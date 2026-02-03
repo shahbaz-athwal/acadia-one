@@ -1,27 +1,25 @@
-## What's inside?
+# Dryft Dashboard
 
-This Turborepo includes the following:
+Single-app Next.js dashboard with Convex for backend data/functions.
 
-### Apps and Packages
+## Prerequisites
 
-- `next`: a nextjs frontend
-- `fastify`: a fastify/trpc api
-- `@repo/db`: prisma client for PostgreSQL
-- `@repo/ui`: a custom shadcn component library
-- `@repo/scraper`: custom scrapers for acadia course catalog and rate my professor
-
-### Docker
-
-This contains following docker compose files:
-
-- `docker-compose.yml`: production docker compose file
-- `docker-compose.local.yml`: local docker compose file for development
+- Bun (>=1.3)
+- Convex CLI (`bunx convex` or `npm i -g convex`)
+- Biome (optional, for lint/format)
 
 ## Setup
 
-### Prerequisites
+1. Copy `.env.example` to `.env.local` and fill in values.
+2. Install deps: `bun install`
+3. Configure/start Convex: `bun run dev:setup` (first time) or `bun run dev:convex`
+4. Start Next.js: `bun run dev`
 
-- Docker
-- Bun
-- Biome (for linting and formatting)
-- PostgreSQL with WAL replication enabled
+## Scripts
+
+- `bun run dev` — Next.js dev server
+- `bun run dev:convex` — Convex dev server
+- `bun run build` — Production build
+- `bun run start` — Start production build
+- `bun run lint` — Biome checks
+- `bun run format` — Biome format
