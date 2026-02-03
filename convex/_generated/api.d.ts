@@ -8,7 +8,6 @@
  * @module
  */
 
-import type * as courses from "../courses.js";
 import type * as departments from "../departments.js";
 import type * as internal_ from "../internal.js";
 import type * as jobLocks from "../jobLocks.js";
@@ -19,6 +18,7 @@ import type * as lib_posthog from "../lib/posthog.js";
 import type * as lib_rmp from "../lib/rmp.js";
 import type * as professors from "../professors.js";
 import type * as terms from "../terms.js";
+import type * as workflows from "../workflows.js";
 
 import type {
   ApiFromModules,
@@ -27,7 +27,6 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
-  courses: typeof courses;
   departments: typeof departments;
   internal: typeof internal_;
   jobLocks: typeof jobLocks;
@@ -38,6 +37,7 @@ declare const fullApi: ApiFromModules<{
   "lib/rmp": typeof lib_rmp;
   professors: typeof professors;
   terms: typeof terms;
+  workflows: typeof workflows;
 }>;
 
 /**
