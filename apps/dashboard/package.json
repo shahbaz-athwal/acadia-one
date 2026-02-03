@@ -3,9 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "bun run --bun next dev",
+    "dev:next": "bun run --bun next dev",
+    "dev:convex": "convex dev",
     "build": "bun run --bun next build",
     "start": "bun run --bun next start",
+    "dev:setup": "convex dev --configure --until-success",
     "lint": "biome check",
     "format": "biome format --write"
   },
@@ -18,6 +20,7 @@
     "@vercel/config": "^0.0.24",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "convex": "^1.31.7",
     "lucide-react": "^0.562.0",
     "motion": "^12.23.26",
     "next": "^16.1.1",
