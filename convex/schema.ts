@@ -7,6 +7,13 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_createdAt", ["createdAt"]),
 
+  acadiaAuth: defineTable({
+    provider: v.string(),
+    cookies: v.string(),
+    expiresAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_provider", ["provider"]),
+
   departments: defineTable({
     prefix: v.string(),
     name: v.string(),

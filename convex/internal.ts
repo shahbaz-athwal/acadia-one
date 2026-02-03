@@ -13,6 +13,61 @@ export const insertLog = internalMutation({
   },
 });
 
+export const getAcadiaAuth = internalQuery({
+  args: { provider: v.string() },
+  returns: v.union(
+    v.object({
+      cookies: v.string(),
+      expiresAt: v.number(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("acadiaAuth")
+      .withIndex("by_provider", (q) => q.eq("provider", args.provider))
+      .first();
+    if (!existing) {
+      return null;
+    }
+    return {
+      cookies: existing.cookies,
+      expiresAt: existing.expiresAt,
+    };
+  },
+});
+
+export const upsertAcadiaAuth = internalMutation({
+  args: {
+    provider: v.string(),
+    cookies: v.string(),
+    expiresAt: v.number(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("acadiaAuth")
+      .withIndex("by_provider", (q) => q.eq("provider", args.provider))
+      .first();
+    const updatedAt = Date.now();
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        cookies: args.cookies,
+        expiresAt: args.expiresAt,
+        updatedAt,
+      });
+      return null;
+    }
+    await ctx.db.insert("acadiaAuth", {
+      provider: args.provider,
+      cookies: args.cookies,
+      expiresAt: args.expiresAt,
+      updatedAt,
+    });
+    return null;
+  },
+});
+
 export const upsertDepartments = internalMutation({
   args: {
     departments: v.array(

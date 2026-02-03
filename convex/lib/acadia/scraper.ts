@@ -1,19 +1,14 @@
 "use node";
 
-import https from "node:https";
-import axios, { type AxiosInstance } from "axios";
+import type { AxiosInstance } from "axios";
 import { z } from "zod";
-
-const BASE_URL = "https://collss.acadiau.ca";
-
-const clientConfig = {
-  baseURL: BASE_URL,
-  httpsAgent: new https.Agent({ rejectUnauthorized: false }),
-  validateStatus: (status: number) => status >= 200 && status < 500,
-};
-
-const client = axios.create(clientConfig);
-const authClient = axios.create(clientConfig);
+import { internal } from "../../_generated/api";
+import type { ActionCtx } from "../../_generated/server";
+import {
+  authenticateWithAxios,
+  createClient,
+  DEFAULT_AUTH_TIMEOUT_MS,
+} from "./auth";
 
 const PostSearchCriteriaRequestSchema = z.object({
   keyword: z.string().nullable(),
@@ -191,120 +186,21 @@ const SectionDetailsFilteredResponseSchema = z
     )
   );
 
-async function authenticateWithAxios(
-  username: string,
-  password: string
-): Promise<string> {
-  const formData = new URLSearchParams();
-  formData.append("UserName", username);
-  formData.append("Password", password);
+const ACADIA_AUTH_PROVIDER = "default";
 
-  const response = await authClient.post(
-    "/student/Account/Login",
-    formData.toString(),
-    {
-      maxRedirects: 0,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    }
-  );
-
-  const setCookieHeaders = response.headers["set-cookie"];
-  let allCookies: string[] = [];
-
-  if (setCookieHeaders) {
-    allCookies = setCookieHeaders
-      .map((cookieHeader) => {
-        if (!cookieHeader) {
-          return null;
-        }
-        const cookiePart = cookieHeader.split(";")[0];
-        return cookiePart;
-      })
-      .filter((cookie): cookie is string => cookie !== null);
-  }
-
-  if (response.status === 302 && response.headers.location) {
-    const cookieString = allCookies.join("; ");
-
-    const redirectResponse = await authClient.get(response.headers.location, {
-      maxRedirects: 0,
-      headers: {
-        Cookie: cookieString,
-      },
-    });
-
-    if (redirectResponse.headers["set-cookie"]) {
-      const redirectCookies = redirectResponse.headers["set-cookie"]
-        .map((cookieHeader) => {
-          if (!cookieHeader) {
-            return null;
-          }
-          return cookieHeader.split(";")[0];
-        })
-        .filter((cookie): cookie is string => cookie !== null);
-
-      allCookies = [...allCookies, ...redirectCookies];
-    }
-  }
-
-  return allCookies.join("; ");
-}
-
-type ScraperCredentials = {
-  username: string;
-  password: string;
-};
-
-const AUTH_TIMEOUT_MS = 10 * 60 * 1000;
-
-export class AcadiaService {
+export class AcadiaScraper {
   private readonly client: AxiosInstance;
-  private cookies: string | null = null;
-  private readonly config: ScraperCredentials;
-  private authTimestamp: number | null = null;
-  private authPromise: Promise<void> | null = null;
+  private readonly cookies: string;
 
-  constructor(
-    config: ScraperCredentials,
-    clientInstance: AxiosInstance = client
-  ) {
-    this.config = config;
+  constructor(cookies: string, clientInstance: AxiosInstance = createClient()) {
+    this.cookies = cookies;
     this.client = clientInstance;
-    this.setupInterceptors();
-  }
 
-  private setupInterceptors() {
-    this.client.interceptors.request.use(async (config) => {
+    this.client.interceptors.request.use((config) => {
       config.headers.set("Accept", "application/json");
-
-      const authExpired =
-        Date.now() - (this.authTimestamp ?? 0) > AUTH_TIMEOUT_MS;
-
-      if (authExpired) {
-        if (!this.authPromise) {
-          this.authPromise = this.authenticate().finally(() => {
-            this.authPromise = null;
-          });
-        }
-        await this.authPromise;
-      }
-
-      if (this.cookies) {
-        config.headers.set("Cookie", this.cookies);
-      }
-
+      config.headers.set("Cookie", this.cookies);
       return config;
     });
-  }
-
-  private async authenticate() {
-    this.cookies = await authenticateWithAxios(
-      this.config.username,
-      this.config.password
-    );
-    this.authTimestamp = Date.now();
   }
 
   private async postSearchCriteria(
@@ -363,7 +259,15 @@ export class AcadiaService {
   }
 }
 
-export function getAcadiaScraper() {
+export async function getAcadiaScraper(ctx: ActionCtx) {
+  const storedAuth = await ctx.runQuery(internal.internal.getAcadiaAuth, {
+    provider: ACADIA_AUTH_PROVIDER,
+  });
+  const now = Date.now();
+  if (storedAuth?.cookies && storedAuth.expiresAt > now) {
+    return new AcadiaScraper(storedAuth.cookies);
+  }
+
   const username = process.env.ACADIA_USERNAME;
   const password = process.env.ACADIA_PASSWORD;
   if (!username) {
@@ -372,5 +276,14 @@ export function getAcadiaScraper() {
   if (!password) {
     throw new Error("ACADIA_PASSWORD is not set");
   }
-  return new AcadiaService({ username, password });
+
+  const cookies = await authenticateWithAxios(username, password);
+
+  const expiresAt = now + DEFAULT_AUTH_TIMEOUT_MS;
+  await ctx.runMutation(internal.internal.upsertAcadiaAuth, {
+    provider: ACADIA_AUTH_PROVIDER,
+    cookies,
+    expiresAt,
+  });
+  return new AcadiaScraper(cookies);
 }

@@ -5,7 +5,7 @@ import { api, internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import type { ActionCtx } from "./_generated/server";
 import { action } from "./_generated/server";
-import { getAcadiaScraper } from "./lib/acadia";
+import { getAcadiaScraper } from "./lib/acadia/scraper";
 import { matchProfessorsWithRMP } from "./lib/aiMatcher";
 import { RMP_ACADIA_ID } from "./lib/constants";
 import { scraper as rmpScraper } from "./lib/rmp";
@@ -24,6 +24,8 @@ const toTimestamp = (value: string) => {
 
 const toOptional = <T>(value: T | null | undefined): T | undefined =>
   value ?? undefined;
+
+type AcadiaScraperInstance = Awaited<ReturnType<typeof getAcadiaScraper>>;
 
 type PopulateDepartmentsResult = {
   processed: number;
@@ -79,7 +81,7 @@ type TriggerRmpReviewsPullingResult = {
 
 async function processCourseInternal(
   ctx: ActionCtx,
-  scraper: ReturnType<typeof getAcadiaScraper>,
+  scraper: AcadiaScraperInstance,
   args: {
     courseId: Id<"courses">;
     courseExternalId: string;
@@ -341,7 +343,7 @@ async function pullRmpReviewsInternal(
 export const populateDepartments = action({
   args: {},
   handler: async (ctx): Promise<PopulateDepartmentsResult> => {
-    const scraper = getAcadiaScraper();
+    const scraper = await getAcadiaScraper(ctx);
     const departments = await scraper.getAllDepartments();
     const processed = await ctx.runMutation(
       internal.internal.upsertDepartments,
@@ -362,7 +364,7 @@ export const populateDepartments = action({
 export const populateCourses = action({
   args: {},
   handler: async (ctx): Promise<PopulateCoursesResult> => {
-    const scraper = getAcadiaScraper();
+    const scraper = await getAcadiaScraper(ctx);
     const courses = await scraper.getAllCourses();
     const processed = await ctx.runMutation(internal.internal.upsertCourses, {
       courses: courses.map((course) => ({
@@ -387,7 +389,7 @@ export const populateProfessors = action({
   args: {},
   handler: async (ctx): Promise<PopulateProfessorsResult> => {
     const departments = await ctx.runQuery(api.departments.list);
-    const scraper = getAcadiaScraper();
+    const scraper = await getAcadiaScraper(ctx);
     const professors: Array<{
       externalId: string;
       name: string;
@@ -432,7 +434,7 @@ export const processCourse = action({
     departmentPrefix: v.string(),
   },
   handler: async (ctx, args): Promise<ProcessCourseResult> => {
-    const scraper = getAcadiaScraper();
+    const scraper = await getAcadiaScraper(ctx);
     const result = await processCourseInternal(ctx, scraper, args);
     return {
       message: `Processed ${result.sectionsProcessed} sections.`,
@@ -448,7 +450,7 @@ export const triggerCourseProcessing = action({
     const courses = await ctx.runQuery(
       internal.internal.listCoursesForProcessing
     );
-    const scraper = getAcadiaScraper();
+    const scraper = await getAcadiaScraper(ctx);
     let processedCourses = 0;
 
     for (const course of courses) {
