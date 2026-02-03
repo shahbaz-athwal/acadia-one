@@ -10,7 +10,6 @@
 
 import type * as departments from "../departments.js";
 import type * as internal_ from "../internal.js";
-import type * as jobLocks from "../jobLocks.js";
 import type * as lib_acadia from "../lib/acadia.js";
 import type * as lib_aiMatcher from "../lib/aiMatcher.js";
 import type * as lib_constants from "../lib/constants.js";
@@ -29,7 +28,6 @@ import type {
 declare const fullApi: ApiFromModules<{
   departments: typeof departments;
   internal: typeof internal_;
-  jobLocks: typeof jobLocks;
   "lib/acadia": typeof lib_acadia;
   "lib/aiMatcher": typeof lib_aiMatcher;
   "lib/constants": typeof lib_constants;

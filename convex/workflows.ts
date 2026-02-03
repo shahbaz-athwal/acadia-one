@@ -25,38 +25,37 @@ const toTimestamp = (value: string) => {
 const toOptional = <T>(value: T | null | undefined): T | undefined =>
   value ?? undefined;
 
-type LockedResult = {
-  skipped: boolean;
+type PopulateDepartmentsResult = {
+  processed: number;
   message: string;
 };
 
-type PopulateDepartmentsResult = LockedResult & {
+type PopulateCoursesResult = {
   processed: number;
+  message: string;
 };
 
-type PopulateCoursesResult = LockedResult & {
-  processed: number;
-};
-
-type PopulateProfessorsResult = LockedResult & {
+type PopulateProfessorsResult = {
   processed: number;
   departments: number;
+  message: string;
 };
 
 type ProcessCourseResult = {
-  skipped: false;
   message: string;
   sectionsProcessed: number;
   sectionsUpserted: number;
 };
 
-type TriggerCourseProcessingResult = LockedResult & {
+type TriggerCourseProcessingResult = {
   processedCourses: number;
   totalCourses: number;
+  message: string;
 };
 
-type LinkProfessorsWithRmpResult = LockedResult & {
+type LinkProfessorsWithRmpResult = {
   matched: number;
+  message: string;
 };
 
 type PullRmpReviewsArgs = {
@@ -65,38 +64,18 @@ type PullRmpReviewsArgs = {
 };
 
 type PullRmpReviewsResult = {
-  skipped: false;
   message: string;
   created: number;
   discarded: number;
 };
 
-type TriggerRmpReviewsPullingResult = LockedResult & {
+type TriggerRmpReviewsPullingResult = {
   processedProfessors: number;
   totalProfessors: number;
   created: number;
   discarded: number;
+  message: string;
 };
-
-const lockSkipMessage = (key: string) =>
-  `Skipped "${key}" because another run is in progress.`;
-
-async function withJobLock<T extends LockedResult>(
-  ctx: ActionCtx,
-  key: string,
-  skippedResult: T,
-  run: () => Promise<T>
-): Promise<T> {
-  const acquired = await ctx.runMutation(internal.jobLocks.tryAcquire, { key });
-  if (!acquired) {
-    return skippedResult;
-  }
-  try {
-    return await run();
-  } finally {
-    await ctx.runMutation(internal.jobLocks.release, { key });
-  }
-}
 
 async function processCourseInternal(
   ctx: ActionCtx,
@@ -359,121 +338,86 @@ async function pullRmpReviewsInternal(
 
 export const populateDepartments = action({
   args: {},
-  handler: async (ctx): Promise<PopulateDepartmentsResult> =>
-    withJobLock<PopulateDepartmentsResult>(
-      ctx,
-      "populate-departments",
+  handler: async (ctx): Promise<PopulateDepartmentsResult> => {
+    const scraper = getAcadiaScraper();
+    const departments = await scraper.getAllDepartments();
+    const processed = await ctx.runMutation(
+      internal.internal.upsertDepartments,
       {
-        skipped: true,
-        processed: 0,
-        message: lockSkipMessage("populate-departments"),
-      },
-      async () => {
-        const scraper = getAcadiaScraper();
-        const departments = await scraper.getAllDepartments();
-        const processed = await ctx.runMutation(
-          internal.internal.upsertDepartments,
-          {
-            departments: departments.map((department) => ({
-              prefix: department.prefix,
-              name: department.name,
-            })),
-          }
-        );
-        const message = `Populated ${processed} departments.`;
-        await ctx.runMutation(internal.internal.insertLog, { message });
-        return { skipped: false, processed, message };
+        departments: departments.map((department) => ({
+          prefix: department.prefix,
+          name: department.name,
+        })),
       }
-    ),
+    );
+    const message = `Populated ${processed} departments.`;
+    await ctx.runMutation(internal.internal.insertLog, { message });
+    return { processed, message };
+  },
 });
 
 export const populateCourses = action({
   args: {},
-  handler: async (ctx): Promise<PopulateCoursesResult> =>
-    withJobLock<PopulateCoursesResult>(
-      ctx,
-      "populate-courses",
-      {
-        skipped: true,
-        processed: 0,
-        message: lockSkipMessage("populate-courses"),
-      },
-      async () => {
-        const scraper = getAcadiaScraper();
-        const courses = await scraper.getAllCourses();
-        const processed = await ctx.runMutation(
-          internal.internal.upsertCourses,
-          {
-            courses: courses.map((course) => ({
-              externalId: course.id,
-              code: course.code,
-              title: course.title,
-              description: course.description || "",
-              departmentPrefix: course.subjectCode,
-              matchingSectionIds: course.matchingSectionIds,
-              credits: course.credits,
-              requisites: course.courseRequisites,
-            })),
-          }
-        );
-        const message = `Populated ${processed} courses.`;
-        await ctx.runMutation(internal.internal.insertLog, { message });
-        return { skipped: false, processed, message };
-      }
-    ),
+  handler: async (ctx): Promise<PopulateCoursesResult> => {
+    const scraper = getAcadiaScraper();
+    const courses = await scraper.getAllCourses();
+    const processed = await ctx.runMutation(internal.internal.upsertCourses, {
+      courses: courses.map((course) => ({
+        externalId: course.id,
+        code: course.code,
+        title: course.title,
+        description: course.description || "",
+        departmentPrefix: course.subjectCode,
+        matchingSectionIds: course.matchingSectionIds,
+        credits: course.credits,
+        requisites: course.courseRequisites,
+      })),
+    });
+    const message = `Populated ${processed} courses.`;
+    await ctx.runMutation(internal.internal.insertLog, { message });
+    return { processed, message };
+  },
 });
 
 export const populateProfessors = action({
   args: {},
-  handler: async (ctx): Promise<PopulateProfessorsResult> =>
-    withJobLock<PopulateProfessorsResult>(
-      ctx,
-      "populate-professors",
-      {
-        skipped: true,
-        processed: 0,
-        departments: 0,
-        message: lockSkipMessage("populate-professors"),
-      },
-      async () => {
-        const departments = await ctx.runQuery(api.departments.list);
-        const scraper = getAcadiaScraper();
-        const professors: Array<{
-          externalId: string;
-          name: string;
-          departmentPrefix: string;
-        }> = [];
+  handler: async (ctx): Promise<PopulateProfessorsResult> => {
+    const departments = await ctx.runQuery(api.departments.list);
+    const scraper = getAcadiaScraper();
+    const professors: Array<{
+      externalId: string;
+      name: string;
+      departmentPrefix: string;
+    }> = [];
 
-        for (const department of departments) {
-          await sleep(FACULTY_FETCH_DELAY_MS);
-          const faculties = await scraper.getFacultiesByDepartment(
-            department.prefix
-          );
-          for (const faculty of faculties) {
-            professors.push({
-              externalId: faculty.id,
-              name: faculty.name,
-              departmentPrefix: department.prefix,
-            });
-          }
-        }
-
-        const processed = await ctx.runMutation(
-          internal.internal.upsertProfessors,
-          {
-            professors,
-          }
-        );
-        const message = `Populated ${processed} professors in ${departments.length} departments.`;
-        await ctx.runMutation(internal.internal.insertLog, { message });
-        return {
-          skipped: false,
-          processed,
-          departments: departments.length,
-          message,
-        };
+    for (const department of departments) {
+      await sleep(FACULTY_FETCH_DELAY_MS);
+      const faculties = await scraper.getFacultiesByDepartment(
+        department.prefix
+      );
+      for (const faculty of faculties) {
+        professors.push({
+          externalId: faculty.id,
+          name: faculty.name,
+          departmentPrefix: department.prefix,
+        });
       }
-    ),
+    }
+
+    const processed = await ctx.runMutation(
+      internal.internal.upsertProfessors,
+      {
+        professors,
+      }
+    );
+    const message = `Populated ${processed} professors in ${departments.length} departments.`;
+    await ctx.runMutation(internal.internal.insertLog, { message });
+    return {
+      processed,
+      departments: departments.length,
+      message,
+    };
+  },
 });
 
 export const processCourse = action({
@@ -487,7 +431,6 @@ export const processCourse = action({
     const scraper = getAcadiaScraper();
     const result = await processCourseInternal(ctx, scraper, args);
     return {
-      skipped: false,
       message: `Processed ${result.sectionsProcessed} sections.`,
       sectionsProcessed: result.sectionsProcessed,
       sectionsUpserted: result.sectionsUpserted,
@@ -497,117 +440,92 @@ export const processCourse = action({
 
 export const triggerCourseProcessing = action({
   args: {},
-  handler: async (ctx): Promise<TriggerCourseProcessingResult> =>
-    withJobLock<TriggerCourseProcessingResult>(
-      ctx,
-      "trigger-course-processing",
-      {
-        skipped: true,
-        processedCourses: 0,
-        totalCourses: 0,
-        message: lockSkipMessage("trigger-course-processing"),
-      },
-      async () => {
-        const courses = await ctx.runQuery(
-          internal.internal.listCoursesForProcessing
-        );
-        const scraper = getAcadiaScraper();
-        let processedCourses = 0;
+  handler: async (ctx): Promise<TriggerCourseProcessingResult> => {
+    const courses = await ctx.runQuery(
+      internal.internal.listCoursesForProcessing
+    );
+    const scraper = getAcadiaScraper();
+    let processedCourses = 0;
 
-        for (const course of courses) {
-          await processCourseInternal(ctx, scraper, {
-            courseId: course._id,
-            courseExternalId: course.externalId,
-            sectionIds: course.matchingSectionIds,
-            departmentPrefix: course.departmentPrefix,
-          });
-          processedCourses += 1;
-        }
+    for (const course of courses) {
+      await processCourseInternal(ctx, scraper, {
+        courseId: course._id,
+        courseExternalId: course.externalId,
+        sectionIds: course.matchingSectionIds,
+        departmentPrefix: course.departmentPrefix,
+      });
+      processedCourses += 1;
+    }
 
-        const message = `Processed ${processedCourses} courses.`;
-        await ctx.runMutation(internal.internal.insertLog, { message });
-        return {
-          skipped: false,
-          processedCourses,
-          totalCourses: courses.length,
-          message,
-        };
-      }
-    ),
+    const message = `Processed ${processedCourses} courses.`;
+    await ctx.runMutation(internal.internal.insertLog, { message });
+    return {
+      processedCourses,
+      totalCourses: courses.length,
+      message,
+    };
+  },
 });
 
 export const linkProfessorsWithRmp = action({
   args: {},
-  handler: async (ctx): Promise<LinkProfessorsWithRmpResult> =>
-    withJobLock<LinkProfessorsWithRmpResult>(
-      ctx,
-      "link-professors-with-rmp",
-      {
-        skipped: true,
+  handler: async (ctx): Promise<LinkProfessorsWithRmpResult> => {
+    const professors: Array<{
+      externalId: string;
+      name: string;
+      departmentPrefix: string;
+    }> = await ctx.runQuery(internal.internal.listProfessorsWithoutRmpId);
+    if (professors.length === 0) {
+      return {
         matched: 0,
-        message: lockSkipMessage("link-professors-with-rmp"),
-      },
-      async () => {
-        const professors: Array<{
-          externalId: string;
-          name: string;
-          departmentPrefix: string;
-        }> = await ctx.runQuery(internal.internal.listProfessorsWithoutRmpId);
-        if (professors.length === 0) {
-          return {
-            skipped: false,
-            matched: 0,
-            message: "No professors without RMP IDs.",
-          };
-        }
+        message: "No professors without RMP IDs.",
+      };
+    }
 
-        const departments = await ctx.runQuery(api.departments.list);
-        const departmentByPrefix = new Map(
-          departments.map((department) => [department.prefix, department.name])
-        );
+    const departments = await ctx.runQuery(api.departments.list);
+    const departmentByPrefix = new Map(
+      departments.map((department) => [department.prefix, department.name])
+    );
 
-        const formattedProfessors = professors.map((professor) => ({
-          id: professor.externalId,
-          name: professor.name,
-          department:
-            departmentByPrefix.get(professor.departmentPrefix) ??
-            professor.departmentPrefix,
-        }));
+    const formattedProfessors = professors.map((professor) => ({
+      id: professor.externalId,
+      name: professor.name,
+      department:
+        departmentByPrefix.get(professor.departmentPrefix) ??
+        professor.departmentPrefix,
+    }));
 
-        const rmpProfessors =
-          await rmpScraper.searchTeachersBySchoolId(RMP_ACADIA_ID);
-        const matches = await matchProfessorsWithRMP(
-          formattedProfessors,
-          rmpProfessors
-        );
+    const rmpProfessors =
+      await rmpScraper.searchTeachersBySchoolId(RMP_ACADIA_ID);
+    const matches = await matchProfessorsWithRMP(
+      formattedProfessors,
+      rmpProfessors
+    );
 
-        const updates = matches
-          .filter((match) => match.rmpId)
-          .map((match) => ({
-            externalId: match.professorId,
-            rmpId: match.rmpId as string,
-          }));
+    const updates = matches
+      .filter((match) => match.rmpId)
+      .map((match) => ({
+        externalId: match.professorId,
+        rmpId: match.rmpId as string,
+      }));
 
-        if (updates.length === 0) {
-          return {
-            skipped: false,
-            matched: 0,
-            message: "No professors matched with RMP.",
-          };
-        }
+    if (updates.length === 0) {
+      return {
+        matched: 0,
+        message: "No professors matched with RMP.",
+      };
+    }
 
-        const matched = await ctx.runMutation(
-          internal.internal.updateProfessorRmpIds,
-          { updates }
-        );
+    const matched = await ctx.runMutation(
+      internal.internal.updateProfessorRmpIds,
+      { updates }
+    );
 
-        return {
-          skipped: false,
-          matched,
-          message: `Linked ${matched} professors with RMP.`,
-        };
-      }
-    ),
+    return {
+      matched,
+      message: `Linked ${matched} professors with RMP.`,
+    };
+  },
 });
 
 export const pullRmpReviews = action({
@@ -618,7 +536,6 @@ export const pullRmpReviews = action({
   handler: async (ctx, args): Promise<PullRmpReviewsResult> => {
     const result = await pullRmpReviewsInternal(ctx, args);
     return {
-      skipped: false,
       created: result.created,
       discarded: result.discarded,
       message: result.message,
@@ -628,45 +545,31 @@ export const pullRmpReviews = action({
 
 export const triggerRmpReviewsPulling = action({
   args: {},
-  handler: async (ctx): Promise<TriggerRmpReviewsPullingResult> =>
-    withJobLock<TriggerRmpReviewsPullingResult>(
-      ctx,
-      "trigger-rmp-reviews-pulling",
-      {
-        skipped: true,
-        processedProfessors: 0,
-        totalProfessors: 0,
-        created: 0,
-        discarded: 0,
-        message: lockSkipMessage("trigger-rmp-reviews-pulling"),
-      },
-      async () => {
-        const professors: Array<{ _id: Id<"professors">; rmpId: string }> =
-          await ctx.runQuery(internal.internal.listProfessorsWithRmpId);
-        let processedProfessors = 0;
-        let created = 0;
-        let discarded = 0;
+  handler: async (ctx): Promise<TriggerRmpReviewsPullingResult> => {
+    const professors: Array<{ _id: Id<"professors">; rmpId: string }> =
+      await ctx.runQuery(internal.internal.listProfessorsWithRmpId);
+    let processedProfessors = 0;
+    let created = 0;
+    let discarded = 0;
 
-        for (const professor of professors) {
-          const result = await pullRmpReviewsInternal(ctx, {
-            professorId: professor._id,
-            rmpId: professor.rmpId,
-          });
-          processedProfessors += 1;
-          created += result.created;
-          discarded += result.discarded;
-        }
+    for (const professor of professors) {
+      const result = await pullRmpReviewsInternal(ctx, {
+        professorId: professor._id,
+        rmpId: professor.rmpId,
+      });
+      processedProfessors += 1;
+      created += result.created;
+      discarded += result.discarded;
+    }
 
-        const message = `Processed ${processedProfessors} professors for RMP reviews.`;
-        await ctx.runMutation(internal.internal.insertLog, { message });
-        return {
-          skipped: false,
-          processedProfessors,
-          totalProfessors: professors.length,
-          created,
-          discarded,
-          message,
-        };
-      }
-    ),
+    const message = `Processed ${processedProfessors} professors for RMP reviews.`;
+    await ctx.runMutation(internal.internal.insertLog, { message });
+    return {
+      processedProfessors,
+      totalProfessors: professors.length,
+      created,
+      discarded,
+      message,
+    };
+  },
 });

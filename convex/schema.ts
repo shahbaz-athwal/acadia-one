@@ -129,10 +129,4 @@ export default defineSchema({
     .index("by_courseId", ["courseId"])
     .index("by_status", ["status"])
     .index("by_rmpId", ["rmpId"]),
-
-  jobLocks: defineTable({
-    key: v.string(),
-    lockedAt: v.number(),
-    lockExpiresAt: v.number(),
-  }).index("by_key", ["key"]),
 });
