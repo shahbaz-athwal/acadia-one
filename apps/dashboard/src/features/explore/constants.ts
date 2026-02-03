@@ -1,40 +1,10 @@
-import type { ExploreSort, ExploreTerm } from "@/features/explore/query-state";
-
-type ExploreOption = {
-  value: string;
-  label: string;
-};
-
-type TermOption = {
-  value: ExploreTerm;
-  label: string;
-};
+import type { ExploreSort } from "@/features/explore/query-state";
 
 type SortOption = {
   value: string;
   label: string;
   sort: ExploreSort;
 };
-
-const termOptions: TermOption[] = [
-  { value: "fall", label: "Fall" },
-  { value: "winter", label: "Winter" },
-  { value: "summer", label: "Summer" },
-];
-
-const professorOptions: ExploreOption[] = [
-  { value: "prof-001", label: "Dr. Avery Sutton" },
-  { value: "prof-002", label: "Prof. Jordan Kim" },
-  { value: "prof-003", label: "Dr. Casey Patel" },
-  { value: "prof-004", label: "Prof. Morgan Reed" },
-];
-
-const subjectOptions: ExploreOption[] = [
-  { value: "subj-101", label: "Computer Science" },
-  { value: "subj-102", label: "Economics" },
-  { value: "subj-103", label: "Psychology" },
-  { value: "subj-104", label: "Mathematics" },
-];
 
 const academicLevelOptions = Array.from({ length: 10 }, (_, index) => ({
   value: index,
@@ -84,11 +54,5 @@ const sortOptions: SortOption[] = [
   },
 ];
 
-export {
-  termOptions,
-  professorOptions,
-  subjectOptions,
-  academicLevelOptions,
-  sortOptions,
-};
-export type { ExploreOption, TermOption, SortOption };
+export { academicLevelOptions, sortOptions };
+export type { SortOption };

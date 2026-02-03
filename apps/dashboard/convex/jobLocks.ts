@@ -8,7 +8,6 @@ export const tryAcquire = internalMutation({
     key: v.string(),
     ttlMs: v.optional(v.number()),
   },
-  returns: v.boolean(),
   handler: async (ctx, args) => {
     const ttlMs = args.ttlMs ?? DEFAULT_TTL_MS;
     const now = Date.now();

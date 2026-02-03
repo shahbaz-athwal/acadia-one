@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "convex/react";
 import { Field, FieldItem, FieldLabel } from "@/components/ui/field";
 import { Fieldset, FieldsetLegend } from "@/components/ui/fieldset";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -8,12 +9,24 @@ import { AcademicLevelMultiSelect } from "@/features/explore/components/academic
 import { MultiCombobox } from "@/features/explore/components/multi-combobox";
 import { TermMultiSelect } from "@/features/explore/components/term-multiselect";
 import { TimeRangeFilter } from "@/features/explore/components/time-range-filter";
-import { professorOptions, subjectOptions } from "@/features/explore/constants";
 import { useExploreQueryState } from "@/features/explore/query-state";
+import { api } from "../../../../convex/_generated/api";
 
 function ExploreFilters() {
   const { state, setFilters } = useExploreQueryState();
   const { filters } = state;
+  const professors = useQuery(api.professors.list, {});
+  const departments = useQuery(api.departments.list, {});
+  const professorOptions =
+    professors?.map((professor) => ({
+      value: professor.id,
+      label: professor.name,
+    })) ?? [];
+  const subjectOptions =
+    departments?.map((department) => ({
+      value: department.prefix,
+      label: department.name,
+    })) ?? [];
 
   return (
     <ScrollArea className="h-full">

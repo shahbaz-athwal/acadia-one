@@ -18,11 +18,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import type { ExploreOption } from "@/features/explore/constants";
 import { cn } from "@/lib/utils";
 
 type MultiComboboxProps = {
-  options: ExploreOption[];
+  options: Array<{ value: string; label: string }>;
   value: string[];
   onChange: (value: string[]) => void;
   placeholder?: string;

@@ -10,7 +10,6 @@ import {
 
 import { normalizeTimeRange } from "@/features/explore/time";
 
-const TERM_VALUES = ["fall", "winter", "summer"] as const;
 const SORT_KEYS = ["title", "difficulty", "numRatings", "courseLevel"] as const;
 const SORT_DIRECTIONS = ["asc", "desc"] as const;
 const VIEW_VALUES = ["grid", "table"] as const;
@@ -20,7 +19,7 @@ const TIME_MINUTES_MAX = 21 * 60; // 9:00 PM
 const TIME_STEP_MINUTES = 15;
 
 // Types
-type ExploreTerm = (typeof TERM_VALUES)[number];
+type ExploreTerm = string;
 type ExploreView = (typeof VIEW_VALUES)[number];
 
 type ExploreTimeRange = {
@@ -77,7 +76,7 @@ function useExploreQueryState() {
       sortDir: parseAsStringLiteral(SORT_DIRECTIONS).withDefault(
         DEFAULT_EXPLORE_STATE.sort.dir
       ),
-      term: parseAsArrayOf(parseAsStringLiteral(TERM_VALUES)).withDefault([]),
+      term: parseAsArrayOf(parseAsString).withDefault([]),
       professorIds: parseAsArrayOf(parseAsString).withDefault([]),
       subjectIds: parseAsArrayOf(parseAsString).withDefault([]),
       academicLevels: parseAsArrayOf(parseAsInteger).withDefault([]),
@@ -162,7 +161,6 @@ function useExploreQueryState() {
 export { useExploreQueryState };
 export {
   DEFAULT_EXPLORE_STATE,
-  TERM_VALUES,
   SORT_KEYS,
   SORT_DIRECTIONS,
   VIEW_VALUES,

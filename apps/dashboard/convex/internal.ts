@@ -259,10 +259,12 @@ export const updateCourseLastSectionPulledAt = internalMutation({
     courseId: v.id("courses"),
     lastSectionPulledAt: v.number(),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     await ctx.db.patch(args.courseId, {
       lastSectionPulledAt: args.lastSectionPulledAt,
     });
+    return null;
   },
 });
 
@@ -271,10 +273,12 @@ export const updateProfessorLastPullFromRmp = internalMutation({
     professorId: v.id("professors"),
     lastPullFromRmp: v.number(),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     await ctx.db.patch(args.professorId, {
       lastPullFromRmp: args.lastPullFromRmp,
     });
+    return null;
   },
 });
 
@@ -357,6 +361,16 @@ export const recomputeCourseAggregates = internalMutation({
 
 export const getCourseByExternalId = internalQuery({
   args: { externalId: v.string() },
+  returns: v.union(
+    v.null(),
+    v.object({
+      _id: v.id("courses"),
+      externalId: v.string(),
+      code: v.string(),
+      title: v.string(),
+      departmentPrefix: v.string(),
+    })
+  ),
   handler: async (ctx, args) => {
     const course = await ctx.db
       .query("courses")
@@ -379,7 +393,15 @@ export const getCourseByExternalId = internalQuery({
 
 export const getProfessorByExternalId = internalQuery({
   args: { externalId: v.string() },
-
+  returns: v.union(
+    v.null(),
+    v.object({
+      _id: v.id("professors"),
+      externalId: v.string(),
+      name: v.string(),
+      departmentPrefix: v.string(),
+    })
+  ),
   handler: async (ctx, args) => {
     const professor = await ctx.db
       .query("professors")
@@ -401,6 +423,13 @@ export const getProfessorByExternalId = internalQuery({
 
 export const getCoursesByCodes = internalQuery({
   args: { codes: v.array(v.string()) },
+  returns: v.array(
+    v.object({
+      _id: v.id("courses"),
+      code: v.string(),
+      externalId: v.string(),
+    })
+  ),
   handler: async (ctx, args) => {
     const results: Array<{
       _id: Id<"courses">;
@@ -425,6 +454,15 @@ export const getCoursesByCodes = internalQuery({
 });
 
 export const listCoursesForProcessing = internalQuery({
+  args: {},
+  returns: v.array(
+    v.object({
+      _id: v.id("courses"),
+      externalId: v.string(),
+      matchingSectionIds: v.array(v.string()),
+      departmentPrefix: v.string(),
+    })
+  ),
   handler: async (ctx) => {
     const courses = await ctx.db.query("courses").collect();
     return courses
@@ -454,5 +492,80 @@ export const listProfessorsWithRmpId = internalQuery({
         _id: professor._id,
         rmpId: professor.rmpId as string,
       }));
+  },
+});
+
+export const listProfessorsWithoutRmpId = internalQuery({
+  args: {},
+  returns: v.array(
+    v.object({
+      externalId: v.string(),
+      name: v.string(),
+      departmentPrefix: v.string(),
+    })
+  ),
+  handler: async (ctx) => {
+    const professors = await ctx.db.query("professors").collect();
+    return professors
+      .filter((professor) => !professor.rmpId)
+      .map((professor) => ({
+        externalId: professor.externalId,
+        name: professor.name,
+        departmentPrefix: professor.departmentPrefix,
+      }));
+  },
+});
+
+export const getProfessorById = internalQuery({
+  args: { id: v.id("professors") },
+  returns: v.union(
+    v.null(),
+    v.object({
+      _id: v.id("professors"),
+      externalId: v.string(),
+      name: v.string(),
+      departmentPrefix: v.string(),
+    })
+  ),
+  handler: async (ctx, args) => {
+    const professor = await ctx.db.get(args.id);
+    if (!professor) {
+      return null;
+    }
+    return {
+      _id: professor._id,
+      externalId: professor.externalId,
+      name: professor.name,
+      departmentPrefix: professor.departmentPrefix,
+    };
+  },
+});
+
+export const updateProfessorRmpIds = internalMutation({
+  args: {
+    updates: v.array(
+      v.object({
+        externalId: v.string(),
+        rmpId: v.string(),
+      })
+    ),
+  },
+  returns: v.number(),
+  handler: async (ctx, args) => {
+    let updated = 0;
+    for (const update of args.updates) {
+      const professor = await ctx.db
+        .query("professors")
+        .withIndex("by_externalId", (q) =>
+          q.eq("externalId", update.externalId)
+        )
+        .first();
+      if (!professor) {
+        continue;
+      }
+      await ctx.db.patch(professor._id, { rmpId: update.rmpId });
+      updated += 1;
+    }
+    return updated;
   },
 });

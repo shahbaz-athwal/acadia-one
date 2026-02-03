@@ -8,13 +8,37 @@
  * @module
  */
 
+import type * as courses from "../courses.js";
+import type * as departments from "../departments.js";
+import type * as internal_ from "../internal.js";
+import type * as jobLocks from "../jobLocks.js";
+import type * as lib_acadia from "../lib/acadia.js";
+import type * as lib_aiMatcher from "../lib/aiMatcher.js";
+import type * as lib_constants from "../lib/constants.js";
+import type * as lib_posthog from "../lib/posthog.js";
+import type * as lib_rmp from "../lib/rmp.js";
+import type * as professors from "../professors.js";
+import type * as terms from "../terms.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  courses: typeof courses;
+  departments: typeof departments;
+  internal: typeof internal_;
+  jobLocks: typeof jobLocks;
+  "lib/acadia": typeof lib_acadia;
+  "lib/aiMatcher": typeof lib_aiMatcher;
+  "lib/constants": typeof lib_constants;
+  "lib/posthog": typeof lib_posthog;
+  "lib/rmp": typeof lib_rmp;
+  professors: typeof professors;
+  terms: typeof terms;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.

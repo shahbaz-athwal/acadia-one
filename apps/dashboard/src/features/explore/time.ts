@@ -26,6 +26,15 @@ function formatMinutes(minutes: number) {
   return `${hour12}:${minuteLabel} ${period}`;
 }
 
+function formatMinutes24(minutes: number) {
+  const total = clampMinutes(roundToStep(minutes));
+  const hour24 = Math.floor(total / 60);
+  const minute = total % 60;
+  return `${hour24.toString().padStart(2, "0")}:${minute
+    .toString()
+    .padStart(2, "0")}`;
+}
+
 function buildTimeOptions() {
   const options: Array<{ value: number; label: string }> = [];
   for (
@@ -55,4 +64,4 @@ function normalizeTimeRange(
   return { start, end };
 }
 
-export { buildTimeOptions, formatMinutes, normalizeTimeRange };
+export { buildTimeOptions, formatMinutes, formatMinutes24, normalizeTimeRange };
