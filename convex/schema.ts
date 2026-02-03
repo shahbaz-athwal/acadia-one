@@ -29,6 +29,7 @@ export default defineSchema({
   professors: defineTable({
     externalId: v.string(),
     rmpId: v.optional(v.string()),
+    rmpLegacyId: v.optional(v.number()),
     departmentPrefix: v.string(),
     name: v.string(),
     designation: v.optional(v.string()),
@@ -109,6 +110,7 @@ export default defineSchema({
 
   ratings: defineTable({
     rmpId: v.optional(v.string()),
+    rmpLegacyId: v.optional(v.number()),
     status: v.string(),
     quality: v.number(),
     difficulty: v.number(),

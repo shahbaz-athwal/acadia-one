@@ -156,6 +156,7 @@ const RatingNodeSchema = z
   })
   .transform((raw) => ({
     id: raw.id || raw.legacyId.toString(),
+    rmpLegacyId: raw.legacyId,
     quality: Math.round((raw.helpfulRating + raw.clarityRating) / 2),
     difficulty: raw.difficultyRating,
     isForCredit: raw.isForCredit,

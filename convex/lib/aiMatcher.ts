@@ -43,5 +43,7 @@ export async function matchProfessorsWithRMP(
     prompt,
   });
 
+  await posthog.shutdown();
+
   return result.object.matches;
 }

@@ -89,6 +89,7 @@ export const upsertProfessors = internalMutation({
         name: v.string(),
         departmentPrefix: v.string(),
         rmpId: v.optional(v.string()),
+        rmpLegacyId: v.optional(v.number()),
         designation: v.optional(v.string()),
         officeLocation: v.optional(v.string()),
         email: v.optional(v.string()),
@@ -287,6 +288,7 @@ export const insertRatings = internalMutation({
     ratings: v.array(
       v.object({
         rmpId: v.optional(v.string()),
+        rmpLegacyId: v.optional(v.number()),
         status: v.string(),
         quality: v.number(),
         difficulty: v.number(),
@@ -547,6 +549,7 @@ export const updateProfessorRmpIds = internalMutation({
       v.object({
         externalId: v.string(),
         rmpId: v.string(),
+        rmpLegacyId: v.number(),
       })
     ),
   },
@@ -563,7 +566,10 @@ export const updateProfessorRmpIds = internalMutation({
       if (!professor) {
         continue;
       }
-      await ctx.db.patch(professor._id, { rmpId: update.rmpId });
+      await ctx.db.patch(professor._id, {
+        rmpId: update.rmpId,
+        rmpLegacyId: update.rmpLegacyId,
+      });
       updated += 1;
     }
     return updated;

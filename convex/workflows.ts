@@ -293,6 +293,7 @@ async function pullRmpReviewsInternal(
     return [
       {
         rmpId: rating.id,
+        rmpLegacyId: rating.rmpLegacyId,
         status: "APPROVED",
         quality: rating.quality,
         difficulty: rating.difficulty,
@@ -336,6 +337,7 @@ async function pullRmpReviewsInternal(
   };
 }
 
+// Tested ✅
 export const populateDepartments = action({
   args: {},
   handler: async (ctx): Promise<PopulateDepartmentsResult> => {
@@ -356,6 +358,7 @@ export const populateDepartments = action({
   },
 });
 
+// Tested ✅
 export const populateCourses = action({
   args: {},
   handler: async (ctx): Promise<PopulateCoursesResult> => {
@@ -379,6 +382,7 @@ export const populateCourses = action({
   },
 });
 
+// Tested ✅
 export const populateProfessors = action({
   args: {},
   handler: async (ctx): Promise<PopulateProfessorsResult> => {
@@ -467,6 +471,7 @@ export const triggerCourseProcessing = action({
   },
 });
 
+// Tested ✅
 export const linkProfessorsWithRmp = action({
   args: {},
   handler: async (ctx): Promise<LinkProfessorsWithRmpResult> => {
@@ -502,12 +507,23 @@ export const linkProfessorsWithRmp = action({
       rmpProfessors
     );
 
+    const rmpProfessorById = new Map(
+      rmpProfessors.map((professor) => [professor.id, professor])
+    );
     const updates = matches
       .filter((match) => match.rmpId)
-      .map((match) => ({
-        externalId: match.professorId,
-        rmpId: match.rmpId as string,
-      }));
+      .map((match) => {
+        const rmpProfessor = rmpProfessorById.get(match.rmpId as string);
+        if (!rmpProfessor) {
+          return null;
+        }
+        return {
+          externalId: match.professorId,
+          rmpId: match.rmpId as string,
+          rmpLegacyId: rmpProfessor.legacyId,
+        };
+      })
+      .filter((update): update is NonNullable<typeof update> => !!update);
 
     if (updates.length === 0) {
       return {
