@@ -8,14 +8,12 @@ import { AI_MAPPING_PROMPT } from "./constants";
 import { posthog } from "./posthog";
 import type { TeacherNode } from "./rmp";
 
-const ProfessorMatchSchema = z.object({
-  matches: z.array(
-    z.object({
-      professorId: z.string(),
-      rmpId: z.string().nullable(),
-    })
-  ),
-});
+const ProfessorMatchSchema = z.array(
+  z.object({
+    professorId: z.string(),
+    rmpId: z.string().nullable(),
+  })
+);
 
 type LocalProfessor = {
   id: string;
@@ -29,13 +27,25 @@ export async function matchProfessorsWithRMP(
   localProfessors: LocalProfessor[],
   rmpProfessors: TeacherNode[]
 ) {
+  const formatLocalProfs = localProfessors
+    .map((p) => `[ID: ${p.id}] ${p.name} - Dept: ${p.department}`)
+    .join("\n");
+
+  const formatRMPProfs = rmpProfessors
+    .map(
+      (p) =>
+        `[RMP_ID: ${p.id}] ${p.firstName} ${p.lastName} - Dept: ${p.department}`
+    )
+    .join("\n");
+
   const prompt = `${AI_MAPPING_PROMPT}
-  Data:
-  - Local Professors (from our database):
-      ${JSON.stringify(localProfessors, null, 2)}
-  - Rate My Professor Data:
-      ${JSON.stringify(rmpProfessors, null, 2)}
-  `;
+
+Local Professors (from our database):
+${formatLocalProfs}
+
+Rate My Professor Data:
+${formatRMPProfs}
+`;
 
   const result = await generateObject({
     model,
@@ -45,5 +55,5 @@ export async function matchProfessorsWithRMP(
 
   await posthog.shutdown();
 
-  return result.object.matches;
+  return result.object;
 }
