@@ -27,11 +27,13 @@ export async function matchProfessorsWithRMP(
   localProfessors: LocalProfessor[],
   rmpProfessors: TeacherNode[]
 ) {
-  const formatLocalProfs = localProfessors
+  const formatLocalProfs = [...localProfessors]
+    .sort((a, b) => a.department.localeCompare(b.department))
     .map((p) => `[ID: ${p.id}] ${p.name} - Dept: ${p.department}`)
     .join("\n");
 
-  const formatRMPProfs = rmpProfessors
+  const formatRMPProfs = [...rmpProfessors]
+    .sort((a, b) => a.department.localeCompare(b.department))
     .map(
       (p) =>
         `[RMP_ID: ${p.id}] ${p.firstName} ${p.lastName} - Dept: ${p.department}`

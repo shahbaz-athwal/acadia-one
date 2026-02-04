@@ -481,7 +481,7 @@ export const linkProfessorsWithRmp = action({
       externalId: string;
       name: string;
       departmentPrefix: string;
-    }> = await ctx.runQuery(internal.internal.listProfessorsWithoutRmpId);
+    }> = await ctx.runQuery(internal.internal.listAllProfessors);
     if (professors.length === 0) {
       return {
         matched: 0,
