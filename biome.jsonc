@@ -1,14 +1,18 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "extends": ["ultracite"],
+  "json": {
+    "parser": {
+      "allowComments": true,
+      "allowTrailingCommas": true
+    }
+  },
   "files": {
     "includes": [
       "**",
-      "!apps/hono-api/prisma/migrations",
       "!bun.lock",
-      "!apps/dashboard/src/components/kibo-ui",
-      "!apps/dashboard/src/components/ui",
-      "!apps/hono-api/prisma/generated"
+      "!src/components/kibo-ui",
+      "!src/components/ui"
     ]
   },
   "linter": {

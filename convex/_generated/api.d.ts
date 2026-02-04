@@ -1,0 +1,85 @@
+/* eslint-disable */
+/**
+ * Generated `api` utility.
+ *
+ * THIS CODE IS AUTOMATICALLY GENERATED.
+ *
+ * To regenerate, run `npx convex dev`.
+ * @module
+ */
+
+import type * as auth from "../auth.js";
+import type * as departments from "../departments.js";
+import type * as http from "../http.js";
+import type * as internal_ from "../internal.js";
+import type * as lib_acadia_auth from "../lib/acadia/auth.js";
+import type * as lib_acadia_impersonator from "../lib/acadia/impersonator.js";
+import type * as lib_acadia_schemas_postSearchCriteria from "../lib/acadia/schemas/postSearchCriteria.js";
+import type * as lib_acadia_schemas_section from "../lib/acadia/schemas/section.js";
+import type * as lib_acadia_schemas_studentGrades from "../lib/acadia/schemas/studentGrades.js";
+import type * as lib_acadia_schemas_studentProgram from "../lib/acadia/schemas/studentProgram.js";
+import type * as lib_acadia_scraper from "../lib/acadia/scraper.js";
+import type * as lib_aiMatcher from "../lib/aiMatcher.js";
+import type * as lib_constants from "../lib/constants.js";
+import type * as lib_encryption from "../lib/encryption.js";
+import type * as lib_posthog from "../lib/posthog.js";
+import type * as lib_rmp from "../lib/rmp.js";
+import type * as professors from "../professors.js";
+import type * as terms from "../terms.js";
+import type * as workflows from "../workflows.js";
+
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
+
+declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
+  departments: typeof departments;
+  http: typeof http;
+  internal: typeof internal_;
+  "lib/acadia/auth": typeof lib_acadia_auth;
+  "lib/acadia/impersonator": typeof lib_acadia_impersonator;
+  "lib/acadia/schemas/postSearchCriteria": typeof lib_acadia_schemas_postSearchCriteria;
+  "lib/acadia/schemas/section": typeof lib_acadia_schemas_section;
+  "lib/acadia/schemas/studentGrades": typeof lib_acadia_schemas_studentGrades;
+  "lib/acadia/schemas/studentProgram": typeof lib_acadia_schemas_studentProgram;
+  "lib/acadia/scraper": typeof lib_acadia_scraper;
+  "lib/aiMatcher": typeof lib_aiMatcher;
+  "lib/constants": typeof lib_constants;
+  "lib/encryption": typeof lib_encryption;
+  "lib/posthog": typeof lib_posthog;
+  "lib/rmp": typeof lib_rmp;
+  professors: typeof professors;
+  terms: typeof terms;
+  workflows: typeof workflows;
+}>;
+
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;
+
+export declare const components: {};
