@@ -8,14 +8,18 @@
  * @module
  */
 
+import type * as auth from "../auth.js";
 import type * as departments from "../departments.js";
+import type * as http from "../http.js";
 import type * as internal_ from "../internal.js";
 import type * as lib_acadia_auth from "../lib/acadia/auth.js";
 import type * as lib_acadia_scraper from "../lib/acadia/scraper.js";
 import type * as lib_aiMatcher from "../lib/aiMatcher.js";
 import type * as lib_constants from "../lib/constants.js";
+import type * as lib_encryption from "../lib/encryption.js";
 import type * as lib_posthog from "../lib/posthog.js";
 import type * as lib_rmp from "../lib/rmp.js";
+import type * as lib_sessionValidation from "../lib/sessionValidation.js";
 import type * as professors from "../professors.js";
 import type * as terms from "../terms.js";
 import type * as workflows from "../workflows.js";
@@ -27,14 +31,18 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   departments: typeof departments;
+  http: typeof http;
   internal: typeof internal_;
   "lib/acadia/auth": typeof lib_acadia_auth;
   "lib/acadia/scraper": typeof lib_acadia_scraper;
   "lib/aiMatcher": typeof lib_aiMatcher;
   "lib/constants": typeof lib_constants;
+  "lib/encryption": typeof lib_encryption;
   "lib/posthog": typeof lib_posthog;
   "lib/rmp": typeof lib_rmp;
+  "lib/sessionValidation": typeof lib_sessionValidation;
   professors: typeof professors;
   terms: typeof terms;
   workflows: typeof workflows;

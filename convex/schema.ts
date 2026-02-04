@@ -10,6 +10,8 @@ export default defineSchema({
   acadiaAuth: defineTable({
     provider: v.string(),
     cookies: v.string(),
+    encryptedCredentials: v.string(),
+    lastAcadiaAuth: v.number(),
     expiresAt: v.number(),
     updatedAt: v.number(),
   }).index("by_provider", ["provider"]),

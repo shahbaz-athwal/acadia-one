@@ -283,6 +283,8 @@ export async function getAcadiaScraper(ctx: ActionCtx) {
   await ctx.runMutation(internal.internal.upsertAcadiaAuth, {
     provider: ACADIA_AUTH_PROVIDER,
     cookies,
+    encryptedCredentials: "",
+    lastAcadiaAuth: now,
     expiresAt,
   });
   return new AcadiaScraper(cookies);

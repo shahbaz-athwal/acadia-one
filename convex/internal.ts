@@ -18,6 +18,8 @@ export const getAcadiaAuth = internalQuery({
   returns: v.union(
     v.object({
       cookies: v.string(),
+      encryptedCredentials: v.string(),
+      lastAcadiaAuth: v.number(),
       expiresAt: v.number(),
     }),
     v.null()
@@ -32,6 +34,8 @@ export const getAcadiaAuth = internalQuery({
     }
     return {
       cookies: existing.cookies,
+      encryptedCredentials: existing.encryptedCredentials,
+      lastAcadiaAuth: existing.lastAcadiaAuth,
       expiresAt: existing.expiresAt,
     };
   },
@@ -41,6 +45,8 @@ export const upsertAcadiaAuth = internalMutation({
   args: {
     provider: v.string(),
     cookies: v.string(),
+    encryptedCredentials: v.string(),
+    lastAcadiaAuth: v.number(),
     expiresAt: v.number(),
   },
   returns: v.null(),
@@ -53,6 +59,8 @@ export const upsertAcadiaAuth = internalMutation({
     if (existing) {
       await ctx.db.patch(existing._id, {
         cookies: args.cookies,
+        encryptedCredentials: args.encryptedCredentials,
+        lastAcadiaAuth: args.lastAcadiaAuth,
         expiresAt: args.expiresAt,
         updatedAt,
       });
@@ -61,6 +69,8 @@ export const upsertAcadiaAuth = internalMutation({
     await ctx.db.insert("acadiaAuth", {
       provider: args.provider,
       cookies: args.cookies,
+      encryptedCredentials: args.encryptedCredentials,
+      lastAcadiaAuth: args.lastAcadiaAuth,
       expiresAt: args.expiresAt,
       updatedAt,
     });
