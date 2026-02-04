@@ -83,3 +83,7 @@ export async function authenticateWithAxios(
 }
 
 export const DEFAULT_AUTH_TIMEOUT_MS = 10 * 60 * 1000;
+
+export function isAcadiaSessionExpired(lastAcadiaAuth: number): boolean {
+  return Date.now() - lastAcadiaAuth > DEFAULT_AUTH_TIMEOUT_MS;
+}
