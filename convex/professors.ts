@@ -123,7 +123,6 @@ export const byId = query({
       ),
     })
   ),
-  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: FIX LATER
   handler: async (ctx, args) => {
     const professor = await ctx.db
       .query("professors")

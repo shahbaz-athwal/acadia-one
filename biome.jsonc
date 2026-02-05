@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite"],
+  "extends": ["ultracite/biome/core", "ultracite/biome/react"],
   "json": {
     "parser": {
       "allowComments": true,
@@ -8,21 +8,21 @@
     }
   },
   "files": {
-    "includes": [
-      "**",
-      "!bun.lock",
-      "!src/components/kibo-ui",
-      "!src/components/ui"
-    ]
+    "includes": ["!bun.lock", "!src/components/ui", "!convex/_generated"]
   },
   "linter": {
-    "rules": {
-      "style": {
-        "noMagicNumbers": "off"
-      },
-      "suspicious": {
-        "noUnknownAtRules": "off"
+    "rules": {}
+  },
+  "overrides": [
+    {
+      "includes": ["convex/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": "off"
+          }
+        }
       }
     }
-  }
+  ]
 }

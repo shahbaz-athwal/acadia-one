@@ -7,11 +7,6 @@ import { action } from "./_generated/server";
 import { authenticateWithAxios } from "./lib/acadia/auth";
 import { encryptCredentials } from "./lib/encryption";
 
-type AuthRequestBody = {
-  username: string;
-  password: string;
-};
-
 type AuthResult =
   | {
       success: true;
@@ -28,7 +23,13 @@ type AuthResult =
 export const authenticateUser = action(
   async (
     ctx: ActionCtx,
-    { username, password }: AuthRequestBody
+    {
+      username,
+      password,
+    }: {
+      username: string;
+      password: string;
+    }
   ): Promise<AuthResult> => {
     try {
       // Authenticate with Acadia

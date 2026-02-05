@@ -27,57 +27,57 @@ const toOptional = <T>(value: T | null | undefined): T | undefined =>
 
 type AcadiaScraperInstance = Awaited<ReturnType<typeof getAcadiaScraper>>;
 
-type PopulateDepartmentsResult = {
+interface PopulateDepartmentsResult {
   processed: number;
   message: string;
-};
+}
 
-type PopulateCoursesResult = {
+interface PopulateCoursesResult {
   processed: number;
   message: string;
-};
+}
 
-type PopulateProfessorsResult = {
+interface PopulateProfessorsResult {
   processed: number;
   departments: number;
   message: string;
-};
+}
 
-type ProcessCourseResult = {
+interface ProcessCourseResult {
   message: string;
   sectionsProcessed: number;
   sectionsUpserted: number;
-};
+}
 
-type TriggerCourseProcessingResult = {
+interface TriggerCourseProcessingResult {
   processedCourses: number;
   totalCourses: number;
   message: string;
-};
+}
 
-type LinkProfessorsWithRmpResult = {
+interface LinkProfessorsWithRmpResult {
   matched: number;
   message: string;
-};
+}
 
-type PullRmpReviewsArgs = {
+interface PullRmpReviewsArgs {
   professorId: Id<"professors">;
   rmpId: string;
-};
+}
 
-type PullRmpReviewsResult = {
+interface PullRmpReviewsResult {
   message: string;
   created: number;
   discarded: number;
-};
+}
 
-type TriggerRmpReviewsPullingResult = {
+interface TriggerRmpReviewsPullingResult {
   processedProfessors: number;
   totalProfessors: number;
   created: number;
   discarded: number;
   message: string;
-};
+}
 
 async function processCourseInternal(
   ctx: ActionCtx,
