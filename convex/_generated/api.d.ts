@@ -14,6 +14,7 @@ import type * as http from "../http.js";
 import type * as internal_ from "../internal.js";
 import type * as lib_acadia_auth from "../lib/acadia/auth.js";
 import type * as lib_acadia_impersonator from "../lib/acadia/impersonator.js";
+import type * as lib_acadia_programs from "../lib/acadia/programs.js";
 import type * as lib_acadia_schemas_postSearchCriteria from "../lib/acadia/schemas/postSearchCriteria.js";
 import type * as lib_acadia_schemas_section from "../lib/acadia/schemas/section.js";
 import type * as lib_acadia_schemas_studentGrades from "../lib/acadia/schemas/studentGrades.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   internal: typeof internal_;
   "lib/acadia/auth": typeof lib_acadia_auth;
   "lib/acadia/impersonator": typeof lib_acadia_impersonator;
+  "lib/acadia/programs": typeof lib_acadia_programs;
   "lib/acadia/schemas/postSearchCriteria": typeof lib_acadia_schemas_postSearchCriteria;
   "lib/acadia/schemas/section": typeof lib_acadia_schemas_section;
   "lib/acadia/schemas/studentGrades": typeof lib_acadia_schemas_studentGrades;
