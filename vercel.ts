@@ -6,5 +6,5 @@ export const config: VercelConfig = {
   buildCommand: "bun run build",
   devCommand: "bun run dev:vite",
   installCommand: "bun install",
-  outputDirectory: "dist/client",
+  outputDirectory: "dist",
 };

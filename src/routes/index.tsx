@@ -14,39 +14,39 @@ function App() {
   const features = [
     {
       icon: <Zap className="h-12 w-12 text-cyan-400" />,
-      title: "Powerful Server Functions",
+      title: "Fast Development",
       description:
-        "Write server-side code that seamlessly integrates with your client components. Type-safe, secure, and simple.",
-    },
-    {
-      icon: <Server className="h-12 w-12 text-cyan-400" />,
-      title: "Flexible Server Side Rendering",
-      description:
-        "Full-document SSR, streaming, and progressive enhancement out of the box. Control exactly what renders where.",
+        "Lightning-fast hot module replacement with Vite. See your changes instantly.",
     },
     {
       icon: <RouteIcon className="h-12 w-12 text-cyan-400" />,
-      title: "API Routes",
+      title: "Type-Safe Routing",
       description:
-        "Build type-safe API endpoints alongside your application. No separate backend needed.",
+        "Built with TanStack Router for fully type-safe navigation and route parameters.",
     },
     {
       icon: <Shield className="h-12 w-12 text-cyan-400" />,
-      title: "Strongly Typed Everything",
+      title: "Strongly Typed",
       description:
-        "End-to-end type safety from server to client. Catch errors before they reach production.",
+        "End-to-end type safety with TypeScript. Catch errors before they reach production.",
+    },
+    {
+      icon: <Server className="h-12 w-12 text-cyan-400" />,
+      title: "Modern Tooling",
+      description:
+        "Built with modern tools and best practices. Fast builds and optimal performance.",
     },
     {
       icon: <Waves className="h-12 w-12 text-cyan-400" />,
-      title: "Full Streaming Support",
+      title: "Component Library",
       description:
-        "Stream data from server to client progressively. Perfect for AI applications and real-time updates.",
+        "Comprehensive UI component library ready to use. Build beautiful interfaces quickly.",
     },
     {
       icon: <Sparkles className="h-12 w-12 text-cyan-400" />,
-      title: "Next Generation Ready",
+      title: "Production Ready",
       description:
-        "Built from the ground up for modern web applications. Deploy anywhere JavaScript runs.",
+        "Optimized for production deployment. Deploy anywhere static sites are supported.",
     },
   ];
 
@@ -55,38 +55,21 @@ function App() {
       <section className="relative overflow-hidden px-6 py-20 text-center">
         <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10" />
         <div className="relative mx-auto max-w-5xl">
-          <div className="mb-6 flex items-center justify-center gap-6">
-            <img
-              alt="TanStack Logo"
-              className="h-24 w-24 md:h-32 md:w-32"
-              src="/tanstack-circle-logo.png"
-            />
-            <h1 className="font-black text-6xl text-white [letter-spacing:-0.08em] md:text-7xl">
-              <span className="text-gray-300">TANSTACK</span>{" "}
-              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                START
-              </span>
-            </h1>
-          </div>
+          <h1 className="mb-6 font-black text-6xl text-white [letter-spacing:-0.08em] md:text-7xl">
+            <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+              Dryft
+            </span>
+          </h1>
           <p className="mb-4 font-light text-2xl text-gray-300 md:text-3xl">
-            The framework for next generation AI applications
+            Welcome to your application
           </p>
           <p className="mx-auto mb-8 max-w-3xl text-gray-400 text-lg">
-            Full-stack framework powered by TanStack Router for React and Solid.
-            Build modern applications with server functions, streaming, and type
-            safety.
+            Built with React, Vite, and TanStack Router. Type-safe routing with
+            modern tooling.
           </p>
           <div className="flex flex-col items-center gap-4">
-            <a
-              className="rounded-lg bg-cyan-500 px-8 py-3 font-semibold text-white shadow-cyan-500/50 shadow-lg transition-colors hover:bg-cyan-600"
-              href="https://tanstack.com/start"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              Documentation
-            </a>
             <p className="mt-2 text-gray-400 text-sm">
-              Begin your TanStack Start journey by editing{" "}
+              Get started by editing{" "}
               <code className="rounded bg-slate-700 px-2 py-1 text-cyan-400">
                 /src/routes/index.tsx
               </code>
