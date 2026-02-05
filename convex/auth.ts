@@ -7,10 +7,10 @@ import { action } from "./_generated/server";
 import { authenticateWithAxios } from "./lib/acadia/auth";
 import { encryptCredentials } from "./lib/encryption";
 
-type AuthRequestBody = {
+interface AuthRequestBody {
   username: string;
   password: string;
-};
+}
 
 type AuthResult =
   | {

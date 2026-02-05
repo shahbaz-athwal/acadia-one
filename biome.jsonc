@@ -1,16 +1,28 @@
 {
-	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-	"extends": ["ultracite/biome/core"],
-	"json": {
-		"parser": {
-			"allowComments": true,
-			"allowTrailingCommas": true
-		}
-	},
-	"files": {
-		"includes": ["**", "!bun.lock", "!src/components/ui"]
-	},
-	"linter": {
-		"rules": {}
-	}
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": ["ultracite/biome/core", "ultracite/biome/react"],
+  "json": {
+    "parser": {
+      "allowComments": true,
+      "allowTrailingCommas": true
+    }
+  },
+  "files": {
+    "includes": ["!bun.lock", "!src/components/ui", "!convex/_generated"]
+  },
+  "linter": {
+    "rules": {}
+  },
+  "overrides": [
+    {
+      "includes": ["convex/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "useFilenamingConvention": "off"
+          }
+        }
+      }
+    }
+  ]
 }

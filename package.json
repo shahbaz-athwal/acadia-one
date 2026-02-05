@@ -10,8 +10,7 @@
     "start": "vite preview",
     "dev:convex": "convex dev",
     "dev:setup": "convex dev --configure --until-success",
-    "lint": "biome check",
-    "format": "biome format --write"
+    "lint": "ultracite fix"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.43",

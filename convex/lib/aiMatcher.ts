@@ -15,11 +15,11 @@ const ProfessorMatchSchema = z.array(
   })
 );
 
-type LocalProfessor = {
+interface LocalProfessor {
   id: string;
   name: string;
   department: string;
-};
+}
 
 const model = withTracing(google("gemini-pro-latest"), posthog, {});
 
