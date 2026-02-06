@@ -3,9 +3,11 @@
 import type { AxiosInstance } from "axios";
 import type { ActionCtx } from "../../_generated/server";
 import { createClient } from "./auth";
+import { ProgramEvaluationFilteredResponseSchema } from "./schemas/programEvaluation";
 import { StudentGradesFilteredResponseSchema } from "./schemas/studentGrades";
 import { StudentProgramDetailsFilteredResponseSchema } from "./schemas/studentProgram";
 
+export type { ProgramEvaluationTransformed } from "./schemas/programEvaluation";
 export type { StudentGradesTransformed } from "./schemas/studentGrades";
 export type { StudentProgramDetailsTransformed } from "./schemas/studentProgram";
 
@@ -44,6 +46,19 @@ export class AcadiaImpersonator {
     );
 
     return StudentGradesFilteredResponseSchema.parse(response.data);
+  }
+
+  async getProgramEvaluation(programCode: string) {
+    const response = await this.client.post(
+      "/student/Planning/Programs/ProgramEvaluation",
+      {
+        program: programCode,
+        isWhatIfEvaluation: true,
+        studentId: this.studentId,
+      }
+    );
+
+    return ProgramEvaluationFilteredResponseSchema.parse(response.data).program;
   }
 }
 

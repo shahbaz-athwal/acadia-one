@@ -9,6 +9,9 @@ export const PostSearchCriteriaRequestSchema = z.object({
   faculty: z.array(z.coerce.number()),
   pageNumber: z.number(),
   quantityPerPage: z.number(),
+  group: z.string().optional(),
+  requirement: z.string().optional(),
+  subrequirement: z.string().optional(),
 });
 
 export const PostSearchCriteriaFilteredResponseSchema = z

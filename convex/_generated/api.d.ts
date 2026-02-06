@@ -16,6 +16,7 @@ import type * as lib_acadia_auth from "../lib/acadia/auth.js";
 import type * as lib_acadia_impersonator from "../lib/acadia/impersonator.js";
 import type * as lib_acadia_programs from "../lib/acadia/programs.js";
 import type * as lib_acadia_schemas_postSearchCriteria from "../lib/acadia/schemas/postSearchCriteria.js";
+import type * as lib_acadia_schemas_programEvaluation from "../lib/acadia/schemas/programEvaluation.js";
 import type * as lib_acadia_schemas_section from "../lib/acadia/schemas/section.js";
 import type * as lib_acadia_schemas_studentGrades from "../lib/acadia/schemas/studentGrades.js";
 import type * as lib_acadia_schemas_studentProgram from "../lib/acadia/schemas/studentProgram.js";
@@ -44,6 +45,7 @@ declare const fullApi: ApiFromModules<{
   "lib/acadia/impersonator": typeof lib_acadia_impersonator;
   "lib/acadia/programs": typeof lib_acadia_programs;
   "lib/acadia/schemas/postSearchCriteria": typeof lib_acadia_schemas_postSearchCriteria;
+  "lib/acadia/schemas/programEvaluation": typeof lib_acadia_schemas_programEvaluation;
   "lib/acadia/schemas/section": typeof lib_acadia_schemas_section;
   "lib/acadia/schemas/studentGrades": typeof lib_acadia_schemas_studentGrades;
   "lib/acadia/schemas/studentProgram": typeof lib_acadia_schemas_studentProgram;

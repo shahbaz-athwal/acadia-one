@@ -13,6 +13,7 @@ import {
   PostSearchCriteriaFilteredResponseSchema,
   PostSearchCriteriaRequestSchema,
 } from "./schemas/postSearchCriteria";
+import { ProgramEvaluationFilteredResponseSchema } from "./schemas/programEvaluation";
 import { SectionDetailsFilteredResponseSchema } from "./schemas/section";
 
 const ACADIA_AUTH_PROVIDER = "default";
@@ -43,7 +44,7 @@ export class AcadiaScraper {
       subjects: [],
       faculty: [],
       pageNumber: 1,
-      quantityPerPage: 30,
+      quantityPerPage: 50,
     };
 
     const validatedCriteria = PostSearchCriteriaRequestSchema.parse({
@@ -85,6 +86,32 @@ export class AcadiaScraper {
       }
     );
     return SectionDetailsFilteredResponseSchema.parse(response.data);
+  }
+
+  async getProgramEvaluation(studentId: string, programCode: string) {
+    const response = await this.client.post(
+      "/student/Planning/Programs/ProgramEvaluation",
+      {
+        program: programCode,
+        isWhatIfEvaluation: true,
+        studentId,
+      }
+    );
+
+    return ProgramEvaluationFilteredResponseSchema.parse(response.data).program;
+  }
+
+  async getRequiredCourses(
+    group: string,
+    requirement: string,
+    subrequirement: string
+  ) {
+    const data = await this.postSearchCriteria({
+      group,
+      requirement,
+      subrequirement,
+    });
+    return data.courses;
   }
 }
 
