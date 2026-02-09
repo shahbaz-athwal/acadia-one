@@ -64,8 +64,8 @@ export class AcadiaImpersonator {
 
 export function getAcadiaImpersonator(
   _ctx: ActionCtx,
-  _provider: string,
-  _studentId: string
+  _sessionId: string,
+  _decryptionToken: string
 ) {
   throw new Error("getAcadiaImpersonator not implemented yet");
 }

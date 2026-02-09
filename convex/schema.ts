@@ -66,9 +66,11 @@ export default defineSchema({
     requisites: v.optional(
       v.array(
         v.object({
-          code: v.string(),
+          codes: v.array(v.string()),
           displayText: v.string(),
+          displayTextAnnotated: v.string(),
           displayTextExtension: v.string(),
+          displayTextExtensionAnnotated: v.optional(v.string()),
         })
       )
     ),

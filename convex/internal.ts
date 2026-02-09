@@ -201,9 +201,11 @@ export const upsertCourses = internalMutation({
         requisites: v.optional(
           v.array(
             v.object({
-              code: v.string(),
+              codes: v.array(v.string()),
               displayText: v.string(),
+              displayTextAnnotated: v.string(),
               displayTextExtension: v.string(),
+              displayTextExtensionAnnotated: v.optional(v.string()),
             })
           )
         ),
