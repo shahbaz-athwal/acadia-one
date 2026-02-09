@@ -50,10 +50,10 @@ http.route({
         );
       }
 
-      // Kick off post-auth background work (best-effort).
       try {
         await ctx.scheduler.runAfter(0, internal.auth.pullUserData, {
           sessionId: result.sessionId,
+          token: result.token,
         });
       } catch {
         // Intentionally ignore scheduling failures so auth can still succeed.

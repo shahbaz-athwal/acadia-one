@@ -185,6 +185,63 @@ export const createAcadiaSessionAndUser = internalMutation({
   },
 });
 
+const acadiaUserDataStatusValidator = v.union(
+  v.literal("pending"),
+  v.literal("ready")
+);
+
+export const setAcadiaUserDataStatus = internalMutation({
+  args: {
+    sessionId: v.string(),
+    status: acadiaUserDataStatusValidator,
+    error: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const existingUser = await ctx.db
+      .query("acadiaUsers")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .first();
+    if (!existingUser) {
+      return null;
+    }
+
+    const updatedAt = Date.now();
+    await ctx.db.patch(existingUser._id, {
+      userDataStatus: args.status,
+      userDataPullError: args.error ?? undefined,
+      updatedAt,
+    });
+    return null;
+  },
+});
+
+export const setAcadiaUserData = internalMutation({
+  args: {
+    sessionId: v.string(),
+    userData: v.any(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const existingUser = await ctx.db
+      .query("acadiaUsers")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .first();
+    if (!existingUser) {
+      return null;
+    }
+
+    const updatedAt = Date.now();
+    await ctx.db.patch(existingUser._id, {
+      userDataStatus: "ready",
+      userDataPullError: undefined,
+      userData: args.userData,
+      updatedAt,
+    });
+    return null;
+  },
+});
+
 export const upsertDepartments = internalMutation({
   args: {
     departments: v.array(

@@ -5,6 +5,7 @@ import { internal } from "./_generated/api";
 import type { ActionCtx } from "./_generated/server";
 import { action, internalAction } from "./_generated/server";
 import { authenticateWithAxios } from "./lib/acadia/auth";
+import { getAcadiaImpersonator } from "./lib/acadia/impersonator";
 import { encryptCredentials } from "./lib/encryption";
 
 type AuthResult =
@@ -93,8 +94,47 @@ export const authenticateUser = action(
 );
 
 export const pullUserData = internalAction(
-  (_ctx: ActionCtx, { sessionId }: { sessionId: string }) => {
-    // TODO: Pull user data after successful auth.
-    return { sessionId };
+  async (
+    ctx: ActionCtx,
+    { sessionId, token }: { sessionId: string; token: string }
+  ) => {
+    await ctx.runMutation(internal.internal.setAcadiaUserDataStatus, {
+      sessionId,
+      status: "pending",
+    });
+
+    try {
+      const impersonator = await getAcadiaImpersonator(ctx, sessionId, token);
+      const programDetails = await impersonator.getStudentProgramDetails();
+      const grades = await impersonator.getStudentGrades();
+
+      const primaryProgramCode = programDetails.programs[0]?.programCode;
+      const programEvaluation = primaryProgramCode
+        ? await impersonator.getProgramEvaluation(primaryProgramCode)
+        : undefined;
+
+      const userData = {
+        pulledAt: Date.now(),
+        profile: programDetails.profile,
+        programs: programDetails.programs,
+        grades,
+        ...(programEvaluation ? { programEvaluation } : {}),
+      };
+
+      await ctx.runMutation(internal.internal.setAcadiaUserData, {
+        sessionId,
+        userData,
+      });
+
+      return { sessionId, status: "ready" as const };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      await ctx.runMutation(internal.internal.setAcadiaUserDataStatus, {
+        sessionId,
+        status: "pending",
+        error: message,
+      });
+      return { sessionId, status: "pending" as const, error: message };
+    }
   }
 );
