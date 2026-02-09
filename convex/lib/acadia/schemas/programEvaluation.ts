@@ -57,7 +57,7 @@ export const ProgramEvaluationFilteredResponseSchema = z
             id: group.Id,
             courses: group.Courses.map((course) => ({
               id: course.Id,
-              subjectCode: course.SubjectCode,
+              code: course.SubjectCode + course.Number,
               number: course.Number,
               title: course.Title,
               courseName: course.CourseName,

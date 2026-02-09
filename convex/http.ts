@@ -1,5 +1,5 @@
 import { httpRouter } from "convex/server";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { httpAction } from "./_generated/server";
 
 const http = httpRouter();
@@ -48,6 +48,15 @@ http.route({
             },
           }
         );
+      }
+
+      // Kick off post-auth background work (best-effort).
+      try {
+        await ctx.scheduler.runAfter(0, internal.auth.pullUserData, {
+          sessionId: result.sessionId,
+        });
+      } catch {
+        // Intentionally ignore scheduling failures so auth can still succeed.
       }
 
       const maxAge = 604_800; // 7 days in seconds

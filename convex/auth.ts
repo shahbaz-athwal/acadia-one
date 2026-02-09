@@ -3,7 +3,7 @@
 import crypto from "node:crypto";
 import { internal } from "./_generated/api";
 import type { ActionCtx } from "./_generated/server";
-import { action } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import { authenticateWithAxios } from "./lib/acadia/auth";
 import { encryptCredentials } from "./lib/encryption";
 
@@ -89,5 +89,12 @@ export const authenticateUser = action(
         status: 500,
       };
     }
+  }
+);
+
+export const pullUserData = internalAction(
+  (_ctx: ActionCtx, { sessionId }: { sessionId: string }) => {
+    // TODO: Pull user data after successful auth.
+    return { sessionId };
   }
 );
