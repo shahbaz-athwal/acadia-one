@@ -16,7 +16,7 @@ import {
 import { ProgramEvaluationFilteredResponseSchema } from "./schemas/programEvaluation";
 import { SectionDetailsFilteredResponseSchema } from "./schemas/section";
 
-const ACADIA_AUTH_PROVIDER = "default";
+const ACADIA_SESSION_ID = "default";
 
 export class AcadiaScraper {
   private readonly client: AxiosInstance;
@@ -116,12 +116,12 @@ export class AcadiaScraper {
 }
 
 export async function getAcadiaScraper(ctx: ActionCtx) {
-  const storedAuth = await ctx.runQuery(internal.internal.getAcadiaAuth, {
-    provider: ACADIA_AUTH_PROVIDER,
+  const storedSession = await ctx.runQuery(internal.internal.getAcadiaSession, {
+    sessionId: ACADIA_SESSION_ID,
   });
   const now = Date.now();
-  if (storedAuth?.cookies && storedAuth.expiresAt > now) {
-    return new AcadiaScraper(storedAuth.cookies);
+  if (storedSession?.cookies && storedSession.expiresAt > now) {
+    return new AcadiaScraper(storedSession.cookies);
   }
 
   const username = process.env.ACADIA_USERNAME;
@@ -136,10 +136,9 @@ export async function getAcadiaScraper(ctx: ActionCtx) {
   const cookies = await authenticateWithAxios(username, password);
 
   const expiresAt = now + DEFAULT_AUTH_TIMEOUT_MS;
-  await ctx.runMutation(internal.internal.upsertAcadiaAuth, {
-    provider: ACADIA_AUTH_PROVIDER,
+  await ctx.runMutation(internal.internal.upsertAcadiaSession, {
+    sessionId: ACADIA_SESSION_ID,
     cookies,
-    encryptedCredentials: "",
     lastAcadiaAuth: now,
     expiresAt,
   });

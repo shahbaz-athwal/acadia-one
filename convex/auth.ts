@@ -10,7 +10,7 @@ import { encryptCredentials } from "./lib/encryption";
 type AuthResult =
   | {
       success: true;
-      uniqueId: string;
+      sessionId: string;
       token: string;
     }
   | {
@@ -45,9 +45,13 @@ export const authenticateUser = action(
         };
       }
 
-      // Generate unique ID and token
-      const uniqueId = crypto.randomUUID();
+      // Generate session ID and token
+      const sessionId = crypto.randomUUID();
       const token = crypto.randomBytes(32).toString("hex");
+      const tokenHash = crypto
+        .createHash("sha256")
+        .update(Buffer.from(token, "hex"))
+        .digest("hex");
 
       // Encrypt credentials using the token as the encryption key
       const encryptedCredentials = encryptCredentials(
@@ -58,21 +62,23 @@ export const authenticateUser = action(
 
       // Calculate expiration (7 days from now)
       const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
-      const expiresAt = Date.now() + sevenDaysInMs;
-      const lastAcadiaAuth = Date.now();
+      const now = Date.now();
+      const expiresAt = now + sevenDaysInMs;
+      const lastAcadiaAuth = now;
 
       // Save to database with encrypted credentials
-      await ctx.runMutation(internal.internal.upsertAcadiaAuth, {
-        provider: uniqueId,
+      await ctx.runMutation(internal.internal.createAcadiaSessionAndUser, {
+        sessionId,
         cookies,
         encryptedCredentials,
+        tokenHash,
         lastAcadiaAuth,
         expiresAt,
       });
 
       return {
         success: true,
-        uniqueId,
+        sessionId,
         token,
       };
     } catch (error) {

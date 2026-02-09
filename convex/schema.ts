@@ -7,14 +7,20 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_createdAt", ["createdAt"]),
 
-  acadiaAuth: defineTable({
-    provider: v.string(),
+  acadiaSessions: defineTable({
+    sessionId: v.string(),
     cookies: v.string(),
-    encryptedCredentials: v.string(),
     lastAcadiaAuth: v.number(),
     expiresAt: v.number(),
     updatedAt: v.number(),
-  }).index("by_provider", ["provider"]),
+  }).index("by_sessionId", ["sessionId"]),
+
+  acadiaUsers: defineTable({
+    sessionId: v.string(),
+    encryptedCredentials: v.string(),
+    tokenHash: v.string(),
+    updatedAt: v.number(),
+  }).index("by_sessionId", ["sessionId"]),
 
   departments: defineTable({
     prefix: v.string(),

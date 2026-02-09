@@ -13,12 +13,11 @@ export const insertLog = internalMutation({
   },
 });
 
-export const getAcadiaAuth = internalQuery({
-  args: { provider: v.string() },
+export const getAcadiaSession = internalQuery({
+  args: { sessionId: v.string() },
   returns: v.union(
     v.object({
       cookies: v.string(),
-      encryptedCredentials: v.string(),
       lastAcadiaAuth: v.number(),
       expiresAt: v.number(),
     }),
@@ -26,54 +25,162 @@ export const getAcadiaAuth = internalQuery({
   ),
   handler: async (ctx, args) => {
     const existing = await ctx.db
-      .query("acadiaAuth")
-      .withIndex("by_provider", (q) => q.eq("provider", args.provider))
+      .query("acadiaSessions")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
       .first();
     if (!existing) {
       return null;
     }
     return {
       cookies: existing.cookies,
-      encryptedCredentials: existing.encryptedCredentials,
       lastAcadiaAuth: existing.lastAcadiaAuth,
       expiresAt: existing.expiresAt,
     };
   },
 });
 
-export const upsertAcadiaAuth = internalMutation({
+export const upsertAcadiaSession = internalMutation({
   args: {
-    provider: v.string(),
+    sessionId: v.string(),
     cookies: v.string(),
-    encryptedCredentials: v.string(),
     lastAcadiaAuth: v.number(),
     expiresAt: v.number(),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
     const existing = await ctx.db
-      .query("acadiaAuth")
-      .withIndex("by_provider", (q) => q.eq("provider", args.provider))
+      .query("acadiaSessions")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
       .first();
     const updatedAt = Date.now();
     if (existing) {
       await ctx.db.patch(existing._id, {
         cookies: args.cookies,
-        encryptedCredentials: args.encryptedCredentials,
         lastAcadiaAuth: args.lastAcadiaAuth,
         expiresAt: args.expiresAt,
         updatedAt,
       });
       return null;
     }
-    await ctx.db.insert("acadiaAuth", {
-      provider: args.provider,
+    await ctx.db.insert("acadiaSessions", {
+      sessionId: args.sessionId,
       cookies: args.cookies,
-      encryptedCredentials: args.encryptedCredentials,
       lastAcadiaAuth: args.lastAcadiaAuth,
       expiresAt: args.expiresAt,
       updatedAt,
     });
+    return null;
+  },
+});
+
+export const getAcadiaUser = internalQuery({
+  args: { sessionId: v.string() },
+  returns: v.union(
+    v.object({
+      encryptedCredentials: v.string(),
+      tokenHash: v.string(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("acadiaUsers")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .first();
+    if (!existing) {
+      return null;
+    }
+    return {
+      encryptedCredentials: existing.encryptedCredentials,
+      tokenHash: existing.tokenHash,
+    };
+  },
+});
+
+export const upsertAcadiaUser = internalMutation({
+  args: {
+    sessionId: v.string(),
+    encryptedCredentials: v.string(),
+    tokenHash: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("acadiaUsers")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .first();
+    const updatedAt = Date.now();
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        encryptedCredentials: args.encryptedCredentials,
+        tokenHash: args.tokenHash,
+        updatedAt,
+      });
+      return null;
+    }
+    await ctx.db.insert("acadiaUsers", {
+      sessionId: args.sessionId,
+      encryptedCredentials: args.encryptedCredentials,
+      tokenHash: args.tokenHash,
+      updatedAt,
+    });
+    return null;
+  },
+});
+
+export const createAcadiaSessionAndUser = internalMutation({
+  args: {
+    sessionId: v.string(),
+    cookies: v.string(),
+    encryptedCredentials: v.string(),
+    tokenHash: v.string(),
+    lastAcadiaAuth: v.number(),
+    expiresAt: v.number(),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const updatedAt = Date.now();
+
+    const existingSession = await ctx.db
+      .query("acadiaSessions")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .first();
+    if (existingSession) {
+      await ctx.db.patch(existingSession._id, {
+        cookies: args.cookies,
+        lastAcadiaAuth: args.lastAcadiaAuth,
+        expiresAt: args.expiresAt,
+        updatedAt,
+      });
+    } else {
+      await ctx.db.insert("acadiaSessions", {
+        sessionId: args.sessionId,
+        cookies: args.cookies,
+        lastAcadiaAuth: args.lastAcadiaAuth,
+        expiresAt: args.expiresAt,
+        updatedAt,
+      });
+    }
+
+    const existingUser = await ctx.db
+      .query("acadiaUsers")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .first();
+    if (existingUser) {
+      await ctx.db.patch(existingUser._id, {
+        encryptedCredentials: args.encryptedCredentials,
+        tokenHash: args.tokenHash,
+        updatedAt,
+      });
+    } else {
+      await ctx.db.insert("acadiaUsers", {
+        sessionId: args.sessionId,
+        encryptedCredentials: args.encryptedCredentials,
+        tokenHash: args.tokenHash,
+        updatedAt,
+      });
+    }
+
     return null;
   },
 });

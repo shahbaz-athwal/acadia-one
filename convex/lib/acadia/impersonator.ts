@@ -1,8 +1,15 @@
 "use node";
 
+import crypto from "node:crypto";
 import type { AxiosInstance } from "axios";
+import { internal } from "../../_generated/api";
 import type { ActionCtx } from "../../_generated/server";
-import { createClient } from "./auth";
+import { decryptCredentials } from "../encryption";
+import {
+  authenticateWithAxios,
+  createClient,
+  isAcadiaSessionExpired,
+} from "./auth";
 import { ProgramEvaluationFilteredResponseSchema } from "./schemas/programEvaluation";
 import { StudentGradesFilteredResponseSchema } from "./schemas/studentGrades";
 import { StudentProgramDetailsFilteredResponseSchema } from "./schemas/studentProgram";
@@ -62,10 +69,65 @@ export class AcadiaImpersonator {
   }
 }
 
-export function getAcadiaImpersonator(
-  _ctx: ActionCtx,
-  _sessionId: string,
-  _decryptionToken: string
-) {
-  throw new Error("getAcadiaImpersonator not implemented yet");
+function sha256HexFromTokenHex(tokenHex: string): string {
+  return crypto
+    .createHash("sha256")
+    .update(Buffer.from(tokenHex, "hex"))
+    .digest("hex");
+}
+
+function tokenMatchesHash(tokenHex: string, storedHashHex: string): boolean {
+  try {
+    const computedHashHex = sha256HexFromTokenHex(tokenHex);
+    const computed = Buffer.from(computedHashHex, "hex");
+    const stored = Buffer.from(storedHashHex, "hex");
+    if (computed.length !== stored.length) {
+      return false;
+    }
+    return crypto.timingSafeEqual(computed, stored);
+  } catch {
+    return false;
+  }
+}
+
+export async function getAcadiaImpersonator(
+  ctx: ActionCtx,
+  sessionId: string,
+  decryptionToken: string
+): Promise<AcadiaImpersonator> {
+  const user = await ctx.runQuery(internal.internal.getAcadiaUser, {
+    sessionId,
+  });
+  if (!user) {
+    throw new Error("No user found for this session.");
+  }
+  if (!tokenMatchesHash(decryptionToken, user.tokenHash)) {
+    throw new Error("Invalid token for this session.");
+  }
+
+  const session = await ctx.runQuery(internal.internal.getAcadiaSession, {
+    sessionId,
+  });
+  const now = Date.now();
+  if (!session || session.expiresAt <= now) {
+    throw new Error("Session expired or not found.");
+  }
+
+  const { username, password } = decryptCredentials(
+    user.encryptedCredentials,
+    decryptionToken
+  );
+
+  let cookies = session.cookies;
+  if (!cookies || isAcadiaSessionExpired(session.lastAcadiaAuth)) {
+    cookies = await authenticateWithAxios(username, password);
+    await ctx.runMutation(internal.internal.upsertAcadiaSession, {
+      sessionId,
+      cookies,
+      lastAcadiaAuth: now,
+      expiresAt: session.expiresAt,
+    });
+  }
+
+  return new AcadiaImpersonator(username.slice(0, -1), cookies);
 }

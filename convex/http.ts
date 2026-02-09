@@ -52,7 +52,7 @@ http.route({
 
       const maxAge = 604_800; // 7 days in seconds
       const cookieOptions = `Max-Age=${maxAge}; HttpOnly; Secure; SameSite=Lax; Path=/`;
-      const sessionIdCookie = `acadia_session_id=${result.uniqueId}; ${cookieOptions}`;
+      const sessionIdCookie = `acadia_session_id=${result.sessionId}; ${cookieOptions}`;
       const tokenCookie = `acadia_token=${result.token}; ${cookieOptions}`;
 
       return new Response(
