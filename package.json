@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev --port 3000",
-    "dev:vite": "vite dev --port 3000",
-    "build": "vite build",
-    "start": "vite preview",
+    "dev": "concurrently -n \"VITE,CONVEX\" -c \"cyan,magenta\" \"bun run dev:vite\" \"bun run dev:convex\"",
+    "dev:vite": "bun --bun vite dev --port 3000",
     "dev:convex": "convex dev",
     "dev:setup": "convex dev --configure --until-success",
+    "build": "bun --bun vite build",
+    "start": "bun --bun vite preview",
     "lint": "ultracite fix"
   },
   "dependencies": {
@@ -53,8 +53,9 @@
     "@types/node": "^24.10.4",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "react-scan": "^0.4.3",
     "@vitejs/plugin-react": "^5.0.4",
+    "concurrently": "^9.2.1",
+    "react-scan": "^0.4.3",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "ultracite": "^7",
