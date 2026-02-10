@@ -23,8 +23,6 @@ interface PullRmpReviewsResult {
 interface TriggerRmpReviewsPullingResult {
   processedProfessors: number;
   totalProfessors: number;
-  created: number;
-  discarded: number;
   message: string;
 }
 
@@ -180,26 +178,24 @@ export const triggerRmpReviewsPulling = internalAction({
     const professors: Array<{ _id: Id<"professors">; rmpId: string }> =
       await ctx.runQuery(internal.internal.listProfessorsWithRmpId);
     let processedProfessors = 0;
-    let created = 0;
-    let discarded = 0;
 
-    for (const professor of professors) {
-      const result = await pullRmpReviewsInternal(ctx, {
-        professorId: professor._id,
-        rmpId: professor.rmpId,
-      });
+    for (const [index, professor] of professors.entries()) {
+      await ctx.scheduler.runAfter(
+        index * 1000,
+        internal.workflow.pullReviews.pullRmpReviews,
+        {
+          professorId: professor._id,
+          rmpId: professor.rmpId,
+        }
+      );
       processedProfessors += 1;
-      created += result.created;
-      discarded += result.discarded;
     }
 
-    const message = `Processed ${processedProfessors} professors for RMP reviews.`;
+    const message = `Scheduled ${processedProfessors} professors for RMP review pulling.`;
     await ctx.runMutation(internal.internal.insertLog, { message });
     return {
       processedProfessors,
       totalProfessors: professors.length,
-      created,
-      discarded,
       message,
     };
   },

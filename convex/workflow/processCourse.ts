@@ -186,20 +186,23 @@ export const triggerCourseProcessing = internalAction({
     const courses = await ctx.runQuery(
       internal.internal.listCoursesForProcessing
     );
-    const scraper = await getAcadiaScraper(ctx);
     let processedCourses = 0;
 
-    for (const course of courses) {
-      await processCourseInternal(ctx, scraper, {
-        courseId: course._id,
-        courseExternalId: course.externalId,
-        sectionIds: course.matchingSectionIds,
-        departmentPrefix: course.departmentPrefix,
-      });
+    for (const [index, course] of courses.entries()) {
+      await ctx.scheduler.runAfter(
+        index * 500,
+        internal.workflow.processCourse.processCourse,
+        {
+          courseId: course._id,
+          courseExternalId: course.externalId,
+          sectionIds: course.matchingSectionIds,
+          departmentPrefix: course.departmentPrefix,
+        }
+      );
       processedCourses += 1;
     }
 
-    const message = `Processed ${processedCourses} courses.`;
+    const message = `Scheduled ${processedCourses} course processing actions.`;
     await ctx.runMutation(internal.internal.insertLog, { message });
     return {
       processedCourses,
