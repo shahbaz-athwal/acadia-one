@@ -31,6 +31,7 @@ import type * as workflow_populate from "../workflow/populate.js";
 import type * as workflow_processCourse from "../workflow/processCourse.js";
 import type * as workflow_pullReviews from "../workflow/pullReviews.js";
 import type * as workflow_rmpLink from "../workflow/rmpLink.js";
+import type * as workflow_syncAggregates from "../workflow/syncAggregates.js";
 
 import type {
   ApiFromModules,
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   "workflow/processCourse": typeof workflow_processCourse;
   "workflow/pullReviews": typeof workflow_pullReviews;
   "workflow/rmpLink": typeof workflow_rmpLink;
+  "workflow/syncAggregates": typeof workflow_syncAggregates;
 }>;
 
 /**

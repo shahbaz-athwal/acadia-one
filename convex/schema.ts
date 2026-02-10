@@ -160,6 +160,9 @@ export default defineSchema({
     websiteUrl: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
     lastPullFromRmp: v.optional(v.number()),
+    ratingCount: v.number(),
+    avgDifficulty: v.union(v.number(), v.null()),
+    avgQuality: v.union(v.number(), v.null()),
   })
     .index("by_externalId", ["externalId"])
     .index("by_rmpId", ["rmpId"])

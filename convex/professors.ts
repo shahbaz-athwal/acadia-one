@@ -44,6 +44,9 @@ export const byId = query({
         lastPullFromRmp: v.optional(v.number()),
         departmentPrefix: v.string(),
         departmentName: v.optional(v.string()),
+        ratingCount: v.number(),
+        avgDifficulty: v.union(v.number(), v.null()),
+        avgQuality: v.union(v.number(), v.null()),
       }),
       courses: v.array(
         v.object({
@@ -298,6 +301,9 @@ export const byId = query({
         lastPullFromRmp: professor.lastPullFromRmp,
         departmentPrefix: professor.departmentPrefix,
         departmentName: department?.name,
+        ratingCount: professor.ratingCount ?? 0,
+        avgDifficulty: professor.avgDifficulty ?? null,
+        avgQuality: professor.avgQuality ?? null,
       },
       courses: courses.map((course) => ({
         id: course.externalId,

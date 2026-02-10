@@ -145,6 +145,18 @@ async function pullRmpReviewsInternal(
     ratings: ratingsToCreate,
   });
 
+  if (created > 0) {
+    const courseIds = [...new Set(ratingsToCreate.map((rating) => rating.courseId))];
+    for (const courseId of courseIds) {
+      await ctx.runMutation(internal.internal.recomputeCourseAggregates, {
+        courseId,
+      });
+    }
+    await ctx.runMutation(internal.internal.recomputeProfessorAggregates, {
+      professorId,
+    });
+  }
+
   await ctx.runMutation(internal.internal.updateProfessorLastPullFromRmp, {
     professorId,
     lastPullFromRmp: Date.now(),

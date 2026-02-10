@@ -351,7 +351,12 @@ export const upsertProfessors = internalMutation({
       if (existing) {
         await ctx.db.patch(existing._id, professor);
       } else {
-        await ctx.db.insert("professors", professor);
+        await ctx.db.insert("professors", {
+          ...professor,
+          ratingCount: 0,
+          avgDifficulty: null,
+          avgQuality: null,
+        });
       }
       processed += 1;
     }
@@ -600,6 +605,40 @@ export const recomputeCourseAggregates = internalMutation({
   },
 });
 
+export const recomputeProfessorAggregates = internalMutation({
+  args: { professorId: v.id("professors") },
+  returns: v.object({
+    ratingCount: v.number(),
+    avgDifficulty: v.union(v.number(), v.null()),
+    avgQuality: v.union(v.number(), v.null()),
+  }),
+  handler: async (ctx, args) => {
+    const ratings = await ctx.db
+      .query("ratings")
+      .withIndex("by_professorId", (q) => q.eq("professorId", args.professorId))
+      .collect();
+    const ratingCount = ratings.length;
+    if (ratingCount === 0) {
+      await ctx.db.patch(args.professorId, {
+        ratingCount: 0,
+        avgDifficulty: null,
+        avgQuality: null,
+      });
+      return { ratingCount: 0, avgDifficulty: null, avgQuality: null };
+    }
+    const difficultySum = ratings.reduce((sum, r) => sum + r.difficulty, 0);
+    const qualitySum = ratings.reduce((sum, r) => sum + r.quality, 0);
+    const avgDifficulty = difficultySum / ratingCount;
+    const avgQuality = qualitySum / ratingCount;
+    await ctx.db.patch(args.professorId, {
+      ratingCount,
+      avgDifficulty,
+      avgQuality,
+    });
+    return { ratingCount, avgDifficulty, avgQuality };
+  },
+});
+
 export const getCourseByExternalId = internalQuery({
   args: { externalId: v.string() },
   returns: v.union(
@@ -717,6 +756,15 @@ export const listCoursesForProcessing = internalQuery({
   },
 });
 
+export const listAllCourseIds = internalQuery({
+  args: {},
+  returns: v.array(v.id("courses")),
+  handler: async (ctx) => {
+    const courses = await ctx.db.query("courses").collect();
+    return courses.map((course) => course._id);
+  },
+});
+
 export const listProfessorsWithRmpId = internalQuery({
   args: {},
   returns: v.array(
@@ -752,6 +800,15 @@ export const listAllProfessors = internalQuery({
       name: professor.name,
       departmentPrefix: professor.departmentPrefix,
     }));
+  },
+});
+
+export const listAllProfessorIds = internalQuery({
+  args: {},
+  returns: v.array(v.id("professors")),
+  handler: async (ctx) => {
+    const professors = await ctx.db.query("professors").collect();
+    return professors.map((professor) => professor._id);
   },
 });
 
