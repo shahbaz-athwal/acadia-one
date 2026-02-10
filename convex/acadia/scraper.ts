@@ -2,8 +2,8 @@
 
 import type { AxiosInstance } from "axios";
 import type { z } from "zod";
-import { internal } from "../../_generated/api";
-import type { ActionCtx } from "../../_generated/server";
+import { internal } from "../_generated/api";
+import type { ActionCtx } from "../_generated/server";
 import {
   authenticateWithAxios,
   createClient,

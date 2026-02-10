@@ -1,6 +1,6 @@
 import { api, internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
-import { getAcadiaScraper } from "../lib/acadia/scraper";
+import { getAcadiaScraper } from "../acadia/scraper";
 
 const FACULTY_FETCH_DELAY_MS = 400;
 

@@ -4,8 +4,8 @@ import crypto from "node:crypto";
 import { internal } from "./_generated/api";
 import type { ActionCtx } from "./_generated/server";
 import { action, internalAction } from "./_generated/server";
-import { authenticateWithAxios } from "./lib/acadia/auth";
-import { getAcadiaImpersonator } from "./lib/acadia/impersonator";
+import { authenticateWithAxios } from "./acadia/auth";
+import { getAcadiaImpersonator } from "./acadia/impersonator";
 import { encryptCredentials } from "./lib/encryption";
 
 type AuthResult =

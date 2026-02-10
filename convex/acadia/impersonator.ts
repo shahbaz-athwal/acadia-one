@@ -2,9 +2,9 @@
 
 import crypto from "node:crypto";
 import type { AxiosInstance } from "axios";
-import { internal } from "../../_generated/api";
-import type { ActionCtx } from "../../_generated/server";
-import { decryptCredentials } from "../encryption";
+import { internal } from "../_generated/api";
+import type { ActionCtx } from "../_generated/server";
+import { decryptCredentials } from "../lib/encryption";
 import {
   authenticateWithAxios,
   createClient,
