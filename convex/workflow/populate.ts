@@ -1,3 +1,4 @@
+"use node";
 import { api, internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
 import { getAcadiaScraper } from "../acadia/scraper";
