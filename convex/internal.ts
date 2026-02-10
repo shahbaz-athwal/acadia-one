@@ -77,6 +77,7 @@ export const getAcadiaUser = internalQuery({
   args: { sessionId: v.string() },
   returns: v.union(
     v.object({
+      studentId: v.string(),
       encryptedCredentials: v.string(),
       tokenHash: v.string(),
     }),
@@ -91,6 +92,7 @@ export const getAcadiaUser = internalQuery({
       return null;
     }
     return {
+      studentId: existing.studentId,
       encryptedCredentials: existing.encryptedCredentials,
       tokenHash: existing.tokenHash,
     };
@@ -100,6 +102,7 @@ export const getAcadiaUser = internalQuery({
 export const upsertAcadiaUser = internalMutation({
   args: {
     sessionId: v.string(),
+    studentId: v.string(),
     encryptedCredentials: v.string(),
     tokenHash: v.string(),
   },
@@ -112,6 +115,7 @@ export const upsertAcadiaUser = internalMutation({
     const updatedAt = Date.now();
     if (existing) {
       await ctx.db.patch(existing._id, {
+        studentId: args.studentId,
         encryptedCredentials: args.encryptedCredentials,
         tokenHash: args.tokenHash,
         updatedAt,
@@ -120,6 +124,7 @@ export const upsertAcadiaUser = internalMutation({
     }
     await ctx.db.insert("acadiaUsers", {
       sessionId: args.sessionId,
+      studentId: args.studentId,
       encryptedCredentials: args.encryptedCredentials,
       tokenHash: args.tokenHash,
       updatedAt,
@@ -132,6 +137,7 @@ export const createAcadiaSessionAndUser = internalMutation({
   args: {
     sessionId: v.string(),
     cookies: v.string(),
+    studentId: v.string(),
     encryptedCredentials: v.string(),
     tokenHash: v.string(),
     lastAcadiaAuth: v.number(),
@@ -168,6 +174,7 @@ export const createAcadiaSessionAndUser = internalMutation({
       .first();
     if (existingUser) {
       await ctx.db.patch(existingUser._id, {
+        studentId: args.studentId,
         encryptedCredentials: args.encryptedCredentials,
         tokenHash: args.tokenHash,
         updatedAt,
@@ -175,6 +182,7 @@ export const createAcadiaSessionAndUser = internalMutation({
     } else {
       await ctx.db.insert("acadiaUsers", {
         sessionId: args.sessionId,
+        studentId: args.studentId,
         encryptedCredentials: args.encryptedCredentials,
         tokenHash: args.tokenHash,
         updatedAt,

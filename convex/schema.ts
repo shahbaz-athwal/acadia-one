@@ -17,6 +17,7 @@ export default defineSchema({
 
   acadiaUsers: defineTable({
     sessionId: v.string(),
+    studentId: v.string(),
     encryptedCredentials: v.string(),
     tokenHash: v.string(),
     updatedAt: v.number(),

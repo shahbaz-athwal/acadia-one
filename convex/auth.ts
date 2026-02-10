@@ -71,6 +71,7 @@ export const authenticateUser = action(
       await ctx.runMutation(internal.internal.createAcadiaSessionAndUser, {
         sessionId,
         cookies,
+        studentId: username,
         encryptedCredentials,
         tokenHash,
         lastAcadiaAuth,

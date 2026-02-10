@@ -113,12 +113,15 @@ export async function getAcadiaImpersonator(
     throw new Error("Session expired or not found.");
   }
 
+  let cookies = session.cookies;
+  if (cookies && !isAcadiaSessionExpired(session.lastAcadiaAuth)) {
+    return new AcadiaImpersonator(user.studentId, cookies);
+  }
+
   const { username, password } = decryptCredentials(
     user.encryptedCredentials,
     decryptionToken
   );
-
-  let cookies = session.cookies;
   if (!cookies || isAcadiaSessionExpired(session.lastAcadiaAuth)) {
     cookies = await authenticateWithAxios(username, password);
     await ctx.runMutation(internal.internal.upsertAcadiaSession, {
@@ -129,5 +132,5 @@ export async function getAcadiaImpersonator(
     });
   }
 
-  return new AcadiaImpersonator(username.slice(0, -1), cookies);
+  return new AcadiaImpersonator(user.studentId.slice(0, -1), cookies);
 }
