@@ -28,7 +28,10 @@ import type * as lib_posthog from "../lib/posthog.js";
 import type * as lib_rmp from "../lib/rmp.js";
 import type * as professors from "../professors.js";
 import type * as terms from "../terms.js";
-import type * as workflows from "../workflows.js";
+import type * as workflow_populate from "../workflow/populate.js";
+import type * as workflow_processCourse from "../workflow/processCourse.js";
+import type * as workflow_pullReviews from "../workflow/pullReviews.js";
+import type * as workflow_rmpLink from "../workflow/rmpLink.js";
 
 import type {
   ApiFromModules,
@@ -57,7 +60,10 @@ declare const fullApi: ApiFromModules<{
   "lib/rmp": typeof lib_rmp;
   professors: typeof professors;
   terms: typeof terms;
-  workflows: typeof workflows;
+  "workflow/populate": typeof workflow_populate;
+  "workflow/processCourse": typeof workflow_processCourse;
+  "workflow/pullReviews": typeof workflow_pullReviews;
+  "workflow/rmpLink": typeof workflow_rmpLink;
 }>;
 
 /**

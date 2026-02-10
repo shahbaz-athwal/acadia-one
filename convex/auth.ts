@@ -38,6 +38,7 @@ export const authenticateUser = action(
       try {
         cookies = await authenticateWithAxios(username, password);
       } catch (error) {
+        console.error("Authentication failed.", error);
         return {
           success: false,
           error: "Authentication failed. Please check your credentials.",

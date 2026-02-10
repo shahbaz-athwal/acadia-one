@@ -1,14 +1,11 @@
-"use node";
-
-import https from "node:https";
 import axios, { type AxiosInstance } from "axios";
 
 export const BASE_URL = "https://collss.acadiau.ca";
 
 export const clientConfig = {
   baseURL: BASE_URL,
-  httpsAgent: new https.Agent({ rejectUnauthorized: false }),
   validateStatus: (status: number) => status >= 200 && status < 500,
+  // httpsAgent: new https.Agent({ rejectUnauthorized: false }),
 };
 
 export const createClient = (
@@ -76,6 +73,7 @@ export async function authenticateWithAxios(
   }
 
   if (allCookies.length < 6) {
+    console.log("Failed to authenticate with Acadia.", allCookies);
     throw new Error("Failed to authenticate with Acadia.");
   }
 
