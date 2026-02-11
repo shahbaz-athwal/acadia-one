@@ -10,7 +10,7 @@ export function FilterPanel({ className }: { className?: string }) {
     <Card
       className={cn(
         "flex h-full flex-col gap-6 overflow-y-auto p-4",
-        className,
+        className
       )}
     >
       <FilterSection label="Term">

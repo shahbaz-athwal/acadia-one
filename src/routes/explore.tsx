@@ -24,14 +24,31 @@ function parseNumberArray(value: unknown): number[] {
     .filter((num) => Number.isFinite(num));
 }
 
-export const exploreSearchSchema = z.object({
+const exploreSearchSchema = z.object({
   term: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
   dept: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
   prof: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
   day: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
+  sv: z.enum(["calendar", "agenda"]).catch("calendar"),
+  st: z.string().catch(""),
 });
 
 export type ExploreSearchParams = z.infer<typeof exploreSearchSchema>;
+
+export const SEARCH_DEFAULTS: ExploreSearchParams = {
+  term: [],
+  dept: [],
+  prof: [],
+  day: [],
+  sv: "calendar",
+  st: "",
+};
+
+export function withSearchDefaults(
+  prev: Partial<ExploreSearchParams>
+): ExploreSearchParams {
+  return { ...SEARCH_DEFAULTS, ...prev };
+}
 
 export const Route = createFileRoute("/explore")({
   validateSearch: zodValidator(exploreSearchSchema),
@@ -42,7 +59,9 @@ export const Route = createFileRoute("/explore")({
         dept: [],
         prof: [],
         day: [],
-      }),
+        sv: "calendar",
+        st: "",
+      } as Record<string, unknown>),
     ],
   },
   component: RouteComponent,

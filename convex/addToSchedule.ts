@@ -116,6 +116,7 @@ export const get = query({
           color: item.color,
           section: {
             id: section.externalId,
+            termCode: section.termCode,
             sectionCode: section.sectionCode,
             classStartTime: section.classStartTime,
             classEndTime: section.classEndTime,

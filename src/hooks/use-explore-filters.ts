@@ -1,20 +1,12 @@
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
-import type { ExploreSearchParams } from "@/routes/explore";
+import {
+  SEARCH_DEFAULTS as DEFAULTS,
+  withSearchDefaults as withDefaults,
+} from "@/routes/explore";
 import { api } from "../../convex/_generated/api";
 
 const routeApi = getRouteApi("/explore");
-
-const DEFAULTS: ExploreSearchParams = {
-  term: [],
-  dept: [],
-  prof: [],
-  day: [],
-};
-
-function withDefaults(prev: Partial<ExploreSearchParams>): ExploreSearchParams {
-  return { ...DEFAULTS, ...prev };
-}
 
 export function useExploreFilters() {
   const search = routeApi.useSearch();
