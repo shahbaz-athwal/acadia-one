@@ -26,6 +26,7 @@
     "@tanstack/react-router-devtools": "^1.158.1",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/router-plugin": "^1.132.0",
+    "@tanstack/zod-adapter": "^1.159.5",
     "@vercel/config": "^0.0.24",
     "ai": "^5.0.116",
     "axios": "^1.13.2",

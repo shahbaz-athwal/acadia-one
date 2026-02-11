@@ -1,28 +1,22 @@
+import { getRouteApi } from "@tanstack/react-router";
 import { usePaginatedQuery, useQuery } from "convex/react";
-import { useMemo, useState } from "react";
 import { api } from "../../convex/_generated/api";
 
-export interface ExploreFilters {
-  termCodes: string[];
-  departmentPrefixes: string[];
-  professorExternalIds: string[];
-  days: number[];
-}
-
-const EMPTY_FILTERS: ExploreFilters = {
-  termCodes: [],
-  departmentPrefixes: [],
-  professorExternalIds: [],
-  days: [],
-};
+const routeApi = getRouteApi("/explore");
 
 const PAGE_SIZE = 10;
 
 export function useExploreCourses(initialPageSize = PAGE_SIZE) {
-  const [filters, _] = useState<ExploreFilters>(EMPTY_FILTERS);
+  const search = routeApi.useSearch();
+  const filters = {
+    termCodes: search.term,
+    departmentPrefixes: search.dept,
+    professorExternalIds: search.prof,
+    days: search.day,
+  };
 
   // Build the filters arg for Convex — only include non-empty arrays
-  const convexFilters = useMemo(() => {
+  const convexFilters = (() => {
     const f: Record<string, string[] | number[]> = {};
     if (filters.termCodes.length > 0) {
       f.termCodes = filters.termCodes;
@@ -37,12 +31,12 @@ export function useExploreCourses(initialPageSize = PAGE_SIZE) {
       f.days = filters.days;
     }
     return Object.keys(f).length > 0 ? f : undefined;
-  }, [filters]);
+  })();
 
   const { results, status, loadMore, isLoading } = usePaginatedQuery(
     api.courses.listForExplore,
     { filters: convexFilters },
-    { initialNumItems: initialPageSize }
+    { initialNumItems: initialPageSize },
   );
 
   const count = useQuery(api.courses.countForExplore, {
@@ -55,6 +49,5 @@ export function useExploreCourses(initialPageSize = PAGE_SIZE) {
     status,
     loadMore,
     isLoading,
-    filters,
   };
 }

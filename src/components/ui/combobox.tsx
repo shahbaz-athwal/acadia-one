@@ -178,6 +178,8 @@ function ComboboxItem({
   children,
   ...props
 }: ComboboxPrimitive.Item.Props) {
+  const { multiple } = React.useContext(ComboboxContext);
+
   return (
     <ComboboxPrimitive.Item
       className={cn(
@@ -187,21 +189,42 @@ function ComboboxItem({
       data-slot="combobox-item"
       {...props}
     >
-      <ComboboxPrimitive.ItemIndicator className="col-start-1">
-        <svg
-          fill="none"
-          height="24"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
-          width="24"
-          xmlns="http://www.w3.org/1500/svg"
-        >
-          <path d="M5.252 12.7 10.2 18.63 18.748 5.37" />
-        </svg>
-      </ComboboxPrimitive.ItemIndicator>
+      {multiple ? (
+        <div className="col-start-1 flex size-4 items-center justify-center rounded-[4px] border border-input bg-background shadow-xs/5 in-data-selected:border-primary in-data-selected:bg-primary in-data-selected:text-primary-foreground">
+          <ComboboxPrimitive.ItemIndicator>
+            <svg
+              className="size-3"
+              fill="none"
+              height="24"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="3"
+              viewBox="0 0 24 24"
+              width="24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M5.252 12.7 10.2 18.63 18.748 5.37" />
+            </svg>
+          </ComboboxPrimitive.ItemIndicator>
+        </div>
+      ) : (
+        <ComboboxPrimitive.ItemIndicator className="col-start-1">
+          <svg
+            fill="none"
+            height="24"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/1500/svg"
+          >
+            <path d="M5.252 12.7 10.2 18.63 18.748 5.37" />
+          </svg>
+        </ComboboxPrimitive.ItemIndicator>
+      )}
       <div className="col-start-2">{children}</div>
     </ComboboxPrimitive.Item>
   );
