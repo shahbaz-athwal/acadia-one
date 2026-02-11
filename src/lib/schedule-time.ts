@@ -3,20 +3,23 @@
  * and formatting times for display.
  */
 
-/** The earliest hour shown on the calendar grid. */
-export const GRID_START_HOUR = 3;
+/** Grid start in minutes since midnight (7:30 AM — half-slot before 8 AM so the label isn't clipped). */
+export const GRID_START_MINUTES = 7 * 60 + 30;
 
-/** The latest hour shown on the calendar grid. */
-export const GRID_END_HOUR = 21; // 9:00 PM
+/** Grid end in minutes since midnight (9:00 PM). */
+export const GRID_END_MINUTES = 21 * 60 + 30;
 
 /** Total number of 30-minute slots in the grid. */
-export const SLOT_COUNT = (GRID_END_HOUR - GRID_START_HOUR) * 2; // 26
+export const SLOT_COUNT = (GRID_END_MINUTES - GRID_START_MINUTES) / 30; // 27
 
 /** Height of a single 30-minute slot in pixels. */
-export const SLOT_HEIGHT = 60;
+export const SLOT_HEIGHT = 27;
 
 /** Width of the time gutter column in pixels. */
 export const TIME_GUTTER_WIDTH = 56;
+
+/** Height of the sticky day-header row in pixels. */
+export const HEADER_HEIGHT = 32;
 
 /** Weekday labels indexed by the day number used in the schema (1=Mon, 5=Fri). */
 export const WEEKDAYS = [
@@ -63,11 +66,10 @@ export function parseTimeToMinutes(time: string): number {
 
 /**
  * Convert total minutes since midnight to a Y-pixel offset relative to
- * the top of the grid (where GRID_START_HOUR begins).
+ * the top of the grid body (where GRID_START_MINUTES begins).
  */
 export function minutesToPixelOffset(minutes: number): number {
-  const gridStartMinutes = GRID_START_HOUR * 60;
-  const elapsed = minutes - gridStartMinutes;
+  const elapsed = minutes - GRID_START_MINUTES;
   return (elapsed / 30) * SLOT_HEIGHT;
 }
 
@@ -105,7 +107,7 @@ export function formatTime(minutes: number): string {
 
 /**
  * Generate the time labels for the left gutter.
- * Returns labels at 30-minute increments from GRID_START_HOUR to GRID_END_HOUR.
+ * Returns labels at 30-minute increments from GRID_START_MINUTES to GRID_END_MINUTES.
  */
 export function getTimeSlots(): Array<{
   minutes: number;
@@ -113,7 +115,7 @@ export function getTimeSlots(): Array<{
   isHour: boolean;
 }> {
   const slots: Array<{ minutes: number; label: string; isHour: boolean }> = [];
-  for (let m = GRID_START_HOUR * 60; m < GRID_END_HOUR * 60; m += 30) {
+  for (let m = GRID_START_MINUTES; m < GRID_END_MINUTES; m += 30) {
     slots.push({
       minutes: m,
       label: formatTime(m),

@@ -43,7 +43,9 @@ export function DepartmentFilter() {
               {values.map((dept) => (
                 <ComboboxChip key={dept.value}>{dept.label}</ComboboxChip>
               ))}
-              <ComboboxInput placeholder={values.length > 0 ? "" : "Search departments..."} />
+              <ComboboxInput
+                placeholder={values.length > 0 ? "" : "Search departments..."}
+              />
             </>
           )}
         </ComboboxValue>

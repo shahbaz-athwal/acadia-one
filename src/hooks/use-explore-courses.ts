@@ -36,7 +36,7 @@ export function useExploreCourses(initialPageSize = PAGE_SIZE) {
   const { results, status, loadMore, isLoading } = usePaginatedQuery(
     api.courses.listForExplore,
     { filters: convexFilters },
-    { initialNumItems: initialPageSize },
+    { initialNumItems: initialPageSize }
   );
 
   const count = useQuery(api.courses.countForExplore, {

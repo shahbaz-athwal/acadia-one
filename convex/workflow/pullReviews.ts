@@ -146,7 +146,9 @@ async function pullRmpReviewsInternal(
   });
 
   if (created > 0) {
-    const courseIds = [...new Set(ratingsToCreate.map((rating) => rating.courseId))];
+    const courseIds = [
+      ...new Set(ratingsToCreate.map((rating) => rating.courseId)),
+    ];
     for (const courseId of courseIds) {
       await ctx.runMutation(internal.internal.recomputeCourseAggregates, {
         courseId,

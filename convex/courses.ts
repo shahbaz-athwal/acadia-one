@@ -17,17 +17,28 @@ function matchesSectionFilters(
     days?: number[];
   }
 ): boolean {
-  if (opts.termCodes && opts.termCodes.length > 0 && !opts.termCodes.includes(section.termCode)) {
+  if (
+    opts.termCodes &&
+    opts.termCodes.length > 0 &&
+    !opts.termCodes.includes(section.termCode)
+  ) {
     return false;
   }
   if (opts.professorIdSet && !section.professorId) {
     return false;
   }
-  if (opts.professorIdSet && !opts.professorIdSet.has(section.professorId ?? "")) {
+  if (
+    opts.professorIdSet &&
+    !opts.professorIdSet.has(section.professorId ?? "")
+  ) {
     return false;
   }
   const daysFilter = opts.days;
-  if (daysFilter && daysFilter.length > 0 && !section.days.some((day) => daysFilter.includes(day))) {
+  if (
+    daysFilter &&
+    daysFilter.length > 0 &&
+    !section.days.some((day) => daysFilter.includes(day))
+  ) {
     return false;
   }
   return true;
@@ -58,9 +69,7 @@ export const listForExplore = query({
       );
       professorIdSet = new Set(
         resolved
-          .filter(
-            (prof): prof is NonNullable<typeof prof> => !!prof
-          )
+          .filter((prof): prof is NonNullable<typeof prof> => !!prof)
           .map((prof) => prof._id)
       );
     }
@@ -176,9 +185,7 @@ export const listForExplore = query({
           };
         })
       )
-    ).filter(
-      (course): course is NonNullable<typeof course> => course !== null
-    );
+    ).filter((course): course is NonNullable<typeof course> => course !== null);
 
     return {
       ...paginatedCourses,
@@ -211,9 +218,7 @@ export const countForExplore = query({
       );
       professorIdSet = new Set(
         resolved
-          .filter(
-            (prof): prof is NonNullable<typeof prof> => !!prof
-          )
+          .filter((prof): prof is NonNullable<typeof prof> => !!prof)
           .map((prof) => prof._id)
       );
     }

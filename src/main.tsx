@@ -1,3 +1,5 @@
+// biome-ignore assist/source/organizeImports: react-scan
+import { scan } from "react-scan";
 import { RouterProvider } from "@tanstack/react-router";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { StrictMode } from "react";
@@ -25,6 +27,10 @@ const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Root element not found");
 }
+
+scan({
+  enabled: true,
+});
 
 createRoot(rootElement).render(
   <StrictMode>

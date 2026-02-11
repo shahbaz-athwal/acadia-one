@@ -1,7 +1,4 @@
-import {
-  createRouter,
-  parseSearchWith,
-} from "@tanstack/react-router";
+import { createRouter, parseSearchWith } from "@tanstack/react-router";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
@@ -14,7 +11,7 @@ export const getRouter = () => {
     parseSearch: parseSearchWith((value) => value),
     stringifySearch: (search) => {
       const entries = Object.entries(search).filter(
-        ([, value]) => value !== undefined,
+        ([, value]) => value !== undefined
       );
       if (entries.length === 0) {
         return "";
