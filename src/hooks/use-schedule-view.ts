@@ -9,7 +9,12 @@ const routeApi = getRouteApi("/explore");
 export type ScheduleViewMode = "calendar" | "agenda";
 
 export function useScheduleView() {
-  const search = routeApi.useSearch();
+  const search = routeApi.useSearch({
+    select: (state) => ({
+      sv: state.sv,
+      st: state.st,
+    }),
+  });
   const navigate = useNavigate();
   const terms = useQuery(api.terms.list);
 

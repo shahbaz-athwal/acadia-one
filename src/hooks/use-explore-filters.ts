@@ -9,7 +9,14 @@ import { api } from "../../convex/_generated/api";
 const routeApi = getRouteApi("/explore");
 
 export function useExploreFilters() {
-  const search = routeApi.useSearch();
+  const search = routeApi.useSearch({
+    select: (state) => ({
+      term: state.term,
+      dept: state.dept,
+      prof: state.prof,
+      day: state.day,
+    }),
+  });
   const navigate = useNavigate();
   const filters = {
     termCodes: search.term,
