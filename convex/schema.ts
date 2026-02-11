@@ -233,6 +233,15 @@ export default defineSchema({
     .index("by_professorId", ["professorId"])
     .index("by_externalId_and_termCode", ["externalId", "termCode"]),
 
+  scheduleItems: defineTable({
+    sessionId: v.string(),
+    sectionId: v.id("sections"),
+    color: v.string(),
+    addedAt: v.number(),
+  })
+    .index("by_sessionId", ["sessionId"])
+    .index("by_sessionId_and_sectionId", ["sessionId", "sectionId"]),
+
   ratings: defineTable({
     rmpId: v.optional(v.string()),
     rmpLegacyId: v.optional(v.number()),

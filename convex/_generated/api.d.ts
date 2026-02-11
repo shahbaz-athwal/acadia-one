@@ -17,6 +17,7 @@ import type * as acadia_schemas_section from "../acadia/schemas/section.js";
 import type * as acadia_schemas_studentGrades from "../acadia/schemas/studentGrades.js";
 import type * as acadia_schemas_studentProgram from "../acadia/schemas/studentProgram.js";
 import type * as acadia_scraper from "../acadia/scraper.js";
+import type * as addToSchedule from "../addToSchedule.js";
 import type * as auth from "../auth.js";
 import type * as courses from "../courses.js";
 import type * as departments from "../departments.js";
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   "acadia/schemas/studentGrades": typeof acadia_schemas_studentGrades;
   "acadia/schemas/studentProgram": typeof acadia_schemas_studentProgram;
   "acadia/scraper": typeof acadia_scraper;
+  addToSchedule: typeof addToSchedule;
   auth: typeof auth;
   courses: typeof courses;
   departments: typeof departments;
