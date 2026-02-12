@@ -21,6 +21,9 @@ export const syncAggregateDocuments = internalAction({
       await ctx.runMutation(internal.internal.recomputeCourseAggregates, {
         courseId,
       });
+      await ctx.runMutation(internal.internal.recomputeCourseSectionFilters, {
+        courseId,
+      });
     }
 
     const professorIds = await ctx.runQuery(

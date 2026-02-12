@@ -192,6 +192,10 @@ export default defineSchema({
     ratingCount: v.number(),
     avgDifficulty: v.union(v.number(), v.null()),
     avgQuality: v.union(v.number(), v.null()),
+    // Denormalized section filter fields (populated by recomputeCourseSectionFilters)
+    sectionTermCodes: v.optional(v.array(v.string())),
+    sectionProfessorIds: v.optional(v.array(v.id("professors"))),
+    sectionDays: v.optional(v.array(v.number())),
   })
     .index("by_externalId", ["externalId"])
     .index("by_code", ["code"])

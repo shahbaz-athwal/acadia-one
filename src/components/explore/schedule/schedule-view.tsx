@@ -1,9 +1,9 @@
+import { ScheduleAgenda } from "@/components/explore/schedule/schedule-agenda";
+import { ScheduleCalendar } from "@/components/explore/schedule/schedule-calendar";
+import { ScheduleHeader } from "@/components/explore/schedule/schedule-header";
 import { Card } from "@/components/ui/card";
 import { useScheduleView } from "@/hooks/use-schedule-view";
 import { cn } from "@/lib/utils";
-import { ScheduleAgenda } from "./schedule/schedule-agenda";
-import { ScheduleCalendar } from "./schedule/schedule-calendar";
-import { ScheduleHeader } from "./schedule/schedule-header";
 
 export function ScheduleView({ className }: { className?: string }) {
   const { view } = useScheduleView();

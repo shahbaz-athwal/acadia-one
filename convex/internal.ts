@@ -605,6 +605,36 @@ export const recomputeCourseAggregates = internalMutation({
   },
 });
 
+export const recomputeCourseSectionFilters = internalMutation({
+  args: { courseId: v.id("courses") },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const sections = await ctx.db
+      .query("sections")
+      .withIndex("by_courseId", (q) => q.eq("courseId", args.courseId))
+      .collect();
+
+    const termCodes = [...new Set(sections.map((s) => s.termCode))];
+    const professorIds = [
+      ...new Set(
+        sections
+          .map((s) => s.professorId)
+          .filter((id): id is Id<"professors"> => !!id)
+      ),
+    ];
+    const days = [...new Set(sections.flatMap((s) => s.days))].sort(
+      (a, b) => a - b
+    );
+
+    await ctx.db.patch(args.courseId, {
+      sectionTermCodes: termCodes,
+      sectionProfessorIds: professorIds,
+      sectionDays: days,
+    });
+    return null;
+  },
+});
+
 export const recomputeProfessorAggregates = internalMutation({
   args: { professorId: v.id("professors") },
   returns: v.object({

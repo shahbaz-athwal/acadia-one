@@ -151,6 +151,9 @@ async function processCourseInternal(
   await ctx.runMutation(internal.internal.upsertSections, {
     sections: sectionsPayload,
   });
+  await ctx.runMutation(internal.internal.recomputeCourseSectionFilters, {
+    courseId,
+  });
   await ctx.runMutation(internal.internal.updateCourseLastSectionPulledAt, {
     courseId,
     lastSectionPulledAt: refreshedAt,

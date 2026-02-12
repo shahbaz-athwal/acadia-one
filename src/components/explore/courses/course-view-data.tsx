@@ -1,13 +1,11 @@
 import { useExploreCourses } from "@/hooks/use-explore-courses";
 
 export function CourseViewData() {
-  const { courses, status, isLoading } = useExploreCourses();
+  const { courses } = useExploreCourses();
 
   return (
     <div className="space-y-2 p-4">
-      {isLoading && <p className="text-muted-foreground text-xs">Loading…</p>}
-
-      {courses.length === 0 && !isLoading && (
+      {courses.length === 0 && (
         <p className="text-muted-foreground text-sm">No courses found.</p>
       )}
 
@@ -32,10 +30,6 @@ export function CourseViewData() {
           </ul>
         </div>
       ))}
-
-      {status !== "Exhausted" && !isLoading && (
-        <p className="text-muted-foreground text-xs">status: {status}</p>
-      )}
     </div>
   );
 }

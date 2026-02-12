@@ -2,9 +2,9 @@ import { convexQuery } from "@convex-dev/react-query";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
-import { CourseView } from "@/components/explore/course-view";
-import { FilterPanel } from "@/components/explore/filter-panel";
-import { ScheduleView } from "@/components/explore/schedule-view";
+import { CourseView } from "@/components/explore/courses/course-view";
+import { FilterPanel } from "@/components/explore/filters/filter-panel";
+import { ScheduleView } from "@/components/explore/schedule/schedule-view";
 import { getOrCreateSessionId } from "@/hooks/use-auth";
 import { api } from "../../convex/_generated/api";
 
@@ -94,6 +94,7 @@ export const Route = createFileRoute("/explore")({
     dept: search.dept,
     prof: search.prof,
     day: search.day,
+    page: search.page,
   }),
   loader: async ({ context, deps }) => {
     const sessionId = getOrCreateSessionId();
@@ -108,7 +109,11 @@ export const Route = createFileRoute("/explore")({
         convexQuery(api.addToSchedule.get, { sessionId })
       ),
       context.queryClient.ensureQueryData(
-        convexQuery(api.courses.countForExplore, { filters: convexFilters })
+        convexQuery(api.courses.listForExplore, {
+          page: deps.page,
+          pageSize: 10,
+          filters: convexFilters,
+        })
       ),
     ];
 
