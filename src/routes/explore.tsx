@@ -34,6 +34,7 @@ const exploreSearchSchema = z.object({
   day: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
   sv: z.enum(["calendar", "agenda"]).catch("calendar"),
   st: z.string().catch(""),
+  page: z.coerce.number().int().positive().catch(1),
 });
 
 export type ExploreSearchParams = z.infer<typeof exploreSearchSchema>;
@@ -45,12 +46,32 @@ export const SEARCH_DEFAULTS: ExploreSearchParams = {
   day: [],
   sv: "calendar",
   st: "",
+  page: 1,
 };
 
 export function withSearchDefaults(
   prev: Partial<ExploreSearchParams>
 ): ExploreSearchParams {
   return { ...SEARCH_DEFAULTS, ...prev };
+}
+
+export function buildConvexFilters(
+  search: Pick<ExploreSearchParams, "term" | "dept" | "prof" | "day">
+) {
+  const f: Record<string, string[] | number[]> = {};
+  if (search.term.length > 0) {
+    f.termCodes = search.term;
+  }
+  if (search.dept.length > 0) {
+    f.departmentPrefixes = search.dept;
+  }
+  if (search.prof.length > 0) {
+    f.professorExternalIds = search.prof;
+  }
+  if (search.day.length > 0) {
+    f.days = search.day;
+  }
+  return Object.keys(f).length > 0 ? f : undefined;
 }
 
 export const Route = createFileRoute("/explore")({
@@ -64,12 +85,20 @@ export const Route = createFileRoute("/explore")({
         day: [],
         sv: "calendar",
         st: "",
+        page: 1,
       } as Record<string, unknown>),
     ],
   },
-  loader: async ({ context }) => {
+  loaderDeps: ({ search }) => ({
+    term: search.term,
+    dept: search.dept,
+    prof: search.prof,
+    day: search.day,
+  }),
+  loader: async ({ context, deps }) => {
     const sessionId = getOrCreateSessionId();
     const tokenHash = localStorage.getItem("acadia-one-session-token-hash");
+    const convexFilters = buildConvexFilters(deps);
 
     const prefetches: Promise<unknown>[] = [
       context.queryClient.ensureQueryData(
@@ -78,12 +107,18 @@ export const Route = createFileRoute("/explore")({
       context.queryClient.ensureQueryData(
         convexQuery(api.addToSchedule.get, { sessionId })
       ),
+      context.queryClient.ensureQueryData(
+        convexQuery(api.courses.countForExplore, { filters: convexFilters })
+      ),
     ];
 
     if (tokenHash) {
       prefetches.push(
         context.queryClient.ensureQueryData(
           convexQuery(api.sessions.validateSession, { sessionId, tokenHash })
+        ),
+        context.queryClient.ensureQueryData(
+          convexQuery(api.sessions.getUserData, { sessionId, tokenHash })
         )
       );
     }

@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import type { Doc } from "./_generated/dataModel";
 import { query } from "./_generated/server";
 
 export const validateSession = query({
@@ -44,5 +45,26 @@ export const validateSession = query({
       studentId: user.studentId,
       userDataStatus: user.userDataStatus ?? null,
     };
+  },
+});
+
+type UserData = NonNullable<Doc<"acadiaUsers">["userData"]>;
+
+export const getUserData = query({
+  args: {
+    sessionId: v.string(),
+    tokenHash: v.string(),
+  },
+  handler: async (ctx, args): Promise<UserData | null> => {
+    const user = await ctx.db
+      .query("acadiaUsers")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .first();
+
+    if (!user || user.tokenHash !== args.tokenHash) {
+      return null;
+    }
+
+    return user.userData ?? null;
   },
 });
