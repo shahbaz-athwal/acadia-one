@@ -1,11 +1,16 @@
+import { XIcon } from "lucide-react";
 import { DaysFilter } from "@/components/explore/filters/days-filter";
 import { DepartmentFilter } from "@/components/explore/filters/department-filter";
 import { ProfessorFilter } from "@/components/explore/filters/professor-filter";
 import { TermFilter } from "@/components/explore/filters/term-filter";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { useExploreFilters } from "@/hooks/use-explore-filters";
 import { cn } from "@/lib/utils";
 
 export function FilterPanel({ className }: { className?: string }) {
+  const { clearFilters, filters } = useExploreFilters();
+  const hasFilters = Object.values(filters).some((f) => f.length > 0);
   return (
     <Card
       className={cn(
@@ -13,6 +18,14 @@ export function FilterPanel({ className }: { className?: string }) {
         className
       )}
     >
+      <CardHeader className="flex items-start justify-between gap-2 px-0">
+        <CardTitle className="font-semibold text-base">Filters</CardTitle>
+        {hasFilters && (
+          <Button onClick={clearFilters} size="icon-xs" variant="outline">
+            <XIcon className="size-4" />
+          </Button>
+        )}
+      </CardHeader>
       <FilterSection label="Term">
         <TermFilter />
       </FilterSection>

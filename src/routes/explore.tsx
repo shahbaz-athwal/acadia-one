@@ -62,16 +62,16 @@ export function buildConvexFilters(
 ) {
   const f: Record<string, string[] | number[]> = {};
   if (search.term.length > 0) {
-    f.termCodes = search.term;
+    f.termCodes = [...search.term].sort();
   }
   if (search.dept.length > 0) {
-    f.departmentPrefixes = search.dept;
+    f.departmentPrefixes = [...search.dept].sort();
   }
   if (search.prof.length > 0) {
-    f.professorExternalIds = search.prof;
+    f.professorExternalIds = [...search.prof].sort();
   }
   if (search.day.length > 0) {
-    f.days = search.day;
+    f.days = [...search.day].sort((a, b) => a - b);
   }
   return Object.keys(f).length > 0 ? f : undefined;
 }

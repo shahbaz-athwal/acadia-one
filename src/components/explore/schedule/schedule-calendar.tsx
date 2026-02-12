@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ScheduleBlock } from "./schedule-block";
 
-const DAY_MIN_WIDTH = 120;
+const DAY_MIN_WIDTH = 100;
 
 /** Group schedule items by day number for efficient lookup. */
 function groupByDay(items: ScheduleItem[]): Map<number, ScheduleItem[]> {

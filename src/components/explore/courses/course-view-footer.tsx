@@ -39,9 +39,13 @@ export function CourseViewFooter() {
 
   const pages = getPageRange(page, totalPages);
 
+  if (totalCount <= 1) {
+    return null;
+  }
+
   return (
     <FrameFooter className="flex-row items-center justify-between py-2">
-      <span className="text-muted-foreground text-sm">
+      <span className="text-muted-foreground text-xs">
         Showing {start}–{end} of {totalCount}
       </span>
 
@@ -64,7 +68,7 @@ export function CourseViewFooter() {
                   />
                 }
               >
-                <ChevronLeftIcon className="size-4" />
+                <ChevronLeftIcon className="size-3" />
               </PaginationLink>
             </PaginationItem>
 
@@ -73,9 +77,9 @@ export function CourseViewFooter() {
               const showEllipsis = prev !== undefined && p - prev > 1;
 
               return (
-                <PaginationItem className="flex items-center" key={p}>
+                <PaginationItem className="flex items-center text-xs" key={p}>
                   {showEllipsis && (
-                    <PaginationEllipsis className="min-w-4 items-center [&_svg]:size-4" />
+                    <PaginationEllipsis className="min-w-4 items-center [&_svg]:size-3" />
                   )}
                   <PaginationLink
                     className={
@@ -117,7 +121,7 @@ export function CourseViewFooter() {
                   />
                 }
               >
-                <ChevronRightIcon className="size-4" />
+                <ChevronRightIcon className="size-3" />
               </PaginationLink>
             </PaginationItem>
           </PaginationContent>

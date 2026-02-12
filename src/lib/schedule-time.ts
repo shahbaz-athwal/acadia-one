@@ -13,7 +13,7 @@ export const GRID_END_MINUTES = 21 * 60 + 30;
 export const SLOT_COUNT = (GRID_END_MINUTES - GRID_START_MINUTES) / 30; // 27
 
 /** Height of a single 30-minute slot in pixels. */
-export const SLOT_HEIGHT = 27;
+export const SLOT_HEIGHT = 25;
 
 /** Width of the time gutter column in pixels. */
 export const TIME_GUTTER_WIDTH = 56;

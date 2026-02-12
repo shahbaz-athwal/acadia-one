@@ -11,7 +11,16 @@ const PAGE_SIZE = 10;
 export { PAGE_SIZE };
 
 export function useExploreCourses() {
-  const search = routeApi.useSearch();
+  const search = routeApi.useSearch({
+    select: (state) => ({
+      page: state.page,
+      q: state.q,
+      term: state.term,
+      dept: state.dept,
+      prof: state.prof,
+      day: state.day,
+    }),
+  });
   const convexFilters = buildConvexFilters(search);
 
   const { data } = useSuspenseQuery(

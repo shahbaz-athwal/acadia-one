@@ -1,6 +1,6 @@
-import { TanStackDevtools } from "@tanstack/react-devtools";
+// import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+// import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import type { RouterContext } from "@/router";
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -11,7 +11,7 @@ function RootComponent() {
   return (
     <>
       <Outlet />
-      <TanStackDevtools
+      {/* <TanStackDevtools
         config={{
           position: "bottom-right",
         }}
@@ -21,7 +21,7 @@ function RootComponent() {
             render: <TanStackRouterDevtoolsPanel />,
           },
         ]}
-      />
+      /> */}
     </>
   );
 }

@@ -1,4 +1,12 @@
+import { CalendarDaysIcon } from "lucide-react";
 import { useMemo } from "react";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   type ScheduleItem,
@@ -37,10 +45,17 @@ export function ScheduleAgenda() {
 
   if (!items || items.length === 0) {
     return (
-      // TODO use Empty component
-      <div className="flex flex-1 items-center justify-center p-6 text-muted-foreground text-sm">
-        No sections in schedule
-      </div>
+      <Empty className="h-2/3 flex-none gap-0">
+        <EmptyMedia variant="icon">
+          <CalendarDaysIcon />
+        </EmptyMedia>
+        <EmptyHeader>
+          <EmptyTitle className="text-sm">No sections in schedule</EmptyTitle>
+          <EmptyDescription className="text-balance text-xs">
+            Add sections from the course list to build your schedule.
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     );
   }
 

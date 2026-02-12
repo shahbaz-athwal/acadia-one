@@ -186,7 +186,8 @@ async function collectViaIndex(
   departmentPrefixes: string[],
   hasPostScanFilters: boolean,
   start: number,
-  pageSize: number
+  pageSize: number,
+  professorIds?: string[]
 ): Promise<
   | { kind: "direct"; pageCourses: Doc<"courses">[]; totalCount: number }
   | { kind: "collected"; courses: Doc<"courses">[] }
@@ -241,7 +242,36 @@ async function collectViaIndex(
     };
   }
 
-  // Path D: No department filter + post-scan filters only
+  // Path D-1: Professor filter active — use courseProfessors junction table
+  if (professorIds?.length) {
+    const courseIdSet = new Set<string>();
+    const courseDocs: Doc<"courses">[] = [];
+
+    await Promise.all(
+      professorIds.map(async (profId) => {
+        const links = await ctx.db
+          .query("courseProfessors")
+          .withIndex("by_professorId", (q) =>
+            q.eq("professorId", profId as never)
+          )
+          .collect();
+        const courses = await Promise.all(
+          links.map((link) => ctx.db.get(link.courseId))
+        );
+        for (const course of courses) {
+          if (course && !courseIdSet.has(course._id)) {
+            courseIdSet.add(course._id);
+            courseDocs.push(course);
+          }
+        }
+      })
+    );
+
+    courseDocs.sort((a, b) => a.code.localeCompare(b.code));
+    return { kind: "collected", courses: courseDocs };
+  }
+
+  // Path D-2: No department filter + post-scan filters only (days/terms)
   const courses = await ctx.db.query("courses").withIndex("by_code").collect();
   return { kind: "collected", courses };
 }
@@ -312,7 +342,8 @@ export const listForExplore = query({
       departmentPrefixes,
       !!hasPostScanFilters,
       start,
-      args.pageSize
+      args.pageSize,
+      professorIds
     );
 
     if (result.kind === "direct") {
