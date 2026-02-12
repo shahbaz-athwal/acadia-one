@@ -34,6 +34,7 @@ const exploreSearchSchema = z.object({
   day: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
   sv: z.enum(["calendar", "agenda"]).catch("calendar"),
   st: z.string().catch(""),
+  q: z.string().catch(""),
   page: z.coerce.number().int().positive().catch(1),
 });
 
@@ -46,6 +47,7 @@ export const SEARCH_DEFAULTS: ExploreSearchParams = {
   day: [],
   sv: "calendar",
   st: "",
+  q: "",
   page: 1,
 };
 
@@ -85,6 +87,7 @@ export const Route = createFileRoute("/explore")({
         day: [],
         sv: "calendar",
         st: "",
+        q: "",
         page: 1,
       } as Record<string, unknown>),
     ],
@@ -94,6 +97,7 @@ export const Route = createFileRoute("/explore")({
     dept: search.dept,
     prof: search.prof,
     day: search.day,
+    q: search.q,
     page: search.page,
   }),
   loader: async ({ context, deps }) => {
@@ -113,6 +117,7 @@ export const Route = createFileRoute("/explore")({
           page: deps.page,
           pageSize: 10,
           filters: convexFilters,
+          searchQuery: deps.q || undefined,
         })
       ),
     ];

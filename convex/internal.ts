@@ -364,6 +364,14 @@ export const upsertProfessors = internalMutation({
   },
 });
 
+function buildSearchText(course: {
+  code: string;
+  title: string;
+  description: string;
+}) {
+  return `${course.code} ${course.title} ${course.description}`;
+}
+
 export const upsertCourses = internalMutation({
   args: {
     courses: v.array(
@@ -399,6 +407,7 @@ export const upsertCourses = internalMutation({
           q.eq("externalId", course.externalId)
         )
         .first();
+      const searchText = buildSearchText(course);
       if (existing) {
         await ctx.db.patch(existing._id, {
           code: course.code,
@@ -408,10 +417,12 @@ export const upsertCourses = internalMutation({
           matchingSectionIds: course.matchingSectionIds,
           credits: course.credits,
           requisites: course.requisites,
+          searchText,
         });
       } else {
         await ctx.db.insert("courses", {
           ...course,
+          searchText,
           lastSectionPulledAt: undefined,
           ratingCount: 0,
           avgDifficulty: null,
@@ -447,6 +458,23 @@ export const upsertCourses = internalMutation({
       processed += 1;
     }
     return processed;
+  },
+});
+
+export const backfillSearchText = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const courses = await ctx.db.query("courses").collect();
+    let updated = 0;
+    for (const course of courses) {
+      if (!course.searchText) {
+        await ctx.db.patch(course._id, {
+          searchText: buildSearchText(course),
+        });
+        updated += 1;
+      }
+    }
+    return updated;
   },
 });
 

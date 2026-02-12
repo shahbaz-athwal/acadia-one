@@ -19,6 +19,7 @@ export function useExploreCourses() {
       page: search.page,
       pageSize: PAGE_SIZE,
       filters: convexFilters,
+      searchQuery: search.q || undefined,
     })
   );
 

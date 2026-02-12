@@ -196,11 +196,17 @@ export default defineSchema({
     sectionTermCodes: v.optional(v.array(v.string())),
     sectionProfessorIds: v.optional(v.array(v.id("professors"))),
     sectionDays: v.optional(v.array(v.number())),
+    // Concatenated search field: "<code> <title> <description>"
+    searchText: v.optional(v.string()),
   })
     .index("by_externalId", ["externalId"])
     .index("by_code", ["code"])
     .index("by_departmentPrefix", ["departmentPrefix"])
-    .index("by_title", ["title"]),
+    .index("by_title", ["title"])
+    .searchIndex("search_courses", {
+      searchField: "searchText",
+      filterFields: ["departmentPrefix"],
+    }),
 
   courseProfessors: defineTable({
     courseId: v.id("courses"),
