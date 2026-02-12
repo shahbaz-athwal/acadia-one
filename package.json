@@ -16,6 +16,7 @@
     "@ai-sdk/google": "^2.0.43",
     "@base-ui/react": "^1.1.0",
     "@better-upload/client": "^3.0.7",
+    "@convex-dev/react-query": "^0.1.0",
     "@ncdai/react-wheel-picker": "^1.1.0",
     "@posthog/ai": "^7.3.0",
     "@tailwindcss/vite": "^4.0.6",

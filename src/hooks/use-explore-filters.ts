@@ -1,5 +1,6 @@
+import { convexQuery } from "@convex-dev/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import {
   SEARCH_DEFAULTS as DEFAULTS,
   withSearchDefaults as withDefaults,
@@ -73,9 +74,9 @@ export function useExploreFilters() {
     });
   };
 
-  const terms = useQuery(api.terms.list);
-  const departments = useQuery(api.departments.list);
-  const professors = useQuery(api.professors.list);
+  const { data: options } = useSuspenseQuery(
+    convexQuery(api.explore.filterOptions, {}),
+  );
 
   return {
     filters,
@@ -87,10 +88,6 @@ export function useExploreFilters() {
     setFilters,
     clearFilters,
 
-    options: {
-      terms,
-      departments,
-      professors,
-    },
+    options,
   };
 }

@@ -1,5 +1,6 @@
-// biome-ignore assist/source/organizeImports: react-scan
-import { scan } from "react-scan";
+// import { scan } from "react-scan";
+import { ConvexQueryClient } from "@convex-dev/react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { StrictMode } from "react";
@@ -7,7 +8,6 @@ import { createRoot } from "react-dom/client";
 import { getRouter } from "./router";
 import "./styles/globals.css";
 
-const router = getRouter();
 const convexUrl = import.meta.env.VITE_CONVEX_URL;
 
 if (!convexUrl) {
@@ -15,6 +15,19 @@ if (!convexUrl) {
 }
 
 const convex = new ConvexReactClient(convexUrl);
+const convexQueryClient = new ConvexQueryClient(convex);
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      queryKeyHashFn: convexQueryClient.hashFn(),
+      queryFn: convexQueryClient.queryFn(),
+    },
+  },
+});
+convexQueryClient.connect(queryClient);
+
+const router = getRouter(queryClient);
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
@@ -28,14 +41,17 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-scan({
-  enabled: true,
-});
+// TODO: Figure out why affecting bundle size in production
+// scan({
+//   enabled: true,
+// });
 
 createRoot(rootElement).render(
   <StrictMode>
     <ConvexProvider client={convex}>
-      <RouterProvider router={router} />
+      <QueryClientProvider client={queryClient}>
+        <RouterProvider router={router} />
+      </QueryClientProvider>
     </ConvexProvider>
   </StrictMode>
 );

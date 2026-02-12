@@ -1,5 +1,6 @@
+import { convexQuery } from "@convex-dev/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
 import { useMemo } from "react";
 import { withSearchDefaults as withDefaults } from "@/routes/explore";
 import { api } from "../../convex/_generated/api";
@@ -16,7 +17,9 @@ export function useScheduleView() {
     }),
   });
   const navigate = useNavigate();
-  const terms = useQuery(api.terms.list);
+  const { data: { terms } } = useSuspenseQuery(
+    convexQuery(api.explore.filterOptions, {}),
+  );
 
   const view = search.sv;
   const selectedTermCode = search.st;
@@ -25,7 +28,7 @@ export function useScheduleView() {
   // Determine the effective term: use the selected one if valid, otherwise
   // fall back to the first active term (or the first term overall).
   const { termCode, termIndex, termName } = useMemo(() => {
-    if (!terms || terms.length === 0) {
+    if (terms.length === 0) {
       return { termCode: "", termIndex: -1, termName: "" };
     }
 
@@ -51,8 +54,8 @@ export function useScheduleView() {
     };
   }, [terms, selectedTermCode]);
 
-  const canGoNext = terms != null && termIndex > 0;
-  const canGoPrev = terms != null && termIndex < terms.length - 1;
+  const canGoNext = termIndex > 0;
+  const canGoPrev = termIndex < terms.length - 1;
 
   const setView = (mode: ScheduleViewMode) => {
     navigate({
@@ -70,14 +73,14 @@ export function useScheduleView() {
 
   // Terms are sorted newest-first, so "next" means a newer term (lower index)
   const goToNextTerm = () => {
-    if (canGoNext && terms) {
+    if (canGoNext) {
       setTermCode(terms[termIndex - 1].code);
     }
   };
 
   // "prev" means an older term (higher index)
   const goToPrevTerm = () => {
-    if (canGoPrev && terms) {
+    if (canGoPrev) {
       setTermCode(terms[termIndex + 1].code);
     }
   };

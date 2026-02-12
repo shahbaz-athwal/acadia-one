@@ -1,4 +1,5 @@
-import { useQuery } from "convex/react";
+import { convexQuery } from "@convex-dev/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { api } from "../../convex/_generated/api";
 import { useScheduleView } from "./use-schedule-view";
@@ -12,20 +13,18 @@ export function useScheduleItems() {
   const sessionId = useSessionId();
   const { termCode } = useScheduleView();
 
-  const allItems = useQuery(api.addToSchedule.get, { sessionId });
+  const { data: allItems } = useSuspenseQuery(
+    convexQuery(api.addToSchedule.get, { sessionId })
+  );
 
   const items = useMemo(() => {
-    if (!(allItems && termCode)) {
+    if (!termCode) {
       return undefined;
     }
     return allItems.filter((item) => item.section.termCode === termCode);
   }, [allItems, termCode]);
 
-  // Collect the distinct term codes across all schedule items
   const termCodesInSchedule = useMemo(() => {
-    if (!allItems) {
-      return [];
-    }
     return [...new Set(allItems.map((item) => item.section.termCode))];
   }, [allItems]);
 
@@ -33,7 +32,6 @@ export function useScheduleItems() {
     items,
     allItems,
     termCodesInSchedule,
-    isLoading: allItems === undefined,
     sessionId,
   };
 }

@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 
-const SESSION_KEY = "dryft_schedule_session_id";
+const SESSION_KEY = "acadia-one-session-id";
 
-function getOrCreateSessionId(): string {
+export function getOrCreateSessionId(): string {
   const existing = localStorage.getItem(SESSION_KEY);
   if (existing) {
     return existing;

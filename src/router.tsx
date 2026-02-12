@@ -1,13 +1,15 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { createRouter, parseSearchWith } from "@tanstack/react-router";
-
-// Import the generated route tree
 import { routeTree } from "./routeTree.gen";
 
-// Create a new router instance
-export const getRouter = () => {
+export interface RouterContext {
+  queryClient: QueryClient;
+}
+
+export const getRouter = (queryClient: QueryClient) => {
   const router = createRouter({
     routeTree,
-    context: {},
+    context: { queryClient },
     parseSearch: parseSearchWith((value) => value),
     stringifySearch: (search) => {
       const entries = Object.entries(search).filter(
@@ -30,9 +32,7 @@ export const getRouter = () => {
         .join("&");
       return `?${query}`;
     },
-
     scrollRestoration: true,
-    defaultPreloadStaleTime: 0,
   });
 
   return router;

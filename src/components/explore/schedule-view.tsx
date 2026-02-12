@@ -16,7 +16,8 @@ export function ScheduleView({ className }: { className?: string }) {
       )}
     >
       <ScheduleHeader />
-      {view === "calendar" ? <ScheduleCalendar /> : <ScheduleAgenda />}
+      {view === "calendar" && <ScheduleCalendar />}
+      {view === "agenda" && <ScheduleAgenda />}
     </Card>
   );
 }

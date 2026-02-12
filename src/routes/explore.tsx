@@ -1,9 +1,12 @@
+import { convexQuery } from "@convex-dev/react-query";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { z } from "zod";
 import { CourseView } from "@/components/explore/course-view";
 import { FilterPanel } from "@/components/explore/filter-panel";
 import { ScheduleView } from "@/components/explore/schedule-view";
+import { getOrCreateSessionId } from "@/hooks/use-session-id";
+import { api } from "../../convex/_generated/api";
 
 function parseStringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
@@ -63,6 +66,22 @@ export const Route = createFileRoute("/explore")({
         st: "",
       } as Record<string, unknown>),
     ],
+  },
+  loader: async ({ context }) => {
+    const sessionId = getOrCreateSessionId();
+    await Promise.all([
+      context.queryClient.ensureQueryData(
+        convexQuery(api.explore.filterOptions, {})
+      ),
+      context.queryClient.ensureQueryData(
+        convexQuery(api.addToSchedule.get, { sessionId })
+      ),
+      // context.queryClient.ensureQueryData(
+      //   convexQuery(api.courses.listForExplore, {
+      //     paginationOpts: {},
+      //   })
+      // ),
+    ]);
   },
   component: RouteComponent,
 });

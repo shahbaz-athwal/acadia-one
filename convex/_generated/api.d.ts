@@ -21,6 +21,7 @@ import type * as addToSchedule from "../addToSchedule.js";
 import type * as auth from "../auth.js";
 import type * as courses from "../courses.js";
 import type * as departments from "../departments.js";
+import type * as explore from "../explore.js";
 import type * as http from "../http.js";
 import type * as internal_ from "../internal.js";
 import type * as lib_constants from "../lib/constants.js";
@@ -55,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   courses: typeof courses;
   departments: typeof departments;
+  explore: typeof explore;
   http: typeof http;
   internal: typeof internal_;
   "lib/constants": typeof lib_constants;
