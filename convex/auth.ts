@@ -11,8 +11,8 @@ import { encryptCredentials } from "./lib/encryption";
 type AuthResult =
   | {
       success: true;
-      sessionId: string;
       token: string;
+      tokenHash: string;
     }
   | {
       success: false;
@@ -25,9 +25,11 @@ export const authenticateUser = action(
   async (
     ctx: ActionCtx,
     {
+      sessionId,
       username,
       password,
     }: {
+      sessionId: string;
       username: string;
       password: string;
     }
@@ -47,8 +49,6 @@ export const authenticateUser = action(
         };
       }
 
-      // Generate session ID and token
-      const sessionId = crypto.randomUUID();
       const token = crypto.randomBytes(32).toString("hex");
       const tokenHash = crypto
         .createHash("sha256")
@@ -66,23 +66,26 @@ export const authenticateUser = action(
       const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
       const now = Date.now();
       const expiresAt = now + sevenDaysInMs;
-      const lastAcadiaAuth = now;
 
-      // Save to database with encrypted credentials
       await ctx.runMutation(internal.internal.createAcadiaSessionAndUser, {
         sessionId,
         cookies,
         studentId: username,
         encryptedCredentials,
         tokenHash,
-        lastAcadiaAuth,
+        lastAcadiaAuth: now,
         expiresAt,
+      });
+
+      await ctx.scheduler.runAfter(0, internal.auth.pullUserData, {
+        sessionId,
+        token,
       });
 
       return {
         success: true,
-        sessionId,
         token,
+        tokenHash,
       };
     } catch (error) {
       return {

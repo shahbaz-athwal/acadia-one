@@ -812,27 +812,6 @@ export const listAllProfessorIds = internalQuery({
   },
 });
 
-export const listProfessorsWithoutRmpId = internalQuery({
-  args: {},
-  returns: v.array(
-    v.object({
-      externalId: v.string(),
-      name: v.string(),
-      departmentPrefix: v.string(),
-    })
-  ),
-  handler: async (ctx) => {
-    const professors = await ctx.db.query("professors").collect();
-    return professors
-      .filter((professor) => !professor.rmpId)
-      .map((professor) => ({
-        externalId: professor.externalId,
-        name: professor.name,
-        departmentPrefix: professor.departmentPrefix,
-      }));
-  },
-});
-
 export const getProfessorById = internalQuery({
   args: { id: v.id("professors") },
   returns: v.union(

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { CourseView } from "@/components/explore/course-view";
 import { FilterPanel } from "@/components/explore/filter-panel";
 import { ScheduleView } from "@/components/explore/schedule-view";
-import { getOrCreateSessionId } from "@/hooks/use-session-id";
+import { getOrCreateSessionId } from "@/hooks/use-auth";
 import { api } from "../../convex/_generated/api";
 
 function parseStringArray(value: unknown): string[] {
@@ -69,19 +69,26 @@ export const Route = createFileRoute("/explore")({
   },
   loader: async ({ context }) => {
     const sessionId = getOrCreateSessionId();
-    await Promise.all([
+    const tokenHash = localStorage.getItem("acadia-one-session-token-hash");
+
+    const prefetches: Promise<unknown>[] = [
       context.queryClient.ensureQueryData(
         convexQuery(api.explore.filterOptions, {})
       ),
       context.queryClient.ensureQueryData(
         convexQuery(api.addToSchedule.get, { sessionId })
       ),
-      // context.queryClient.ensureQueryData(
-      //   convexQuery(api.courses.listForExplore, {
-      //     paginationOpts: {},
-      //   })
-      // ),
-    ]);
+    ];
+
+    if (tokenHash) {
+      prefetches.push(
+        context.queryClient.ensureQueryData(
+          convexQuery(api.sessions.validateSession, { sessionId, tokenHash })
+        )
+      );
+    }
+
+    await Promise.all(prefetches);
   },
   component: RouteComponent,
 });

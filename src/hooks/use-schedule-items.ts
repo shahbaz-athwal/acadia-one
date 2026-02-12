@@ -2,15 +2,15 @@ import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { api } from "../../convex/_generated/api";
+import { getOrCreateSessionId } from "./use-auth";
 import { useScheduleView } from "./use-schedule-view";
-import { useSessionId } from "./use-session-id";
 
 export type ScheduleItem = NonNullable<
   ReturnType<typeof useScheduleItems>["items"]
 >[number];
 
 export function useScheduleItems() {
-  const sessionId = useSessionId();
+  const sessionId = getOrCreateSessionId();
   const { termCode } = useScheduleView();
 
   const { data: allItems } = useSuspenseQuery(
