@@ -417,6 +417,32 @@ export const upsertCourses = internalMutation({
           avgDifficulty: null,
           avgQuality: null,
         });
+
+        // Increment denormalized course counters
+        const totalStats = await ctx.db
+          .query("courseStats")
+          .withIndex("by_key", (q) => q.eq("key", "total"))
+          .first();
+        if (totalStats) {
+          await ctx.db.patch(totalStats._id, {
+            courseCount: totalStats.courseCount + 1,
+          });
+        } else {
+          await ctx.db.insert("courseStats", { key: "total", courseCount: 1 });
+        }
+
+        const deptKey = `dept:${course.departmentPrefix}`;
+        const deptStats = await ctx.db
+          .query("courseStats")
+          .withIndex("by_key", (q) => q.eq("key", deptKey))
+          .first();
+        if (deptStats) {
+          await ctx.db.patch(deptStats._id, {
+            courseCount: deptStats.courseCount + 1,
+          });
+        } else {
+          await ctx.db.insert("courseStats", { key: deptKey, courseCount: 1 });
+        }
       }
       processed += 1;
     }
@@ -897,5 +923,43 @@ export const updateProfessorRmpIds = internalMutation({
       updated += 1;
     }
     return updated;
+  },
+});
+
+/**
+ * One-time backfill: seeds the courseStats table from existing course data.
+ * Run once after deploy, then leave as a repair tool.
+ */
+export const backfillCourseStats = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    // Clear existing stats to rebuild from scratch
+    const existingStats = await ctx.db.query("courseStats").collect();
+    for (const stat of existingStats) {
+      await ctx.db.delete(stat._id);
+    }
+
+    // Count courses per department
+    const allCourses = await ctx.db.query("courses").collect();
+    const deptCounts = new Map<string, number>();
+    for (const course of allCourses) {
+      const count = deptCounts.get(course.departmentPrefix) ?? 0;
+      deptCounts.set(course.departmentPrefix, count + 1);
+    }
+
+    // Insert total counter
+    await ctx.db.insert("courseStats", {
+      key: "total",
+      courseCount: allCourses.length,
+    });
+
+    // Insert per-department counters
+    for (const [prefix, count] of deptCounts) {
+      await ctx.db.insert("courseStats", {
+        key: `dept:${prefix}`,
+        courseCount: count,
+      });
+    }
   },
 });

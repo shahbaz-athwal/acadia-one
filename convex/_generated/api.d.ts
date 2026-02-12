@@ -27,7 +27,6 @@ import type * as lib_constants from "../lib/constants.js";
 import type * as lib_encryption from "../lib/encryption.js";
 import type * as lib_posthog from "../lib/posthog.js";
 import type * as lib_rmp from "../lib/rmp.js";
-import type * as professors from "../professors.js";
 import type * as sessions from "../sessions.js";
 import type * as terms from "../terms.js";
 import type * as workflow_populate from "../workflow/populate.js";
@@ -62,7 +61,6 @@ declare const fullApi: ApiFromModules<{
   "lib/encryption": typeof lib_encryption;
   "lib/posthog": typeof lib_posthog;
   "lib/rmp": typeof lib_rmp;
-  professors: typeof professors;
   sessions: typeof sessions;
   terms: typeof terms;
   "workflow/populate": typeof workflow_populate;

@@ -56,7 +56,7 @@ export const listForExplore = query({
   },
   handler: async (ctx, args) => {
     const filters = args.filters;
-    const departmentPrefixes = filters?.departmentPrefixes;
+    const departmentPrefixes = filters?.departmentPrefixes ?? [];
     const termCodes = filters?.termCodes;
     const professorExternalIds = filters?.professorExternalIds;
     const daysFilter = filters?.days;
@@ -77,45 +77,92 @@ export const listForExplore = query({
         .map((prof) => prof._id);
     }
 
-    // Build course query — use DB-level filter for department (scalar field)
-    let coursesQuery = ctx.db.query("courses").withIndex("by_code");
+    const start = (args.page - 1) * args.pageSize;
 
-    if (departmentPrefixes && departmentPrefixes.length > 0) {
-      const prefixes = departmentPrefixes;
-      coursesQuery = coursesQuery.filter((q) =>
-        prefixes.length === 1
-          ? q.eq(q.field("departmentPrefix"), prefixes[0])
-          : q.or(
-              ...prefixes.map((prefix) =>
-                q.eq(q.field("departmentPrefix"), prefix)
-              )
-            )
-      );
-    }
-
-    const allCourses = await coursesQuery.collect();
-
-    // Apply section-level filters in JS using denormalized fields
-    const hasSectionFilters =
+    // Post-scan filters: any filter requiring reading the doc and checking in JS
+    // (section-level: term, professor, days; future: time, level)
+    const hasPostScanFilters =
       (termCodes && termCodes.length > 0) ||
       (professorIds && professorIds.length > 0) ||
       (daysFilter && daysFilter.length > 0);
 
-    const allMatching = hasSectionFilters
-      ? allCourses.filter((course) =>
-          matchesDenormalizedFilters(course, {
-            termCodes,
-            professorIds,
-            days: daysFilter,
-          })
-        )
-      : allCourses;
+    let pageCourses: Doc<"courses">[];
+    let totalCount: number;
 
-    const totalCount = allMatching.length;
+    if (departmentPrefixes.length === 0 && !hasPostScanFilters) {
+      // ── Path A: No filters at all ──
+      // Use .take() for data and denormalized counter for total count.
+      const stats = await ctx.db
+        .query("courseStats")
+        .withIndex("by_key", (q) => q.eq("key", "total"))
+        .first();
 
-    // Manual offset pagination
-    const start = (args.page - 1) * args.pageSize;
-    const pageCourses = allMatching.slice(start, start + args.pageSize);
+      if (stats) {
+        const courses = await ctx.db
+          .query("courses")
+          .withIndex("by_code")
+          .take(start + args.pageSize);
+        pageCourses = courses.slice(start);
+        totalCount = stats.courseCount;
+      } else {
+        // Fallback before backfill — collect all to count (temporary)
+        const allCourses = await ctx.db
+          .query("courses")
+          .withIndex("by_code")
+          .collect();
+        totalCount = allCourses.length;
+        pageCourses = allCourses.slice(start, start + args.pageSize);
+      }
+    } else {
+      // ── Paths B/C/D: At least one filter is active ──
+      // Collect courses scoped by department when possible.
+      let collected: Doc<"courses">[];
+
+      if (departmentPrefixes.length === 1) {
+        // Path B: Single department — use by_departmentPrefix index (~30-100 docs)
+        collected = await ctx.db
+          .query("courses")
+          .withIndex("by_departmentPrefix", (q) =>
+            q.eq("departmentPrefix", departmentPrefixes[0])
+          )
+          .collect();
+      } else if (departmentPrefixes.length > 1) {
+        // Path C: Multiple departments — parallel queries, merge + sort by code
+        const perDept = await Promise.all(
+          departmentPrefixes.map((p) =>
+            ctx.db
+              .query("courses")
+              .withIndex("by_departmentPrefix", (q) =>
+                q.eq("departmentPrefix", p)
+              )
+              .collect()
+          )
+        );
+        collected = perDept
+          .flat()
+          .sort((a, b) => a.code.localeCompare(b.code));
+      } else {
+        // No department filter + post-scan filters only — full scan (rare)
+        collected = await ctx.db
+          .query("courses")
+          .withIndex("by_code")
+          .collect();
+      }
+
+      // Apply post-scan filters in JS when active
+      const allMatching = hasPostScanFilters
+        ? collected.filter((course) =>
+            matchesDenormalizedFilters(course, {
+              termCodes,
+              professorIds,
+              days: daysFilter,
+            })
+          )
+        : collected;
+
+      totalCount = allMatching.length;
+      pageCourses = allMatching.slice(start, start + args.pageSize);
+    }
 
     // Fetch sections + professors only for courses on this page (for display)
     const page = await Promise.all(

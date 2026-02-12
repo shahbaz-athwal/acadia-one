@@ -246,6 +246,11 @@ export default defineSchema({
     .index("by_sessionId", ["sessionId"])
     .index("by_sessionId_and_sectionId", ["sessionId", "sectionId"]),
 
+  courseStats: defineTable({
+    key: v.string(), // "total" or "dept:<PREFIX>"
+    courseCount: v.number(),
+  }).index("by_key", ["key"]),
+
   ratings: defineTable({
     rmpId: v.optional(v.string()),
     rmpLegacyId: v.optional(v.number()),
