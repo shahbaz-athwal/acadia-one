@@ -4,6 +4,7 @@ import type { QueryCtx } from "./_generated/server";
 import { query } from "./_generated/server";
 
 interface ResolvedFilters {
+  courseExternalIds: string[];
   searchQuery: string;
   departmentPrefixes: string[];
   termCodes: string[];
@@ -18,15 +19,10 @@ const filtersValidator = v.object({
   days: v.optional(v.array(v.number())),
 });
 
-// ── 1. Filter Resolution ───────────────────────────────────────────────────────
-
-/**
- * Normalizes raw query args into a canonical `ResolvedFilters` object.
- * Resolves professor externalIds to Convex _ids.
- */
 async function resolveFilters(
   ctx: QueryCtx,
   args: {
+    courseExternalIds?: string[];
     filters?: {
       termCodes?: string[];
       departmentPrefixes?: string[];
@@ -55,6 +51,7 @@ async function resolveFilters(
   }
 
   return {
+    courseExternalIds: args.courseExternalIds ?? [],
     searchQuery: args.searchQuery?.trim() ?? "",
     departmentPrefixes: raw?.departmentPrefixes ?? [],
     termCodes: raw?.termCodes ?? [],
@@ -63,28 +60,20 @@ async function resolveFilters(
   };
 }
 
-// ── 2. Course Collection ───────────────────────────────────────────────────────
-
-/**
- * Collects candidate courses using the best available index strategy.
- *
- * Returns `{ courses, totalCount }` where `totalCount` is the known total
- * when available (unfiltered path), or `null` when it must be computed
- * after post-scan filtering.
- *
- * Strategy priority:
- *  1. Full-text search (when searchQuery is present)
- *  2. No filters — paginated scan via `by_code` + precomputed count
- *  3. Department filter — `by_departmentPrefix` index
- *  4. Professor filter — `courseProfessors` junction table
- *  5. Fallback — full scan via `by_code`
- */
 async function collectCourses(
   ctx: QueryCtx,
   filters: ResolvedFilters,
   pagination: { page: number; pageSize: number }
 ): Promise<{ courses: Doc<"courses">[]; totalCount: number | null }> {
-  // Strategy 1: Full-text search
+  // Strategy 1: Explicit course IDs — direct lookup by externalId
+  if (filters.courseExternalIds.length > 0) {
+    return {
+      courses: await collectByCourseIds(ctx, filters.courseExternalIds),
+      totalCount: null,
+    };
+  }
+
+  // Strategy 2: Full-text search
   if (filters.searchQuery) {
     return {
       courses: await collectViaSearch(ctx, filters),
@@ -124,7 +113,23 @@ async function collectCourses(
   return { courses, totalCount: null };
 }
 
-/** Uses the full-text search index, with optional single-department equality filter. */
+async function collectByCourseIds(
+  ctx: QueryCtx,
+  courseExternalIds: string[]
+): Promise<Doc<"courses">[]> {
+  const courses = await Promise.all(
+    courseExternalIds.map((extId) =>
+      ctx.db
+        .query("courses")
+        .withIndex("by_externalId", (q) => q.eq("externalId", extId))
+        .first()
+    )
+  );
+  return courses.filter(
+    (course): course is NonNullable<typeof course> => !!course
+  );
+}
+
 async function collectViaSearch(
   ctx: QueryCtx,
   filters: ResolvedFilters
@@ -150,7 +155,6 @@ async function collectViaSearch(
   return results;
 }
 
-/** No filters at all — paginated scan with precomputed total from courseStats. */
 async function collectUnfiltered(
   ctx: QueryCtx,
   pagination: { page: number; pageSize: number }
@@ -178,7 +182,6 @@ async function collectUnfiltered(
   };
 }
 
-/** Single or multiple departments — parallel index queries, merged and sorted. */
 async function collectByDepartment(
   ctx: QueryCtx,
   departmentPrefixes: string[]
@@ -201,7 +204,6 @@ async function collectByDepartment(
   return perDept.flat().sort((a, b) => a.code.localeCompare(b.code));
 }
 
-/** Professor filter — uses courseProfessors junction table to find courses. */
 async function collectByProfessor(
   ctx: QueryCtx,
   professorIds: string[]
@@ -235,13 +237,6 @@ async function collectByProfessor(
   return courseDocs;
 }
 
-// ── 3. Post-scan Filtering ─────────────────────────────────────────────────────
-
-/**
- * Filters courses in JS using denormalized section fields.
- * Only applied for filters that can't be handled at the index level
- * (term codes, professor IDs, days).
- */
 function applyPostFilters(
   courses: Doc<"courses">[],
   filters: ResolvedFilters
@@ -362,12 +357,11 @@ async function enrichWithSections(ctx: QueryCtx, courses: Doc<"courses">[]) {
   );
 }
 
-// ── Query ──────────────────────────────────────────────────────────────────────
-
 export const listForExplore = query({
   args: {
     page: v.number(),
     pageSize: v.number(),
+    courseExternalIds: v.optional(v.array(v.string())),
     filters: v.optional(filtersValidator),
     searchQuery: v.optional(v.string()),
   },
