@@ -3,6 +3,14 @@ import type { Doc } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { query } from "./_generated/server";
 
+interface ResolvedFilters {
+  searchQuery: string;
+  departmentPrefixes: string[];
+  termCodes: string[];
+  professorIds: string[];
+  days: number[];
+}
+
 const filtersValidator = v.object({
   termCodes: v.optional(v.array(v.string())),
   departmentPrefixes: v.optional(v.array(v.string())),
@@ -10,53 +18,276 @@ const filtersValidator = v.object({
   days: v.optional(v.array(v.number())),
 });
 
-/**
- * Checks whether a course matches the given section-level filters
- * using the denormalized fields on the course document.
- */
-function matchesDenormalizedFilters(
-  course: Doc<"courses">,
-  opts: {
-    termCodes?: string[];
-    professorIds?: string[];
-    days?: number[];
-  }
-): boolean {
-  const { termCodes, professorIds, days } = opts;
+// ── 1. Filter Resolution ───────────────────────────────────────────────────────
 
-  if (termCodes?.length) {
-    const hasTermMatch = course.sectionTermCodes?.some((tc) =>
-      termCodes.includes(tc)
+/**
+ * Normalizes raw query args into a canonical `ResolvedFilters` object.
+ * Resolves professor externalIds to Convex _ids.
+ */
+async function resolveFilters(
+  ctx: QueryCtx,
+  args: {
+    filters?: {
+      termCodes?: string[];
+      departmentPrefixes?: string[];
+      professorExternalIds?: string[];
+      days?: number[];
+    };
+    searchQuery?: string;
+  }
+): Promise<ResolvedFilters> {
+  const raw = args.filters;
+
+  let professorIds: string[] = [];
+  const professorExternalIds = raw?.professorExternalIds;
+  if (professorExternalIds && professorExternalIds.length > 0) {
+    const resolved = await Promise.all(
+      professorExternalIds.map((extId) =>
+        ctx.db
+          .query("professors")
+          .withIndex("by_externalId", (q) => q.eq("externalId", extId))
+          .first()
+      )
     );
-    if (!hasTermMatch) {
-      return false;
-    }
+    professorIds = resolved
+      .filter((prof): prof is NonNullable<typeof prof> => !!prof)
+      .map((prof) => prof._id);
   }
-  if (professorIds?.length) {
-    const hasProfMatch = course.sectionProfessorIds?.some((pid) =>
-      professorIds.includes(pid as never)
-    );
-    if (!hasProfMatch) {
-      return false;
-    }
-  }
-  if (days?.length) {
-    const hasDayMatch = course.sectionDays?.some((d) => days.includes(d));
-    if (!hasDayMatch) {
-      return false;
-    }
-  }
-  return true;
+
+  return {
+    searchQuery: args.searchQuery?.trim() ?? "",
+    departmentPrefixes: raw?.departmentPrefixes ?? [],
+    termCodes: raw?.termCodes ?? [],
+    professorIds,
+    days: raw?.days ?? [],
+  };
 }
 
+// ── 2. Course Collection ───────────────────────────────────────────────────────
+
 /**
- * Fetches sections + professors for the given courses and returns
- * display-ready objects.
+ * Collects candidate courses using the best available index strategy.
+ *
+ * Returns `{ courses, totalCount }` where `totalCount` is the known total
+ * when available (unfiltered path), or `null` when it must be computed
+ * after post-scan filtering.
+ *
+ * Strategy priority:
+ *  1. Full-text search (when searchQuery is present)
+ *  2. No filters — paginated scan via `by_code` + precomputed count
+ *  3. Department filter — `by_departmentPrefix` index
+ *  4. Professor filter — `courseProfessors` junction table
+ *  5. Fallback — full scan via `by_code`
  */
-async function enrichCoursesWithSections(
+async function collectCourses(
   ctx: QueryCtx,
-  courses: Doc<"courses">[]
-) {
+  filters: ResolvedFilters,
+  pagination: { page: number; pageSize: number }
+): Promise<{ courses: Doc<"courses">[]; totalCount: number | null }> {
+  // Strategy 1: Full-text search
+  if (filters.searchQuery) {
+    return {
+      courses: await collectViaSearch(ctx, filters),
+      totalCount: null,
+    };
+  }
+
+  const hasAnyFilter =
+    filters.departmentPrefixes.length > 0 ||
+    filters.termCodes.length > 0 ||
+    filters.professorIds.length > 0 ||
+    filters.days.length > 0;
+
+  // Strategy 2: No filters — use by_code index with take() + courseStats count
+  if (!hasAnyFilter) {
+    return await collectUnfiltered(ctx, pagination);
+  }
+
+  // Strategy 3: Department(s) — use by_departmentPrefix index
+  if (filters.departmentPrefixes.length > 0) {
+    return {
+      courses: await collectByDepartment(ctx, filters.departmentPrefixes),
+      totalCount: null,
+    };
+  }
+
+  // Strategy 4: Professor(s) — use courseProfessors junction table
+  if (filters.professorIds.length > 0) {
+    return {
+      courses: await collectByProfessor(ctx, filters.professorIds),
+      totalCount: null,
+    };
+  }
+
+  // Strategy 5: Fallback — full scan (only term/days filters active)
+  const courses = await ctx.db.query("courses").withIndex("by_code").collect();
+  return { courses, totalCount: null };
+}
+
+/** Uses the full-text search index, with optional single-department equality filter. */
+async function collectViaSearch(
+  ctx: QueryCtx,
+  filters: ResolvedFilters
+): Promise<Doc<"courses">[]> {
+  const { searchQuery, departmentPrefixes } = filters;
+  const singleDept =
+    departmentPrefixes.length === 1 ? departmentPrefixes[0] : undefined;
+
+  let results = await ctx.db
+    .query("courses")
+    .withSearchIndex("search_courses", (q) => {
+      const s = q.search("searchText", searchQuery);
+      return singleDept ? s.eq("departmentPrefix", singleDept) : s;
+    })
+    .take(256);
+
+  // Multi-department filter in JS (search index only supports single .eq())
+  if (departmentPrefixes.length > 1) {
+    const deptSet = new Set(departmentPrefixes);
+    results = results.filter((c) => deptSet.has(c.departmentPrefix));
+  }
+
+  return results;
+}
+
+/** No filters at all — paginated scan with precomputed total from courseStats. */
+async function collectUnfiltered(
+  ctx: QueryCtx,
+  pagination: { page: number; pageSize: number }
+): Promise<{ courses: Doc<"courses">[]; totalCount: number }> {
+  const start = (pagination.page - 1) * pagination.pageSize;
+
+  const [stats, courses] = await Promise.all([
+    ctx.db
+      .query("courseStats")
+      .withIndex("by_key", (q) => q.eq("key", "total"))
+      .first(),
+    ctx.db
+      .query("courses")
+      .withIndex("by_code")
+      .take(start + pagination.pageSize),
+  ]);
+
+  if (!stats) {
+    throw new ConvexError("No course stats found");
+  }
+
+  return {
+    courses: courses.slice(start),
+    totalCount: stats.courseCount,
+  };
+}
+
+/** Single or multiple departments — parallel index queries, merged and sorted. */
+async function collectByDepartment(
+  ctx: QueryCtx,
+  departmentPrefixes: string[]
+): Promise<Doc<"courses">[]> {
+  const perDept = await Promise.all(
+    departmentPrefixes.map((prefix) =>
+      ctx.db
+        .query("courses")
+        .withIndex("by_departmentPrefix", (q) =>
+          q.eq("departmentPrefix", prefix)
+        )
+        .collect()
+    )
+  );
+
+  if (departmentPrefixes.length === 1) {
+    return perDept[0];
+  }
+
+  return perDept.flat().sort((a, b) => a.code.localeCompare(b.code));
+}
+
+/** Professor filter — uses courseProfessors junction table to find courses. */
+async function collectByProfessor(
+  ctx: QueryCtx,
+  professorIds: string[]
+): Promise<Doc<"courses">[]> {
+  const courseIdSet = new Set<string>();
+  const courseDocs: Doc<"courses">[] = [];
+
+  await Promise.all(
+    professorIds.map(async (profId) => {
+      const links = await ctx.db
+        .query("courseProfessors")
+        .withIndex("by_professorId", (q) =>
+          q.eq("professorId", profId as never)
+        )
+        .collect();
+
+      const courses = await Promise.all(
+        links.map((link) => ctx.db.get(link.courseId))
+      );
+
+      for (const course of courses) {
+        if (course && !courseIdSet.has(course._id)) {
+          courseIdSet.add(course._id);
+          courseDocs.push(course);
+        }
+      }
+    })
+  );
+
+  courseDocs.sort((a, b) => a.code.localeCompare(b.code));
+  return courseDocs;
+}
+
+// ── 3. Post-scan Filtering ─────────────────────────────────────────────────────
+
+/**
+ * Filters courses in JS using denormalized section fields.
+ * Only applied for filters that can't be handled at the index level
+ * (term codes, professor IDs, days).
+ */
+function applyPostFilters(
+  courses: Doc<"courses">[],
+  filters: ResolvedFilters
+): Doc<"courses">[] {
+  const hasPostFilters =
+    filters.termCodes.length > 0 ||
+    filters.professorIds.length > 0 ||
+    filters.days.length > 0;
+
+  if (!hasPostFilters) {
+    return courses;
+  }
+
+  // Build sets once for O(1) lookups during filtering
+  const termSet =
+    filters.termCodes.length > 0 ? new Set(filters.termCodes) : null;
+  const profSet =
+    filters.professorIds.length > 0 ? new Set(filters.professorIds) : null;
+  const daySet = filters.days.length > 0 ? new Set(filters.days) : null;
+
+  return courses.filter((course) => {
+    if (termSet && !course.sectionTermCodes?.some((tc) => termSet.has(tc))) {
+      return false;
+    }
+    if (
+      profSet &&
+      !course.sectionProfessorIds?.some((pid) => profSet.has(pid as string))
+    ) {
+      return false;
+    }
+    if (daySet && !course.sectionDays?.some((d) => daySet.has(d))) {
+      return false;
+    }
+    return true;
+  });
+}
+
+function paginate(
+  courses: Doc<"courses">[],
+  pagination: { page: number; pageSize: number }
+): Doc<"courses">[] {
+  const start = (pagination.page - 1) * pagination.pageSize;
+  return courses.slice(start, start + pagination.pageSize);
+}
+
+async function enrichWithSections(ctx: QueryCtx, courses: Doc<"courses">[]) {
   return await Promise.all(
     courses.map(async (course) => {
       const sections = await ctx.db
@@ -71,9 +302,11 @@ async function enrichCoursesWithSections(
             .filter((id): id is NonNullable<typeof id> => !!id)
         )
       );
+
       const professors = await Promise.all(
         sectionProfessorIds.map((professorId) => ctx.db.get(professorId))
       );
+
       const professorById = new Map(
         professors
           .filter(
@@ -129,152 +362,7 @@ async function enrichCoursesWithSections(
   );
 }
 
-interface PostScanOpts {
-  termCodes?: string[];
-  professorIds?: string[];
-  days?: number[];
-}
-
-function applyPostScanFilters(
-  courses: Doc<"courses">[],
-  hasPostScanFilters: boolean,
-  opts: PostScanOpts
-): Doc<"courses">[] {
-  if (!hasPostScanFilters) {
-    return courses;
-  }
-  return courses.filter((course) => matchesDenormalizedFilters(course, opts));
-}
-
-/**
- * Collects courses using the full text search index, then filters by
- * department and post-scan criteria in JS.
- */
-async function collectViaSearch(
-  ctx: QueryCtx,
-  searchQuery: string,
-  departmentPrefixes: string[]
-): Promise<Doc<"courses">[]> {
-  const singleDept =
-    departmentPrefixes.length === 1 ? departmentPrefixes[0] : undefined;
-
-  let collected = await ctx.db
-    .query("courses")
-    .withSearchIndex("search_courses", (q) => {
-      const s = q.search("searchText", searchQuery);
-      return singleDept ? s.eq("departmentPrefix", singleDept) : s;
-    })
-    .take(256);
-
-  // Multi-department filter in JS (search index only supports single .eq())
-  if (departmentPrefixes.length > 1) {
-    collected = collected.filter((c) =>
-      departmentPrefixes.includes(c.departmentPrefix)
-    );
-  }
-
-  return collected;
-}
-
-/**
- * Collects courses using database indexes (no search query).
- * Returns { pageCourses, totalCount } directly when possible (Path A),
- * or a collected array to be post-filtered (Paths B/C/D).
- */
-async function collectViaIndex(
-  ctx: QueryCtx,
-  departmentPrefixes: string[],
-  hasPostScanFilters: boolean,
-  start: number,
-  pageSize: number,
-  professorIds?: string[]
-): Promise<
-  | { kind: "direct"; pageCourses: Doc<"courses">[]; totalCount: number }
-  | { kind: "collected"; courses: Doc<"courses">[] }
-> {
-  if (departmentPrefixes.length === 0 && !hasPostScanFilters) {
-    // ── Path A: No filters at all ──
-    const stats = await ctx.db
-      .query("courseStats")
-      .withIndex("by_key", (q) => q.eq("key", "total"))
-      .first();
-
-    if (!stats) {
-      throw new ConvexError("No course stats found");
-    }
-
-    const courses = await ctx.db
-      .query("courses")
-      .withIndex("by_code")
-      .take(start + pageSize);
-    return {
-      kind: "direct",
-      pageCourses: courses.slice(start),
-      totalCount: stats.courseCount,
-    };
-  }
-
-  // ── Paths B/C/D: At least one filter is active ──
-  if (departmentPrefixes.length === 1) {
-    // Path B: Single department
-    const courses = await ctx.db
-      .query("courses")
-      .withIndex("by_departmentPrefix", (q) =>
-        q.eq("departmentPrefix", departmentPrefixes[0])
-      )
-      .collect();
-    return { kind: "collected", courses };
-  }
-
-  if (departmentPrefixes.length > 1) {
-    // Path C: Multiple departments — parallel queries, merge + sort
-    const perDept = await Promise.all(
-      departmentPrefixes.map((p) =>
-        ctx.db
-          .query("courses")
-          .withIndex("by_departmentPrefix", (q) => q.eq("departmentPrefix", p))
-          .collect()
-      )
-    );
-    return {
-      kind: "collected",
-      courses: perDept.flat().sort((a, b) => a.code.localeCompare(b.code)),
-    };
-  }
-
-  // Path D-1: Professor filter active — use courseProfessors junction table
-  if (professorIds?.length) {
-    const courseIdSet = new Set<string>();
-    const courseDocs: Doc<"courses">[] = [];
-
-    await Promise.all(
-      professorIds.map(async (profId) => {
-        const links = await ctx.db
-          .query("courseProfessors")
-          .withIndex("by_professorId", (q) =>
-            q.eq("professorId", profId as never)
-          )
-          .collect();
-        const courses = await Promise.all(
-          links.map((link) => ctx.db.get(link.courseId))
-        );
-        for (const course of courses) {
-          if (course && !courseIdSet.has(course._id)) {
-            courseIdSet.add(course._id);
-            courseDocs.push(course);
-          }
-        }
-      })
-    );
-
-    courseDocs.sort((a, b) => a.code.localeCompare(b.code));
-    return { kind: "collected", courses: courseDocs };
-  }
-
-  // Path D-2: No department filter + post-scan filters only (days/terms)
-  const courses = await ctx.db.query("courses").withIndex("by_code").collect();
-  return { kind: "collected", courses };
-}
+// ── Query ──────────────────────────────────────────────────────────────────────
 
 export const listForExplore = query({
   args: {
@@ -284,80 +372,23 @@ export const listForExplore = query({
     searchQuery: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const filters = args.filters;
-    const departmentPrefixes = filters?.departmentPrefixes ?? [];
-    const termCodes = filters?.termCodes;
-    const professorExternalIds = filters?.professorExternalIds;
-    const daysFilter = filters?.days;
-
-    // Resolve professor externalIds to Convex _ids (once per query)
-    let professorIds: string[] | undefined;
-    if (professorExternalIds && professorExternalIds.length > 0) {
-      const resolved = await Promise.all(
-        professorExternalIds.map((extId) =>
-          ctx.db
-            .query("professors")
-            .withIndex("by_externalId", (q) => q.eq("externalId", extId))
-            .first()
-        )
-      );
-      professorIds = resolved
-        .filter((prof): prof is NonNullable<typeof prof> => !!prof)
-        .map((prof) => prof._id);
-    }
-
-    const start = (args.page - 1) * args.pageSize;
-    const postScanOpts: PostScanOpts = {
-      termCodes,
-      professorIds,
-      days: daysFilter,
+    const paginationOptions = {
+      page: args.page,
+      pageSize: args.pageSize,
     };
-    const hasPostScanFilters =
-      (termCodes && termCodes.length > 0) ||
-      (professorIds && professorIds.length > 0) ||
-      (daysFilter && daysFilter.length > 0);
-
-    const searchQuery = args.searchQuery?.trim() || "";
-
-    // ── Search path: full text search index ──
-    if (searchQuery) {
-      const collected = await collectViaSearch(
-        ctx,
-        searchQuery,
-        departmentPrefixes
-      );
-      const allMatching = applyPostScanFilters(
-        collected,
-        !!hasPostScanFilters,
-        postScanOpts
-      );
-      const pageCourses = allMatching.slice(start, start + args.pageSize);
-      const page = await enrichCoursesWithSections(ctx, pageCourses);
-      return { page, totalCount: allMatching.length };
-    }
-
-    // ── Index path ──
-    const result = await collectViaIndex(
+    const filters = await resolveFilters(ctx, args);
+    const { courses, totalCount } = await collectCourses(
       ctx,
-      departmentPrefixes,
-      !!hasPostScanFilters,
-      start,
-      args.pageSize,
-      professorIds
+      filters,
+      paginationOptions
     );
+    const filtered = applyPostFilters(courses, filters);
+    const pageCourses = paginate(filtered, paginationOptions);
+    const page = await enrichWithSections(ctx, pageCourses);
 
-    if (result.kind === "direct") {
-      const page = await enrichCoursesWithSections(ctx, result.pageCourses);
-      return { page, totalCount: result.totalCount };
-    }
-
-    const allMatching = applyPostScanFilters(
-      result.courses,
-      !!hasPostScanFilters,
-      postScanOpts
-    );
-    const pageCourses = allMatching.slice(start, start + args.pageSize);
-    const page = await enrichCoursesWithSections(ctx, pageCourses);
-    return { page, totalCount: allMatching.length };
+    return {
+      page,
+      totalCount: totalCount ?? filtered.length,
+    };
   },
 });
