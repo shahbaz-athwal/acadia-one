@@ -110,36 +110,28 @@ export const pullUserData = internalAction(
 
     try {
       const impersonator = await getAcadiaImpersonator(ctx, sessionId, token);
-      const programDetails = await impersonator.getStudentProgramDetails();
-      const grades = await impersonator.getStudentGrades();
+      const [programDetails, grades] = await Promise.all([
+        impersonator.getStudentProgramDetails(),
+        impersonator.getStudentGrades(),
+      ]);
 
       const primaryProgramCode = programDetails.programs[0]?.programCode;
-      const programEvaluation = primaryProgramCode
-        ? await impersonator.getProgramEvaluation(primaryProgramCode)
-        : undefined;
-
-      const userData = {
-        pulledAt: Date.now(),
-        profile: programDetails.profile,
-        programs: programDetails.programs,
-        grades,
-        ...(programEvaluation ? { programEvaluation } : {}),
-      };
+      const programEvaluation =
+        await impersonator.getProgramEvaluation(primaryProgramCode);
 
       await ctx.runMutation(internal.internal.setAcadiaUserData, {
         sessionId,
-        userData,
+        ...programDetails,
+        grades,
+        programEvaluation,
       });
-
-      return { sessionId, status: "ready" as const };
     } catch (error) {
       const message = error instanceof Error ? error.message : "Unknown error";
       await ctx.runMutation(internal.internal.setAcadiaUserDataStatus, {
         sessionId,
-        status: "pending",
+        status: "error",
         error: message,
       });
-      return { sessionId, status: "pending" as const, error: message };
     }
   }
 );

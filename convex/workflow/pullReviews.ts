@@ -14,27 +14,15 @@ interface PullRmpReviewsArgs {
   rmpId: string;
 }
 
-interface PullRmpReviewsResult {
-  message: string;
-  created: number;
-  discarded: number;
-}
-
-interface TriggerRmpReviewsPullingResult {
-  processedProfessors: number;
-  totalProfessors: number;
-  message: string;
-}
-
 async function pullRmpReviewsInternal(
   ctx: ActionCtx,
   args: PullRmpReviewsArgs
-): Promise<{ created: number; discarded: number; message: string }> {
+) {
   const { professorId, rmpId } = args;
   const { ratings } = await rmpScraper.getTeacherRatings({ teacherId: rmpId });
 
   if (ratings.length === 0) {
-    return { created: 0, discarded: 0, message: "No ratings found." };
+    return 0;
   }
 
   const courseCodes = [
@@ -46,37 +34,21 @@ async function pullRmpReviewsInternal(
   ];
 
   if (courseCodes.length === 0) {
-    return {
-      created: 0,
-      discarded: ratings.length,
-      message: "No course codes found in ratings.",
-    };
+    return 0;
   }
 
-  const courses: Array<{
-    _id: Id<"courses">;
-    code: string;
-    externalId: string;
-  }> = await ctx.runQuery(internal.internal.getCoursesByCodes, {
+  const courses = await ctx.runQuery(internal.internal.getCoursesByCodes, {
     codes: courseCodes,
   });
   if (courses.length === 0) {
-    return {
-      created: 0,
-      discarded: ratings.length,
-      message: "No matching courses found.",
-    };
+    return 0;
   }
 
   const professor = await ctx.runQuery(internal.internal.getProfessorById, {
     id: professorId,
   });
   if (!professor) {
-    return {
-      created: 0,
-      discarded: ratings.length,
-      message: "Professor not found.",
-    };
+    return 0;
   }
 
   const courseByCode = new Map(courses.map((course) => [course.code, course]));
@@ -134,11 +106,7 @@ async function pullRmpReviewsInternal(
   });
 
   if (ratingsToCreate.length === 0) {
-    return {
-      created: 0,
-      discarded: ratings.length,
-      message: "No ratings to create for known courses.",
-    };
+    return 0;
   }
 
   const created = await ctx.runMutation(internal.internal.insertRatings, {
@@ -164,11 +132,7 @@ async function pullRmpReviewsInternal(
     lastPullFromRmp: Date.now(),
   });
 
-  return {
-    created,
-    discarded: ratings.length - created,
-    message: `Created ${created} ratings.`,
-  };
+  return created;
 }
 
 export const pullRmpReviews = internalAction({
@@ -176,22 +140,18 @@ export const pullRmpReviews = internalAction({
     professorId: v.id("professors"),
     rmpId: v.string(),
   },
-  handler: async (ctx, args): Promise<PullRmpReviewsResult> => {
+  handler: async (ctx, args): Promise<string> => {
     const result = await pullRmpReviewsInternal(ctx, args);
-    return {
-      created: result.created,
-      discarded: result.discarded,
-      message: result.message,
-    };
+    return `Created ${result} ratings.`;
   },
 });
 
 export const triggerRmpReviewsPulling = internalAction({
   args: {},
-  handler: async (ctx): Promise<TriggerRmpReviewsPullingResult> => {
-    const professors: Array<{ _id: Id<"professors">; rmpId: string }> =
-      await ctx.runQuery(internal.internal.listProfessorsWithRmpId);
-    let processedProfessors = 0;
+  handler: async (ctx): Promise<string> => {
+    const professors = await ctx.runQuery(
+      internal.internal.listProfessorsWithRmpId
+    );
 
     for (const [index, professor] of professors.entries()) {
       await ctx.scheduler.runAfter(
@@ -202,15 +162,8 @@ export const triggerRmpReviewsPulling = internalAction({
           rmpId: professor.rmpId,
         }
       );
-      processedProfessors += 1;
     }
 
-    const message = `Scheduled ${processedProfessors} professors for RMP review pulling.`;
-    await ctx.runMutation(internal.internal.insertLog, { message });
-    return {
-      processedProfessors,
-      totalProfessors: professors.length,
-      message,
-    };
+    return `Scheduled ${professors.length} professors for RMP review pulling.`;
   },
 });

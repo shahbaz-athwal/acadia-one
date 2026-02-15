@@ -1,6 +1,7 @@
 import { v } from "convex/values";
-import type { Doc } from "./_generated/dataModel";
+import { literals } from "convex-helpers/validators";
 import { query } from "./_generated/server";
+import { vv } from "./schema";
 
 export const validateSession = query({
   args: {
@@ -11,11 +12,7 @@ export const validateSession = query({
     v.object({
       valid: v.literal(true),
       studentId: v.string(),
-      userDataStatus: v.union(
-        v.literal("pending"),
-        v.literal("ready"),
-        v.null()
-      ),
+      userDataStatus: literals("pending", "ready", "error"),
     }),
     v.object({
       valid: v.literal(false),
@@ -43,19 +40,18 @@ export const validateSession = query({
     return {
       valid: true as const,
       studentId: user.studentId,
-      userDataStatus: user.userDataStatus ?? null,
+      userDataStatus: user.userDataStatus,
     };
   },
 });
-
-type UserData = NonNullable<Doc<"acadiaUsers">["userData"]>;
 
 export const getUserData = query({
   args: {
     sessionId: v.string(),
     tokenHash: v.string(),
   },
-  handler: async (ctx, args): Promise<UserData | null> => {
+  returns: v.union(vv.doc("acadiaUserData"), v.null()),
+  handler: async (ctx, args) => {
     const user = await ctx.db
       .query("acadiaUsers")
       .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
@@ -64,7 +60,9 @@ export const getUserData = query({
     if (!user || user.tokenHash !== args.tokenHash) {
       return null;
     }
-
-    return user.userData ?? null;
+    return await ctx.db
+      .query("acadiaUserData")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .first();
   },
 });

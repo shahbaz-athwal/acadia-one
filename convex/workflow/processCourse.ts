@@ -16,18 +16,6 @@ const toTimestamp = (value: string) => {
 
 type AcadiaScraperInstance = Awaited<ReturnType<typeof getAcadiaScraper>>;
 
-interface ProcessCourseResult {
-  message: string;
-  sectionsProcessed: number;
-  sectionsUpserted: number;
-}
-
-interface TriggerCourseProcessingResult {
-  processedCourses: number;
-  totalCourses: number;
-  message: string;
-}
-
 /**
  * Processes a course by pulling detailed section data from the Acadia scraper, upserting associated terms,
  * professors, course-professor links, and section records into the database. Also updates the course's
@@ -54,7 +42,7 @@ async function processCourseInternal(
       sections.map((section) => [section.term.code, section.term])
     ).values(),
   ];
-  await ctx.runMutation(internal.internal.upsertTerms, {
+  await ctx.runMutation(internal.internal.existsTerms, {
     terms: uniqueTerms.map((term) => ({
       code: term.code,
       name: term.name,
@@ -71,7 +59,7 @@ async function processCourseInternal(
         .map((instructor) => [instructor.id, instructor])
     ).values(),
   ];
-  await ctx.runMutation(internal.internal.upsertProfessors, {
+  await ctx.runMutation(internal.internal.existsProfessors, {
     professors: uniqueInstructors.map((instructor) => ({
       externalId: instructor.id,
       name: instructor.name,
@@ -154,10 +142,6 @@ async function processCourseInternal(
   await ctx.runMutation(internal.internal.recomputeCourseSectionFilters, {
     courseId,
   });
-  await ctx.runMutation(internal.internal.updateCourseLastSectionPulledAt, {
-    courseId,
-    lastSectionPulledAt: refreshedAt,
-  });
 
   return {
     sectionsProcessed: sections.length,
@@ -172,24 +156,19 @@ export const processCourse = internalAction({
     sectionIds: v.array(v.string()),
     departmentPrefix: v.string(),
   },
-  handler: async (ctx, args): Promise<ProcessCourseResult> => {
+  handler: async (ctx, args): Promise<string> => {
     const scraper = await getAcadiaScraper(ctx);
     const result = await processCourseInternal(ctx, scraper, args);
-    return {
-      message: `Processed ${result.sectionsProcessed} sections.`,
-      sectionsProcessed: result.sectionsProcessed,
-      sectionsUpserted: result.sectionsUpserted,
-    };
+    return `Processed ${result.sectionsProcessed} sections.`;
   },
 });
 
 export const triggerCourseProcessing = internalAction({
   args: {},
-  handler: async (ctx): Promise<TriggerCourseProcessingResult> => {
+  handler: async (ctx): Promise<string> => {
     const courses = await ctx.runQuery(
       internal.internal.listCoursesForProcessing
     );
-    let processedCourses = 0;
 
     for (const [index, course] of courses.entries()) {
       await ctx.scheduler.runAfter(
@@ -202,15 +181,8 @@ export const triggerCourseProcessing = internalAction({
           departmentPrefix: course.departmentPrefix,
         }
       );
-      processedCourses += 1;
     }
 
-    const message = `Scheduled ${processedCourses} course processing actions.`;
-    await ctx.runMutation(internal.internal.insertLog, { message });
-    return {
-      processedCourses,
-      totalCourses: courses.length,
-      message,
-    };
+    return `Scheduled ${courses.length} course processing actions.`;
   },
 });

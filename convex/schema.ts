@@ -1,12 +1,8 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { literals, typedV } from "convex-helpers/validators";
 
-export default defineSchema({
-  logs: defineTable({
-    message: v.string(),
-    createdAt: v.number(),
-  }).index("by_createdAt", ["createdAt"]),
-
+const schema = defineSchema({
   acadiaSessions: defineTable({
     sessionId: v.string(),
     cookies: v.string(),
@@ -21,110 +17,107 @@ export default defineSchema({
     encryptedCredentials: v.string(),
     tokenHash: v.string(),
     updatedAt: v.number(),
-    userDataStatus: v.optional(
-      v.union(v.literal("pending"), v.literal("ready"))
-    ),
+    userDataStatus: literals("pending", "ready", "error"),
     userDataPullError: v.optional(v.string()),
-    userData: v.optional(
+  }).index("by_sessionId", ["sessionId"]),
+
+  // Large user payloads are isolated to keep `acadiaUsers` lightweight.
+  acadiaUserData: defineTable({
+    sessionId: v.string(),
+    profile: v.object({
+      id: v.string(),
+      firstName: v.string(),
+      lastName: v.string(),
+      preferredEmail: v.string(),
+    }),
+    programs: v.array(
       v.object({
-        pulledAt: v.number(),
-        profile: v.object({
-          id: v.string(),
-          firstName: v.string(),
-          lastName: v.string(),
-          preferredEmail: v.string(),
-        }),
-        programs: v.array(
-          v.object({
-            studentId: v.string(),
-            programCode: v.string(),
-            programName: v.string(),
-            degreeCode: v.string(),
-            catalogCode: v.string(),
-            departmentCode: v.string(),
-            academicLevelCode: v.string(),
-            location: v.string(),
-            status: v.string(),
-            hasGraduated: v.boolean(),
-            startDate: v.union(v.string(), v.null()),
-            endDate: v.union(v.string(), v.null()),
-            anticipatedCompletionDate: v.union(v.string(), v.null()),
-            majors: v.array(
-              v.object({
-                code: v.string(),
-                name: v.string(),
-                startDate: v.union(v.string(), v.null()),
-                endDate: v.union(v.string(), v.null()),
-              })
-            ),
-            minors: v.array(
-              v.object({
-                code: v.string(),
-                name: v.string(),
-                startDate: v.union(v.string(), v.null()),
-                endDate: v.union(v.string(), v.null()),
-              })
-            ),
-          })
-        ),
-        grades: v.object({
-          terms: v.array(
-            v.object({
-              termName: v.string(),
-              termYear: v.number(),
-              startDate: v.string(),
-              endDate: v.string(),
-              gpa: v.union(v.number(), v.null()),
-              courses: v.array(
-                v.object({
-                  courseCode: v.string(),
-                  title: v.string(),
-                  credits: v.string(),
-                  startDate: v.union(v.string(), v.null()),
-                  endDate: v.union(v.string(), v.null()),
-                  finalGrade: v.string(),
-                })
-              ),
-            })
-          ),
-        }),
-        programEvaluation: v.optional(
+        studentId: v.string(),
+        programCode: v.string(),
+        programName: v.string(),
+        degreeCode: v.string(),
+        catalogCode: v.string(),
+        departmentCode: v.string(),
+        academicLevelCode: v.string(),
+        location: v.string(),
+        status: v.string(),
+        hasGraduated: v.boolean(),
+        startDate: v.union(v.string(), v.null()),
+        endDate: v.union(v.string(), v.null()),
+        anticipatedCompletionDate: v.union(v.string(), v.null()),
+        majors: v.array(
           v.object({
             code: v.string(),
-            academicLevelCode: v.string(),
-            title: v.string(),
-            requirements: v.array(
-              v.object({
-                id: v.string(),
-                code: v.string(),
-                description: v.string(),
-                subrequirements: v.array(
-                  v.object({
-                    id: v.string(),
-                    code: v.string(),
-                    directive: v.string(),
-                    groups: v.array(
-                      v.object({
-                        id: v.string(),
-                        courses: v.array(
-                          v.object({
-                            id: v.string(),
-                            code: v.string(),
-                            number: v.string(),
-                            title: v.string(),
-                            courseName: v.string(),
-                          })
-                        ),
-                      })
-                    ),
-                  })
-                ),
-              })
-            ),
+            name: v.string(),
+            startDate: v.union(v.string(), v.null()),
+            endDate: v.union(v.string(), v.null()),
+          })
+        ),
+        minors: v.array(
+          v.object({
+            code: v.string(),
+            name: v.string(),
+            startDate: v.union(v.string(), v.null()),
+            endDate: v.union(v.string(), v.null()),
           })
         ),
       })
     ),
+    grades: v.object({
+      terms: v.array(
+        v.object({
+          termName: v.string(),
+          termYear: v.number(),
+          startDate: v.string(),
+          endDate: v.string(),
+          gpa: v.union(v.number(), v.null()),
+          courses: v.array(
+            v.object({
+              courseCode: v.string(),
+              title: v.string(),
+              credits: v.string(),
+              startDate: v.union(v.string(), v.null()),
+              endDate: v.union(v.string(), v.null()),
+              finalGrade: v.string(),
+            })
+          ),
+        })
+      ),
+    }),
+    programEvaluation: v.object({
+      code: v.string(),
+      academicLevelCode: v.string(),
+      title: v.string(),
+      requirements: v.array(
+        v.object({
+          id: v.string(),
+          code: v.string(),
+          description: v.string(),
+          subrequirements: v.array(
+            v.object({
+              id: v.string(),
+              code: v.string(),
+              directive: v.string(),
+              groups: v.array(
+                v.object({
+                  id: v.string(),
+                  courses: v.array(
+                    v.object({
+                      id: v.string(),
+                      code: v.string(),
+                      number: v.string(),
+                      title: v.string(),
+                      courseName: v.string(),
+                    })
+                  ),
+                })
+              ),
+            })
+          ),
+        })
+      ),
+    }),
+    updatedAt: v.number(),
   }).index("by_sessionId", ["sessionId"]),
 
   departments: defineTable({
@@ -278,6 +271,8 @@ export default defineSchema({
   })
     .index("by_professorId", ["professorId"])
     .index("by_courseId", ["courseId"])
-    .index("by_status", ["status"])
-    .index("by_rmpId", ["rmpId"]),
+    .index("by_status", ["status"]),
 });
+
+export const vv = typedV(schema);
+export default schema;

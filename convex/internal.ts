@@ -1,17 +1,9 @@
 import { v } from "convex/values";
+import { asyncMap } from "convex-helpers";
+import { literals } from "convex-helpers/validators";
 import type { Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery } from "./_generated/server";
-
-export const insertLog = internalMutation({
-  args: { message: v.string() },
-  returns: v.id("logs"),
-  handler: async (ctx, args) => {
-    return await ctx.db.insert("logs", {
-      message: args.message,
-      createdAt: Date.now(),
-    });
-  },
-});
+import { vv } from "./schema";
 
 export const getAcadiaSession = internalQuery({
   args: { sessionId: v.string() },
@@ -40,13 +32,7 @@ export const getAcadiaSession = internalQuery({
 });
 
 export const upsertAcadiaSession = internalMutation({
-  args: {
-    sessionId: v.string(),
-    cookies: v.string(),
-    lastAcadiaAuth: v.number(),
-    expiresAt: v.number(),
-  },
-  returns: v.null(),
+  args: vv.doc("acadiaSessions").omit("_id", "_creationTime", "updatedAt"),
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("acadiaSessions")
@@ -60,7 +46,6 @@ export const upsertAcadiaSession = internalMutation({
         expiresAt: args.expiresAt,
         updatedAt,
       });
-      return null;
     }
     await ctx.db.insert("acadiaSessions", {
       sessionId: args.sessionId,
@@ -69,67 +54,17 @@ export const upsertAcadiaSession = internalMutation({
       expiresAt: args.expiresAt,
       updatedAt,
     });
-    return null;
   },
 });
 
 export const getAcadiaUser = internalQuery({
   args: { sessionId: v.string() },
-  returns: v.union(
-    v.object({
-      studentId: v.string(),
-      encryptedCredentials: v.string(),
-      tokenHash: v.string(),
-    }),
-    v.null()
-  ),
+  returns: v.union(vv.doc("acadiaUsers"), v.null()),
   handler: async (ctx, args) => {
-    const existing = await ctx.db
+    return await ctx.db
       .query("acadiaUsers")
       .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
       .first();
-    if (!existing) {
-      return null;
-    }
-    return {
-      studentId: existing.studentId,
-      encryptedCredentials: existing.encryptedCredentials,
-      tokenHash: existing.tokenHash,
-    };
-  },
-});
-
-export const upsertAcadiaUser = internalMutation({
-  args: {
-    sessionId: v.string(),
-    studentId: v.string(),
-    encryptedCredentials: v.string(),
-    tokenHash: v.string(),
-  },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    const existing = await ctx.db
-      .query("acadiaUsers")
-      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
-      .first();
-    const updatedAt = Date.now();
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        studentId: args.studentId,
-        encryptedCredentials: args.encryptedCredentials,
-        tokenHash: args.tokenHash,
-        updatedAt,
-      });
-      return null;
-    }
-    await ctx.db.insert("acadiaUsers", {
-      sessionId: args.sessionId,
-      studentId: args.studentId,
-      encryptedCredentials: args.encryptedCredentials,
-      tokenHash: args.tokenHash,
-      updatedAt,
-    });
-    return null;
   },
 });
 
@@ -137,13 +72,12 @@ export const createAcadiaSessionAndUser = internalMutation({
   args: {
     sessionId: v.string(),
     cookies: v.string(),
+    lastAcadiaAuth: v.number(),
+    expiresAt: v.number(),
     studentId: v.string(),
     encryptedCredentials: v.string(),
     tokenHash: v.string(),
-    lastAcadiaAuth: v.number(),
-    expiresAt: v.number(),
   },
-  returns: v.null(),
   handler: async (ctx, args) => {
     const updatedAt = Date.now();
 
@@ -185,33 +119,26 @@ export const createAcadiaSessionAndUser = internalMutation({
         studentId: args.studentId,
         encryptedCredentials: args.encryptedCredentials,
         tokenHash: args.tokenHash,
+        userDataStatus: "pending",
         updatedAt,
       });
     }
-
-    return null;
   },
 });
-
-const acadiaUserDataStatusValidator = v.union(
-  v.literal("pending"),
-  v.literal("ready")
-);
 
 export const setAcadiaUserDataStatus = internalMutation({
   args: {
     sessionId: v.string(),
-    status: acadiaUserDataStatusValidator,
+    status: literals("pending", "ready", "error"),
     error: v.optional(v.string()),
   },
-  returns: v.null(),
   handler: async (ctx, args) => {
     const existingUser = await ctx.db
       .query("acadiaUsers")
       .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
       .first();
     if (!existingUser) {
-      return null;
+      return;
     }
 
     const updatedAt = Date.now();
@@ -220,127 +147,89 @@ export const setAcadiaUserDataStatus = internalMutation({
       userDataPullError: args.error ?? undefined,
       updatedAt,
     });
-    return null;
   },
 });
 
 export const setAcadiaUserData = internalMutation({
-  args: {
-    sessionId: v.string(),
-    userData: v.any(),
-  },
-  returns: v.null(),
+  args: vv
+    .doc("acadiaUserData")
+    .pick("sessionId", "profile", "programs", "grades", "programEvaluation"),
   handler: async (ctx, args) => {
     const existingUser = await ctx.db
       .query("acadiaUsers")
       .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
       .first();
     if (!existingUser) {
-      return null;
+      return;
     }
 
     const updatedAt = Date.now();
     await ctx.db.patch(existingUser._id, {
       userDataStatus: "ready",
       userDataPullError: undefined,
-      userData: args.userData,
       updatedAt,
     });
-    return null;
+    const existingUserData = await ctx.db
+      .query("acadiaUserData")
+      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+      .first();
+    if (existingUserData) {
+      await ctx.db.patch(existingUserData._id, {
+        ...args,
+        updatedAt,
+      });
+      return null;
+    }
+    await ctx.db.insert("acadiaUserData", {
+      ...args,
+      updatedAt,
+    });
   },
 });
 
-export const upsertDepartments = internalMutation({
+export const existsDepartments = internalMutation({
   args: {
-    departments: v.array(
-      v.object({
-        prefix: v.string(),
-        name: v.string(),
-        websiteUrl: v.optional(v.string()),
-        facultyUrl: v.optional(v.string()),
-      })
-    ),
+    departments: v.array(vv.doc("departments").pick("prefix", "name")),
   },
-  returns: v.number(),
   handler: async (ctx, args) => {
-    let processed = 0;
     for (const department of args.departments) {
       const existing = await ctx.db
         .query("departments")
         .withIndex("by_prefix", (q) => q.eq("prefix", department.prefix))
         .first();
       if (existing) {
-        const update: Record<string, unknown> = { name: department.name };
-        if (department.websiteUrl !== undefined) {
-          update.websiteUrl = department.websiteUrl;
-        }
-        if (department.facultyUrl !== undefined) {
-          update.facultyUrl = department.facultyUrl;
-        }
-        await ctx.db.patch(existing._id, update);
-      } else {
-        await ctx.db.insert("departments", department);
+        continue;
       }
-      processed += 1;
+      await ctx.db.insert("departments", department);
     }
-    return processed;
   },
 });
 
-export const upsertTerms = internalMutation({
+export const existsTerms = internalMutation({
   args: {
-    terms: v.array(
-      v.object({
-        code: v.string(),
-        name: v.string(),
-        isActive: v.boolean(),
-        startDate: v.number(),
-        endDate: v.number(),
-      })
-    ),
+    terms: v.array(vv.doc("terms").omit("_id", "_creationTime")),
   },
-  returns: v.number(),
   handler: async (ctx, args) => {
-    let processed = 0;
     for (const term of args.terms) {
       const existing = await ctx.db
         .query("terms")
         .withIndex("by_code", (q) => q.eq("code", term.code))
         .first();
       if (existing) {
-        await ctx.db.patch(existing._id, term);
-      } else {
-        await ctx.db.insert("terms", term);
+        continue;
       }
-      processed += 1;
+      await ctx.db.insert("terms", term);
     }
-    return processed;
   },
 });
 
-export const upsertProfessors = internalMutation({
+export const existsProfessors = internalMutation({
   args: {
     professors: v.array(
-      v.object({
-        externalId: v.string(),
-        name: v.string(),
-        departmentPrefix: v.string(),
-        rmpId: v.optional(v.string()),
-        rmpLegacyId: v.optional(v.number()),
-        designation: v.optional(v.string()),
-        officeLocation: v.optional(v.string()),
-        email: v.optional(v.string()),
-        phone: v.optional(v.string()),
-        linkedinUrl: v.optional(v.string()),
-        websiteUrl: v.optional(v.string()),
-        imageUrl: v.optional(v.string()),
-        lastPullFromRmp: v.optional(v.number()),
-      })
+      vv.doc("professors").pick("externalId", "name", "departmentPrefix")
     ),
   },
-  returns: v.number(),
   handler: async (ctx, args) => {
-    let processed = 0;
     for (const professor of args.professors) {
       const existing = await ctx.db
         .query("professors")
@@ -349,27 +238,22 @@ export const upsertProfessors = internalMutation({
         )
         .first();
       if (existing) {
-        await ctx.db.patch(existing._id, professor);
-      } else {
-        await ctx.db.insert("professors", {
-          ...professor,
-          ratingCount: 0,
-          avgDifficulty: null,
-          avgQuality: null,
-        });
+        continue;
       }
-      processed += 1;
+      await ctx.db.insert("professors", {
+        ...professor,
+        ratingCount: 0,
+        avgDifficulty: null,
+        avgQuality: null,
+      });
     }
-    return processed;
   },
 });
 
-function buildSearchText(course: {
-  code: string;
-  title: string;
-  description: string;
-}) {
-  return `${course.code} ${course.title} ${course.description}`;
+function buildSearchText(course: { code: string; title: string }) {
+  const splitCode =
+    course.code.match(/([A-Z]+|\d+)/g)?.join("-") ?? course.code;
+  return `${course.code} ${course.title} ${splitCode}`;
 }
 
 export const upsertCourses = internalMutation({
@@ -467,12 +351,10 @@ export const backfillSearchText = internalMutation({
     const courses = await ctx.db.query("courses").collect();
     let updated = 0;
     for (const course of courses) {
-      if (!course.searchText) {
-        await ctx.db.patch(course._id, {
-          searchText: buildSearchText(course),
-        });
-        updated += 1;
-      }
+      await ctx.db.patch(course._id, {
+        searchText: buildSearchText(course),
+      });
+      updated += 1;
     }
     return updated;
   },
@@ -489,9 +371,7 @@ export const upsertCourseProfessors = internalMutation({
       })
     ),
   },
-  returns: v.number(),
   handler: async (ctx, args) => {
-    let created = 0;
     for (const link of args.links) {
       const existing = await ctx.db
         .query("courseProfessors")
@@ -501,10 +381,8 @@ export const upsertCourseProfessors = internalMutation({
         .first();
       if (!existing) {
         await ctx.db.insert("courseProfessors", link);
-        created += 1;
       }
     }
-    return created;
   },
 });
 
@@ -553,20 +431,6 @@ export const upsertSections = internalMutation({
   },
 });
 
-export const updateCourseLastSectionPulledAt = internalMutation({
-  args: {
-    courseId: v.id("courses"),
-    lastSectionPulledAt: v.number(),
-  },
-  returns: v.null(),
-  handler: async (ctx, args) => {
-    await ctx.db.patch(args.courseId, {
-      lastSectionPulledAt: args.lastSectionPulledAt,
-    });
-    return null;
-  },
-});
-
 export const updateProfessorLastPullFromRmp = internalMutation({
   args: {
     professorId: v.id("professors"),
@@ -583,27 +447,7 @@ export const updateProfessorLastPullFromRmp = internalMutation({
 
 export const insertRatings = internalMutation({
   args: {
-    ratings: v.array(
-      v.object({
-        rmpId: v.optional(v.string()),
-        rmpLegacyId: v.optional(v.number()),
-        status: v.string(),
-        quality: v.number(),
-        difficulty: v.number(),
-        isForCredit: v.optional(v.boolean()),
-        comment: v.optional(v.string()),
-        textBookRequired: v.optional(v.boolean()),
-        attendanceRequired: v.boolean(),
-        gradeReceived: v.optional(v.string()),
-        wouldTakeAgain: v.optional(v.boolean()),
-        thumbsUpTotal: v.number(),
-        thumbsDownTotal: v.number(),
-        tags: v.array(v.string()),
-        professorId: v.id("professors"),
-        courseId: v.id("courses"),
-        postedAt: v.number(),
-      })
-    ),
+    ratings: v.array(vv.doc("ratings").omit("_id", "_creationTime")),
   },
   returns: v.number(),
   handler: async (ctx, args) => {
@@ -612,7 +456,9 @@ export const insertRatings = internalMutation({
       if (rating.rmpId) {
         const existing = await ctx.db
           .query("ratings")
-          .withIndex("by_rmpId", (q) => q.eq("rmpId", rating.rmpId))
+          .withIndex("by_professorId", (q) =>
+            q.eq("professorId", rating.professorId)
+          )
           .first();
         if (existing) {
           continue;
@@ -627,11 +473,6 @@ export const insertRatings = internalMutation({
 
 export const recomputeCourseAggregates = internalMutation({
   args: { courseId: v.id("courses") },
-  returns: v.object({
-    ratingCount: v.number(),
-    avgDifficulty: v.union(v.number(), v.null()),
-    avgQuality: v.union(v.number(), v.null()),
-  }),
   handler: async (ctx, args) => {
     const ratings = await ctx.db
       .query("ratings")
@@ -655,13 +496,11 @@ export const recomputeCourseAggregates = internalMutation({
       avgDifficulty,
       avgQuality,
     });
-    return { ratingCount, avgDifficulty, avgQuality };
   },
 });
 
 export const recomputeCourseSectionFilters = internalMutation({
   args: { courseId: v.id("courses") },
-  returns: v.null(),
   handler: async (ctx, args) => {
     const sections = await ctx.db
       .query("sections")
@@ -685,17 +524,11 @@ export const recomputeCourseSectionFilters = internalMutation({
       sectionProfessorIds: professorIds,
       sectionDays: days,
     });
-    return null;
   },
 });
 
 export const recomputeProfessorAggregates = internalMutation({
   args: { professorId: v.id("professors") },
-  returns: v.object({
-    ratingCount: v.number(),
-    avgDifficulty: v.union(v.number(), v.null()),
-    avgQuality: v.union(v.number(), v.null()),
-  }),
   handler: async (ctx, args) => {
     const ratings = await ctx.db
       .query("ratings")
@@ -719,39 +552,6 @@ export const recomputeProfessorAggregates = internalMutation({
       avgDifficulty,
       avgQuality,
     });
-    return { ratingCount, avgDifficulty, avgQuality };
-  },
-});
-
-export const getCourseByExternalId = internalQuery({
-  args: { externalId: v.string() },
-  returns: v.union(
-    v.null(),
-    v.object({
-      _id: v.id("courses"),
-      externalId: v.string(),
-      code: v.string(),
-      title: v.string(),
-      departmentPrefix: v.string(),
-    })
-  ),
-  handler: async (ctx, args) => {
-    const course = await ctx.db
-      .query("courses")
-      .withIndex("by_externalId", (q) => q.eq("externalId", args.externalId))
-      .first();
-
-    if (!course) {
-      return null;
-    }
-
-    return {
-      _id: course._id,
-      externalId: course.externalId,
-      code: course.code,
-      title: course.title,
-      departmentPrefix: course.departmentPrefix,
-    };
   },
 });
 
@@ -787,33 +587,17 @@ export const getProfessorByExternalId = internalQuery({
 
 export const getCoursesByCodes = internalQuery({
   args: { codes: v.array(v.string()) },
-  returns: v.array(
-    v.object({
-      _id: v.id("courses"),
-      code: v.string(),
-      externalId: v.string(),
-    })
-  ),
+
   handler: async (ctx, args) => {
-    const results: Array<{
-      _id: Id<"courses">;
-      code: string;
-      externalId: string;
-    }> = [];
-    for (const code of args.codes) {
-      const course = await ctx.db
+    const courses = await asyncMap(args.codes, (code) =>
+      ctx.db
         .query("courses")
         .withIndex("by_code", (q) => q.eq("code", code))
-        .first();
-      if (course) {
-        results.push({
-          _id: course._id,
-          code: course.code,
-          externalId: course.externalId,
-        });
-      }
-    }
-    return results;
+        .first()
+    );
+    return courses.filter(
+      (course): course is NonNullable<typeof course> => !!course
+    );
   },
 });
 
@@ -951,43 +735,5 @@ export const updateProfessorRmpIds = internalMutation({
       updated += 1;
     }
     return updated;
-  },
-});
-
-/**
- * One-time backfill: seeds the courseStats table from existing course data.
- * Run once after deploy, then leave as a repair tool.
- */
-export const backfillCourseStats = internalMutation({
-  args: {},
-  returns: v.null(),
-  handler: async (ctx) => {
-    // Clear existing stats to rebuild from scratch
-    const existingStats = await ctx.db.query("courseStats").collect();
-    for (const stat of existingStats) {
-      await ctx.db.delete(stat._id);
-    }
-
-    // Count courses per department
-    const allCourses = await ctx.db.query("courses").collect();
-    const deptCounts = new Map<string, number>();
-    for (const course of allCourses) {
-      const count = deptCounts.get(course.departmentPrefix) ?? 0;
-      deptCounts.set(course.departmentPrefix, count + 1);
-    }
-
-    // Insert total counter
-    await ctx.db.insert("courseStats", {
-      key: "total",
-      courseCount: allCourses.length,
-    });
-
-    // Insert per-department counters
-    for (const [prefix, count] of deptCounts) {
-      await ctx.db.insert("courseStats", {
-        key: `dept:${prefix}`,
-        courseCount: count,
-      });
-    }
   },
 });

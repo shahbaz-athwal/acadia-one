@@ -3,54 +3,28 @@ import { api, internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
 import { getAcadiaScraper } from "../acadia/scraper";
 
-const FACULTY_FETCH_DELAY_MS = 400;
+const FACULTY_FETCH_DELAY_MS = 300;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-interface PopulateDepartmentsResult {
-  processed: number;
-  message: string;
-}
-
-interface PopulateCoursesResult {
-  processed: number;
-  message: string;
-}
-
-interface PopulateProfessorsResult {
-  processed: number;
-  departments: number;
-  message: string;
-}
-
-// Tested ✅
 export const populateDepartments = internalAction({
   args: {},
-  handler: async (ctx): Promise<PopulateDepartmentsResult> => {
+  handler: async (ctx): Promise<string> => {
     const scraper = await getAcadiaScraper(ctx);
     const departments = await scraper.getAllDepartments();
-    const processed = await ctx.runMutation(
-      internal.internal.upsertDepartments,
-      {
-        departments: departments.map((department) => ({
-          prefix: department.prefix,
-          name: department.name,
-        })),
-      }
-    );
-    const message = `Populated ${processed} departments.`;
-    await ctx.runMutation(internal.internal.insertLog, { message });
-    return { processed, message };
+    await ctx.runMutation(internal.internal.existsDepartments, {
+      departments,
+    });
+    return `Populated ${departments.length} departments.`;
   },
 });
 
-// Tested ✅
 export const populateCourses = internalAction({
   args: {},
-  handler: async (ctx): Promise<PopulateCoursesResult> => {
+  handler: async (ctx): Promise<string> => {
     const scraper = await getAcadiaScraper(ctx);
     const courses = await scraper.getAllCourses();
-    const processed = await ctx.runMutation(internal.internal.upsertCourses, {
+    await ctx.runMutation(internal.internal.upsertCourses, {
       courses: courses.map((course) => ({
         externalId: course.id,
         code: course.code,
@@ -62,16 +36,13 @@ export const populateCourses = internalAction({
         requisites: course.courseRequisites,
       })),
     });
-    const message = `Populated ${processed} courses.`;
-    await ctx.runMutation(internal.internal.insertLog, { message });
-    return { processed, message };
+    return `Populated ${courses.length} courses.`;
   },
 });
 
-// Tested ✅
 export const populateProfessors = internalAction({
   args: {},
-  handler: async (ctx): Promise<PopulateProfessorsResult> => {
+  handler: async (ctx): Promise<string> => {
     const departments = await ctx.runQuery(api.departments.list);
     const scraper = await getAcadiaScraper(ctx);
     const professors: Array<{
@@ -94,18 +65,9 @@ export const populateProfessors = internalAction({
       }
     }
 
-    const processed = await ctx.runMutation(
-      internal.internal.upsertProfessors,
-      {
-        professors,
-      }
-    );
-    const message = `Populated ${processed} professors in ${departments.length} departments.`;
-    await ctx.runMutation(internal.internal.insertLog, { message });
-    return {
-      processed,
-      departments: departments.length,
-      message,
-    };
+    await ctx.runMutation(internal.internal.existsProfessors, {
+      professors,
+    });
+    return `Populated ${professors.length} professors in ${departments.length} departments.`;
   },
 });
