@@ -2,6 +2,7 @@
 
 import crypto from "node:crypto";
 import type { AxiosInstance } from "axios";
+import type { z } from "zod";
 import { internal } from "../_generated/api";
 import type { ActionCtx } from "../_generated/server";
 import { decryptCredentials } from "../lib/encryption";
@@ -10,6 +11,10 @@ import {
   createClient,
   isAcadiaSessionExpired,
 } from "./auth";
+import {
+  PostSearchCriteriaFilteredResponseSchema,
+  PostSearchCriteriaRequestSchema,
+} from "./schemas/postSearchCriteria";
 import { ProgramEvaluationFilteredResponseSchema } from "./schemas/programEvaluation";
 import { StudentGradesFilteredResponseSchema } from "./schemas/studentGrades";
 import { StudentProgramDetailsFilteredResponseSchema } from "./schemas/studentProgram";
@@ -67,6 +72,46 @@ export class AcadiaImpersonator {
 
     return ProgramEvaluationFilteredResponseSchema.parse(response.data).program;
   }
+
+  private async postSearchCriteria(
+    searchCriteria?: Partial<z.infer<typeof PostSearchCriteriaRequestSchema>>
+  ) {
+    const defaultCriteria = {
+      keyword: null,
+      terms: [],
+      courseIds: null,
+      sectionIds: null,
+      subjects: [],
+      faculty: [],
+      pageNumber: 1,
+      quantityPerPage: 50,
+    };
+
+    const validatedCriteria = PostSearchCriteriaRequestSchema.parse({
+      ...defaultCriteria,
+      ...searchCriteria,
+    });
+
+    const response = await this.client.post(
+      "/student/Student/Courses/PostSearchCriteria",
+      validatedCriteria
+    );
+
+    return PostSearchCriteriaFilteredResponseSchema.parse(response.data);
+  }
+
+  async getRequiredCourses(
+    group: string,
+    requirement: string,
+    subrequirement: string
+  ) {
+    const data = await this.postSearchCriteria({
+      group,
+      requirement,
+      subrequirement,
+    });
+    return data.courses;
+  }
 }
 
 function sha256HexFromTokenHex(tokenHex: string): string {
@@ -115,7 +160,7 @@ export async function getAcadiaImpersonator(
 
   let cookies = session.cookies;
   if (cookies && !isAcadiaSessionExpired(session.lastAcadiaAuth)) {
-    return new AcadiaImpersonator(user.studentId, cookies);
+    return new AcadiaImpersonator(user.studentId.slice(0, -1), cookies);
   }
 
   const { username, password } = decryptCredentials(

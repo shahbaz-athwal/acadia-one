@@ -10,12 +10,15 @@ const ProgramEvaluationCourseSchema = z.object({
 
 const ProgramEvaluationGroupSchema = z.object({
   Id: z.string(),
+  DisplayText: z.string(),
+  Directive: z.string(),
   Courses: z.array(ProgramEvaluationCourseSchema),
 });
 
 const ProgramEvaluationSubrequirementSchema = z.object({
   Id: z.string(),
   Code: z.string(),
+  DisplayText: z.string(),
   Directive: z.string(),
   Groups: z.array(ProgramEvaluationGroupSchema),
 });
@@ -24,6 +27,7 @@ const ProgramEvaluationRequirementSchema = z.object({
   Id: z.string(),
   Code: z.string(),
   Description: z.string(),
+  Directive: z.string(),
   Subrequirements: z.array(ProgramEvaluationSubrequirementSchema),
 });
 
@@ -49,12 +53,16 @@ export const ProgramEvaluationFilteredResponseSchema = z
         id: req.Id,
         code: req.Code,
         description: req.Description,
+        directive: req.Directive,
         subrequirements: req.Subrequirements.map((sub) => ({
           id: sub.Id,
           code: sub.Code,
+          displayText: sub.DisplayText,
           directive: sub.Directive,
           groups: sub.Groups.map((group) => ({
             id: group.Id,
+            displayText: group.DisplayText,
+            directive: group.Directive,
             courses: group.Courses.map((course) => ({
               id: course.Id,
               code: course.SubjectCode + course.Number,

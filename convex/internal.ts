@@ -187,6 +187,45 @@ export const setAcadiaUserData = internalMutation({
   },
 });
 
+export const getExistingRsgKeys = internalQuery({
+  args: { keys: v.array(v.string()) },
+  returns: v.array(v.string()),
+  handler: async (ctx, args) => {
+    const rows = await asyncMap(args.keys, (key) =>
+      ctx.db
+        .query("rsg")
+        .withIndex("by_key", (q) => q.eq("key", key))
+        .first()
+    );
+
+    return rows
+      .filter((row): row is NonNullable<typeof row> => !!row)
+      .map((row) => row.key);
+  },
+});
+
+export const upsertRsgEntries = internalMutation({
+  args: {
+    entries: v.array(vv.doc("rsg").omit("_id", "_creationTime")),
+  },
+  handler: async (ctx, args) => {
+    for (const entry of args.entries) {
+      const existing = await ctx.db
+        .query("rsg")
+        .withIndex("by_key", (q) => q.eq("key", entry.key))
+        .first();
+      if (existing) {
+        await ctx.db.patch(existing._id, {
+          courseCodes: entry.courseCodes,
+          type: entry.type,
+        });
+      } else {
+        await ctx.db.insert("rsg", entry);
+      }
+    }
+  },
+});
+
 export const existsDepartments = internalMutation({
   args: {
     departments: v.array(vv.doc("departments").pick("prefix", "name")),

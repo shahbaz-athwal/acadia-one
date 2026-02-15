@@ -93,14 +93,18 @@ const schema = defineSchema({
           id: v.string(),
           code: v.string(),
           description: v.string(),
+          directive: v.string(),
           subrequirements: v.array(
             v.object({
               id: v.string(),
               code: v.string(),
+              displayText: v.string(),
               directive: v.string(),
               groups: v.array(
                 v.object({
                   id: v.string(),
+                  displayText: v.string(),
+                  directive: v.string(),
                   courses: v.array(
                     v.object({
                       id: v.string(),
@@ -248,6 +252,12 @@ const schema = defineSchema({
   courseStats: defineTable({
     key: v.string(), // "total" or "dept:<PREFIX>"
     courseCount: v.number(),
+  }).index("by_key", ["key"]),
+
+  rsg: defineTable({
+    key: v.string(), // "<requirementCode>:<subrequirementId>:<groupId>"
+    courseCodes: v.array(v.string()),
+    type: literals("exact", "search"),
   }).index("by_key", ["key"]),
 
   ratings: defineTable({
