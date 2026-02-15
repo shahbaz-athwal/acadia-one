@@ -14,7 +14,7 @@ export default defineSchema({
     expiresAt: v.number(),
     updatedAt: v.number(),
   }).index("by_sessionId", ["sessionId"]),
-
+  // Put user data in a new table. Instead of encrypted credentials, only store encrypted passwords.
   acadiaUsers: defineTable({
     sessionId: v.string(),
     studentId: v.string(),
@@ -132,9 +132,7 @@ export default defineSchema({
     name: v.string(),
     websiteUrl: v.optional(v.string()),
     facultyUrl: v.optional(v.string()),
-  })
-    .index("by_prefix", ["prefix"])
-    .index("by_name", ["name"]),
+  }).index("by_prefix", ["prefix"]),
 
   terms: defineTable({
     code: v.string(),
@@ -167,7 +165,10 @@ export default defineSchema({
     .index("by_externalId", ["externalId"])
     .index("by_rmpId", ["rmpId"])
     .index("by_departmentPrefix", ["departmentPrefix"])
-    .index("by_name", ["name"]),
+    .searchIndex("search_professors", {
+      searchField: "name",
+      filterFields: ["departmentPrefix"],
+    }),
 
   courses: defineTable({
     externalId: v.string(),
@@ -202,7 +203,6 @@ export default defineSchema({
     .index("by_externalId", ["externalId"])
     .index("by_code", ["code"])
     .index("by_departmentPrefix", ["departmentPrefix"])
-    .index("by_title", ["title"])
     .searchIndex("search_courses", {
       searchField: "searchText",
       filterFields: ["departmentPrefix"],

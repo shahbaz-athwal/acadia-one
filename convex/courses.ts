@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import { asyncMap } from "convex-helpers";
 import type { Doc } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { query } from "./_generated/server";
@@ -11,13 +12,6 @@ interface ResolvedFilters {
   professorIds: string[];
   days: number[];
 }
-
-const filtersValidator = v.object({
-  termCodes: v.optional(v.array(v.string())),
-  departmentPrefixes: v.optional(v.array(v.string())),
-  professorExternalIds: v.optional(v.array(v.string())),
-  days: v.optional(v.array(v.number())),
-});
 
 async function resolveFilters(
   ctx: QueryCtx,
@@ -37,13 +31,11 @@ async function resolveFilters(
   let professorIds: string[] = [];
   const professorExternalIds = raw?.professorExternalIds;
   if (professorExternalIds && professorExternalIds.length > 0) {
-    const resolved = await Promise.all(
-      professorExternalIds.map((extId) =>
-        ctx.db
-          .query("professors")
-          .withIndex("by_externalId", (q) => q.eq("externalId", extId))
-          .first()
-      )
+    const resolved = await asyncMap(professorExternalIds, (extId) =>
+      ctx.db
+        .query("professors")
+        .withIndex("by_externalId", (q) => q.eq("externalId", extId))
+        .first()
     );
     professorIds = resolved
       .filter((prof): prof is NonNullable<typeof prof> => !!prof)
@@ -117,13 +109,11 @@ async function collectByCourseIds(
   ctx: QueryCtx,
   courseExternalIds: string[]
 ): Promise<Doc<"courses">[]> {
-  const courses = await Promise.all(
-    courseExternalIds.map((extId) =>
-      ctx.db
-        .query("courses")
-        .withIndex("by_externalId", (q) => q.eq("externalId", extId))
-        .first()
-    )
+  const courses = await asyncMap(courseExternalIds, (extId) =>
+    ctx.db
+      .query("courses")
+      .withIndex("by_externalId", (q) => q.eq("externalId", extId))
+      .first()
   );
   return courses.filter(
     (course): course is NonNullable<typeof course> => !!course
@@ -186,15 +176,11 @@ async function collectByDepartment(
   ctx: QueryCtx,
   departmentPrefixes: string[]
 ): Promise<Doc<"courses">[]> {
-  const perDept = await Promise.all(
-    departmentPrefixes.map((prefix) =>
-      ctx.db
-        .query("courses")
-        .withIndex("by_departmentPrefix", (q) =>
-          q.eq("departmentPrefix", prefix)
-        )
-        .collect()
-    )
+  const perDept = await asyncMap(departmentPrefixes, (prefix) =>
+    ctx.db
+      .query("courses")
+      .withIndex("by_departmentPrefix", (q) => q.eq("departmentPrefix", prefix))
+      .collect()
   );
 
   if (departmentPrefixes.length === 1) {
@@ -211,27 +197,21 @@ async function collectByProfessor(
   const courseIdSet = new Set<string>();
   const courseDocs: Doc<"courses">[] = [];
 
-  await Promise.all(
-    professorIds.map(async (profId) => {
-      const links = await ctx.db
-        .query("courseProfessors")
-        .withIndex("by_professorId", (q) =>
-          q.eq("professorId", profId as never)
-        )
-        .collect();
+  await asyncMap(professorIds, async (profId) => {
+    const links = await ctx.db
+      .query("courseProfessors")
+      .withIndex("by_professorId", (q) => q.eq("professorId", profId as never))
+      .collect();
 
-      const courses = await Promise.all(
-        links.map((link) => ctx.db.get(link.courseId))
-      );
+    const courses = await asyncMap(links, (link) => ctx.db.get(link.courseId));
 
-      for (const course of courses) {
-        if (course && !courseIdSet.has(course._id)) {
-          courseIdSet.add(course._id);
-          courseDocs.push(course);
-        }
+    for (const course of courses) {
+      if (course && !courseIdSet.has(course._id)) {
+        courseIdSet.add(course._id);
+        courseDocs.push(course);
       }
-    })
-  );
+    }
+  });
 
   courseDocs.sort((a, b) => a.code.localeCompare(b.code));
   return courseDocs;
@@ -283,78 +263,75 @@ function paginate(
 }
 
 async function enrichWithSections(ctx: QueryCtx, courses: Doc<"courses">[]) {
-  return await Promise.all(
-    courses.map(async (course) => {
-      const sections = await ctx.db
-        .query("sections")
-        .withIndex("by_courseId", (q) => q.eq("courseId", course._id))
-        .collect();
+  return await asyncMap(courses, async (course) => {
+    const sections = await ctx.db
+      .query("sections")
+      .withIndex("by_courseId", (q) => q.eq("courseId", course._id))
+      .collect();
 
-      const sectionProfessorIds = Array.from(
-        new Set(
-          sections
-            .map((section) => section.professorId)
-            .filter((id): id is NonNullable<typeof id> => !!id)
+    const sectionProfessorIds = Array.from(
+      new Set(
+        sections
+          .map((section) => section.professorId)
+          .filter((id): id is NonNullable<typeof id> => !!id)
+      )
+    );
+
+    const professors = await asyncMap(sectionProfessorIds, (professorId) =>
+      ctx.db.get(professorId)
+    );
+
+    const professorById = new Map(
+      professors
+        .filter(
+          (professor): professor is NonNullable<typeof professor> => !!professor
         )
-      );
+        .map((professor) => [professor._id, professor])
+    );
 
-      const professors = await Promise.all(
-        sectionProfessorIds.map((professorId) => ctx.db.get(professorId))
-      );
+    const requisites = (course.requisites ?? [])
+      .map((requisite) => {
+        const extension = requisite.displayTextExtension.trim();
+        return extension
+          ? `${requisite.displayText} ${extension}`.trim()
+          : requisite.displayText;
+      })
+      .filter((value) => value.length > 0);
 
-      const professorById = new Map(
-        professors
-          .filter(
-            (professor): professor is NonNullable<typeof professor> =>
-              !!professor
-          )
-          .map((professor) => [professor._id, professor])
-      );
-
-      const requisites = (course.requisites ?? [])
-        .map((requisite) => {
-          const extension = requisite.displayTextExtension.trim();
-          return extension
-            ? `${requisite.displayText} ${extension}`.trim()
-            : requisite.displayText;
+    return {
+      id: course.externalId,
+      code: course.code,
+      title: course.title,
+      credits: course.credits,
+      avgQuality: course.avgQuality,
+      avgDifficulty: course.avgDifficulty,
+      ratingCount: course.ratingCount,
+      requisites,
+      sections: sections
+        .map((section) => {
+          const professor = section.professorId
+            ? professorById.get(section.professorId)
+            : null;
+          return {
+            id: section.externalId,
+            termCode: section.termCode,
+            sectionCode: section.sectionCode,
+            professorName:
+              professor?.name ??
+              (section.instructorTBD ? "TBD" : "Unknown Instructor"),
+            professorImageUrl: professor?.imageUrl,
+            classStartTime: section.classStartTime,
+            classEndTime: section.classEndTime,
+            buildingName: section.buildingName,
+            roomNumber: section.roomNumber,
+            days: section.days,
+            instructorTBD: section.instructorTBD,
+            isOnline: section.isOnline,
+          };
         })
-        .filter((value) => value.length > 0);
-
-      return {
-        id: course.externalId,
-        code: course.code,
-        title: course.title,
-        credits: course.credits,
-        avgQuality: course.avgQuality,
-        avgDifficulty: course.avgDifficulty,
-        ratingCount: course.ratingCount,
-        requisites,
-        sections: sections
-          .map((section) => {
-            const professor = section.professorId
-              ? professorById.get(section.professorId)
-              : null;
-            return {
-              id: section.externalId,
-              termCode: section.termCode,
-              sectionCode: section.sectionCode,
-              professorName:
-                professor?.name ??
-                (section.instructorTBD ? "TBD" : "Unknown Instructor"),
-              professorImageUrl: professor?.imageUrl,
-              classStartTime: section.classStartTime,
-              classEndTime: section.classEndTime,
-              buildingName: section.buildingName,
-              roomNumber: section.roomNumber,
-              days: section.days,
-              instructorTBD: section.instructorTBD,
-              isOnline: section.isOnline,
-            };
-          })
-          .sort((a, b) => a.sectionCode.localeCompare(b.sectionCode)),
-      };
-    })
-  );
+        .sort((a, b) => a.sectionCode.localeCompare(b.sectionCode)),
+    };
+  });
 }
 
 export const listForExplore = query({
@@ -362,7 +339,14 @@ export const listForExplore = query({
     page: v.number(),
     pageSize: v.number(),
     courseExternalIds: v.optional(v.array(v.string())),
-    filters: v.optional(filtersValidator),
+    filters: v.optional(
+      v.object({
+        termCodes: v.optional(v.array(v.string())),
+        departmentPrefixes: v.optional(v.array(v.string())),
+        professorExternalIds: v.optional(v.array(v.string())),
+        days: v.optional(v.array(v.number())),
+      })
+    ),
     searchQuery: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
