@@ -14,7 +14,7 @@ export function useScheduleItems() {
   const { termCode } = useScheduleView();
 
   const { data: allItems } = useSuspenseQuery(
-    convexQuery(api.addToSchedule.get, { sessionId })
+    convexQuery(api.schedule.get, { sessionId })
   );
 
   const items = useMemo(() => {

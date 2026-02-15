@@ -3,9 +3,8 @@
 import crypto from "node:crypto";
 import { internal } from "./_generated/api";
 import type { ActionCtx } from "./_generated/server";
-import { action, internalAction } from "./_generated/server";
+import { action } from "./_generated/server";
 import { authenticateWithAxios } from "./acadia/auth";
-import { getAcadiaImpersonator } from "./acadia/impersonator";
 import { encryptCredentials } from "./lib/encryption";
 
 type AuthResult =
@@ -77,10 +76,14 @@ export const authenticateUser = action(
         expiresAt,
       });
 
-      await ctx.scheduler.runAfter(0, internal.auth.pullUserData, {
-        sessionId,
-        token,
-      });
+      await ctx.scheduler.runAfter(
+        0,
+        internal.workflow.pullUserData.pullUserData,
+        {
+          sessionId,
+          token,
+        }
+      );
 
       return {
         success: true,
@@ -94,44 +97,6 @@ export const authenticateUser = action(
         details: error instanceof Error ? error.message : "Unknown error",
         status: 500,
       };
-    }
-  }
-);
-
-export const pullUserData = internalAction(
-  async (
-    ctx: ActionCtx,
-    { sessionId, token }: { sessionId: string; token: string }
-  ) => {
-    await ctx.runMutation(internal.internal.setAcadiaUserDataStatus, {
-      sessionId,
-      status: "pending",
-    });
-
-    try {
-      const impersonator = await getAcadiaImpersonator(ctx, sessionId, token);
-      const [programDetails, grades] = await Promise.all([
-        impersonator.getStudentProgramDetails(),
-        impersonator.getStudentGrades(),
-      ]);
-
-      const primaryProgramCode = programDetails.programs[0]?.programCode;
-      const programEvaluation =
-        await impersonator.getProgramEvaluation(primaryProgramCode);
-
-      await ctx.runMutation(internal.internal.setAcadiaUserData, {
-        sessionId,
-        ...programDetails,
-        grades,
-        programEvaluation,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-      await ctx.runMutation(internal.internal.setAcadiaUserDataStatus, {
-        sessionId,
-        status: "error",
-        error: message,
-      });
     }
   }
 );

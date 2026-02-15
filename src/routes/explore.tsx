@@ -110,7 +110,7 @@ export const Route = createFileRoute("/explore")({
         convexQuery(api.explore.filterOptions, {})
       ),
       context.queryClient.ensureQueryData(
-        convexQuery(api.addToSchedule.get, { sessionId })
+        convexQuery(api.schedule.get, { sessionId })
       ),
       context.queryClient.ensureQueryData(
         convexQuery(api.courses.listForExplore, {
