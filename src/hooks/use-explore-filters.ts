@@ -16,6 +16,7 @@ export function useExploreFilters() {
       dept: state.dept,
       prof: state.prof,
       day: state.day,
+      rsg: state.rsg,
     }),
   });
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export function useExploreFilters() {
     departmentPrefixes: search.dept,
     professorExternalIds: search.prof,
     days: search.day,
+    rsgKeys: search.rsg,
   };
 
   const setTermCodes = (termCodes: string[]) => {
@@ -54,6 +56,13 @@ export function useExploreFilters() {
     });
   };
 
+  const setRsgKeys = (rsgKeys: string[]) => {
+    navigate({
+      to: "/explore",
+      search: (prev) => ({ ...withDefaults(prev), rsg: rsgKeys }),
+    });
+  };
+
   const setFilters = (partial: Partial<typeof filters>) => {
     navigate({
       to: "/explore",
@@ -63,6 +72,7 @@ export function useExploreFilters() {
         dept: partial.departmentPrefixes ?? prev.dept,
         prof: partial.professorExternalIds ?? prev.prof,
         day: partial.days ?? prev.day,
+        rsg: partial.rsgKeys ?? prev.rsg,
       }),
     });
   };
@@ -85,6 +95,7 @@ export function useExploreFilters() {
     setDepartmentPrefixes,
     setProfessorExternalIds,
     setDays,
+    setRsgKeys,
     setFilters,
     clearFilters,
 

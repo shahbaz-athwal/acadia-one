@@ -19,6 +19,7 @@ export function useExploreCourses() {
       dept: state.dept,
       prof: state.prof,
       day: state.day,
+      rsg: state.rsg,
     }),
   });
   const convexFilters = buildConvexFilters(search);

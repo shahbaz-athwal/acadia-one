@@ -97,12 +97,11 @@ export const pullUserData = internalAction(
         }
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
       console.error("Error pulling user data", error);
       await ctx.runMutation(internal.internal.setAcadiaUserDataStatus, {
         sessionId,
         status: "error",
-        error: message,
+        error: JSON.stringify(error),
       });
     }
   }

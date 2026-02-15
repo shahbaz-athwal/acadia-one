@@ -32,6 +32,7 @@ const exploreSearchSchema = z.object({
   dept: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
   prof: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
   day: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
+  rsg: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
   sv: z.enum(["calendar", "agenda"]).catch("calendar"),
   st: z.string().catch(""),
   q: z.string().catch(""),
@@ -45,6 +46,7 @@ export const SEARCH_DEFAULTS: ExploreSearchParams = {
   dept: [],
   prof: [],
   day: [],
+  rsg: [],
   sv: "calendar",
   st: "",
   q: "",
@@ -58,7 +60,7 @@ export function withSearchDefaults(
 }
 
 export function buildConvexFilters(
-  search: Pick<ExploreSearchParams, "term" | "dept" | "prof" | "day">
+  search: Pick<ExploreSearchParams, "term" | "dept" | "prof" | "day" | "rsg">
 ) {
   const f: Record<string, string[] | number[]> = {};
   if (search.term.length > 0) {
@@ -73,6 +75,9 @@ export function buildConvexFilters(
   if (search.day.length > 0) {
     f.days = [...search.day].sort((a, b) => a - b);
   }
+  if (search.rsg.length > 0) {
+    f.rsgKeys = [...search.rsg].sort();
+  }
   return Object.keys(f).length > 0 ? f : undefined;
 }
 
@@ -85,6 +90,7 @@ export const Route = createFileRoute("/explore")({
         dept: [],
         prof: [],
         day: [],
+        rsg: [],
         sv: "calendar",
         st: "",
         q: "",
@@ -97,6 +103,7 @@ export const Route = createFileRoute("/explore")({
     dept: search.dept,
     prof: search.prof,
     day: search.day,
+    rsg: search.rsg,
     q: search.q,
     page: search.page,
   }),

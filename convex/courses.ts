@@ -6,6 +6,8 @@ import { query } from "./_generated/server";
 
 interface ResolvedFilters {
   courseExternalIds: string[];
+  hasRsgFilter: boolean;
+  rsgCourseCodes: string[];
   searchQuery: string;
   departmentPrefixes: string[];
   termCodes: string[];
@@ -18,6 +20,7 @@ async function resolveFilters(
   args: {
     courseExternalIds?: string[];
     filters?: {
+      rsgKeys?: string[];
       termCodes?: string[];
       departmentPrefixes?: string[];
       professorExternalIds?: string[];
@@ -27,6 +30,7 @@ async function resolveFilters(
   }
 ): Promise<ResolvedFilters> {
   const raw = args.filters;
+  const rsgKeys = raw?.rsgKeys ?? [];
 
   let professorIds: string[] = [];
   const professorExternalIds = raw?.professorExternalIds;
@@ -42,8 +46,25 @@ async function resolveFilters(
       .map((prof) => prof._id);
   }
 
+  const rsgCourseCodeSet = new Set<string>();
+  if (rsgKeys.length > 0) {
+    const entries = await asyncMap(rsgKeys, (key) =>
+      ctx.db.query("rsg").withIndex("by_key", (q) => q.eq("key", key)).first()
+    );
+    for (const entry of entries) {
+      if (!entry) {
+        continue;
+      }
+      for (const courseCode of entry.courseCodes) {
+        rsgCourseCodeSet.add(courseCode);
+      }
+    }
+  }
+
   return {
     courseExternalIds: args.courseExternalIds ?? [],
+    hasRsgFilter: rsgKeys.length > 0,
+    rsgCourseCodes: [...rsgCourseCodeSet],
     searchQuery: args.searchQuery?.trim() ?? "",
     departmentPrefixes: raw?.departmentPrefixes ?? [],
     termCodes: raw?.termCodes ?? [],
@@ -57,6 +78,14 @@ async function collectCourses(
   filters: ResolvedFilters,
   pagination: { page: number; pageSize: number }
 ): Promise<{ courses: Doc<"courses">[]; totalCount: number | null }> {
+  // Strategy 0: RSG keys — resolve to course codes and short-circuit all other strategies
+  if (filters.hasRsgFilter) {
+    return {
+      courses: await collectByCourseCodes(ctx, filters.rsgCourseCodes),
+      totalCount: null,
+    };
+  }
+
   // Strategy 1: Explicit course IDs — direct lookup by externalId
   if (filters.courseExternalIds.length > 0) {
     return {
@@ -120,6 +149,18 @@ async function collectByCourseIds(
   );
 }
 
+async function collectByCourseCodes(
+  ctx: QueryCtx,
+  courseCodes: string[]
+): Promise<Doc<"courses">[]> {
+  const courses = await asyncMap(courseCodes, (courseCode) =>
+    ctx.db.query("courses").withIndex("by_code", (q) => q.eq("code", courseCode)).first()
+  );
+  return courses.filter(
+    (course): course is NonNullable<typeof course> => !!course
+  );
+}
+
 async function collectViaSearch(
   ctx: QueryCtx,
   filters: ResolvedFilters
@@ -167,7 +208,7 @@ async function collectUnfiltered(
   }
 
   return {
-    courses: courses.slice(start),
+    courses,
     totalCount: stats.courseCount,
   };
 }
@@ -341,6 +382,7 @@ export const listForExplore = query({
     courseExternalIds: v.optional(v.array(v.string())),
     filters: v.optional(
       v.object({
+        rsgKeys: v.optional(v.array(v.string())),
         termCodes: v.optional(v.array(v.string())),
         departmentPrefixes: v.optional(v.array(v.string())),
         professorExternalIds: v.optional(v.array(v.string())),
