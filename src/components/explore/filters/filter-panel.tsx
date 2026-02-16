@@ -4,28 +4,21 @@ import { DepartmentFilter } from "@/components/explore/filters/department-filter
 import { ProfessorFilter } from "@/components/explore/filters/professor-filter";
 import { TermFilter } from "@/components/explore/filters/term-filter";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
-import { cn } from "@/lib/utils";
 
-export function FilterPanel({ className }: { className?: string }) {
+export function FilterPanel() {
   const { clearFilters, filters } = useExploreFilters();
   const hasFilters = Object.values(filters).some((f) => f.length > 0);
   return (
-    <Card
-      className={cn(
-        "flex h-full flex-col gap-6 overflow-y-auto p-4",
-        className
-      )}
-    >
-      <CardHeader className="flex items-start justify-between gap-2 px-0">
-        <CardTitle className="font-semibold text-base">Filters</CardTitle>
+    <div className="flex h-full flex-col gap-6 overflow-y-auto p-4">
+      <div className="flex items-start justify-between gap-2">
+        <h2 className="font-semibold text-base">Filters</h2>
         {hasFilters && (
           <Button onClick={clearFilters} size="icon-xs" variant="outline">
             <XIcon className="size-4" />
           </Button>
         )}
-      </CardHeader>
+      </div>
       <FilterSection label="Term">
         <TermFilter />
       </FilterSection>
@@ -41,7 +34,7 @@ export function FilterPanel({ className }: { className?: string }) {
       <FilterSection label="Days">
         <DaysFilter />
       </FilterSection>
-    </Card>
+    </div>
   );
 }
 

@@ -1,10 +1,16 @@
 import { convexQuery } from "@convex-dev/react-query";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
+import { useDefaultLayout } from "react-resizable-panels";
 import { z } from "zod";
 import { CourseView } from "@/components/explore/courses/course-view";
 import { FilterPanel } from "@/components/explore/filters/filter-panel";
 import { ScheduleView } from "@/components/explore/schedule/schedule-view";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { getOrCreateSessionId } from "@/hooks/use-auth";
 import { api } from "../../convex/_generated/api";
 
@@ -145,14 +151,40 @@ export const Route = createFileRoute("/explore")({
   component: RouteComponent,
 });
 
+const PANEL_CONFIG = {
+  filters: { defaultSize: "20%", minSize: "15%", maxSize: "30%" },
+  courses: { defaultSize: "50%", minSize: "30%", maxSize: "65%" },
+  schedule: { defaultSize: "30%", minSize: "20%", maxSize: "45%" },
+} as const;
+
+const pillClasses =
+  "before:pointer-events-none before:absolute before:top-1/2 before:left-1/2 before:z-10 before:h-6 before:w-1 before:-translate-x-1/2 before:-translate-y-1/2 before:rounded-full before:bg-muted-foreground/25 before:transition-all before:duration-300 before:ease-[cubic-bezier(0.32,0.72,0,1)] hover:before:h-10 hover:before:bg-muted-foreground/40 active:before:h-12 active:before:w-1.5 active:before:bg-primary";
+
 function RouteComponent() {
+  const { defaultLayout, onLayoutChanged } = useDefaultLayout({
+    id: "explore-layout",
+    storage: localStorage,
+  });
   return (
-    <main className="h-dvh overflow-hidden p-2">
-      <section className="flex h-full min-h-0 gap-2 overflow-hidden">
-        <FilterPanel className="w-[20%] min-w-0" />
-        <CourseView className="w-[50%] min-w-0" />
-        <ScheduleView className="w-[30%] min-w-0" />
-      </section>
+    <main className="h-dvh overflow-hidden">
+      <ResizablePanelGroup
+        className="m-0 h-full min-h-0 p-0"
+        defaultLayout={defaultLayout}
+        onLayoutChanged={onLayoutChanged}
+        orientation="horizontal"
+      >
+        <ResizablePanel {...PANEL_CONFIG.filters}>
+          <FilterPanel />
+        </ResizablePanel>
+        <ResizableHandle className={pillClasses} />
+        <ResizablePanel {...PANEL_CONFIG.courses}>
+          <CourseView />
+        </ResizablePanel>
+        <ResizableHandle className={pillClasses} />
+        <ResizablePanel {...PANEL_CONFIG.schedule}>
+          <ScheduleView />
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </main>
   );
 }
