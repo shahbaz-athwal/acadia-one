@@ -19,21 +19,23 @@ export const validateSession = query({
     })
   ),
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("acadiaUsers")
-      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
-      .first();
+    const [user, session] = await Promise.all([
+      ctx.db
+        .query("acadiaUsers")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+        .first(),
+      ctx.db
+        .query("acadiaSessions")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+        .first(),
+    ]);
 
     if (!user || user.tokenHash !== args.tokenHash) {
       return { valid: false as const };
     }
 
-    const session = await ctx.db
-      .query("acadiaSessions")
-      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
-      .first();
-
-    if (!session || session.expiresAt <= Date.now()) {
+    const now = Date.now();
+    if (!session || session.expiresAt <= now) {
       return { valid: false as const };
     }
 
@@ -52,17 +54,20 @@ export const getUserData = query({
   },
   returns: v.union(vv.doc("acadiaUserData"), v.null()),
   handler: async (ctx, args) => {
-    const user = await ctx.db
-      .query("acadiaUsers")
-      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
-      .first();
+    const [user, userData] = await Promise.all([
+      ctx.db
+        .query("acadiaUsers")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+        .first(),
+      ctx.db
+        .query("acadiaUserData")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+        .first(),
+    ]);
 
     if (!user || user.tokenHash !== args.tokenHash) {
       return null;
     }
-    return await ctx.db
-      .query("acadiaUserData")
-      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
-      .first();
+    return userData;
   },
 });

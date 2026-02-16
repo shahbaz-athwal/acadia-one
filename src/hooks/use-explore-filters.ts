@@ -8,6 +8,7 @@ import {
 import { api } from "../../convex/_generated/api";
 
 const routeApi = getRouteApi("/explore");
+export type FilterPanelTab = "filters" | "progress";
 
 export function useExploreFilters() {
   const search = routeApi.useSearch({
@@ -17,6 +18,7 @@ export function useExploreFilters() {
       prof: state.prof,
       day: state.day,
       rsg: state.rsg,
+      ft: state.ft,
     }),
   });
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ export function useExploreFilters() {
     days: search.day,
     rsgKeys: search.rsg,
   };
+  const panelTab = search.ft;
 
   const setTermCodes = (termCodes: string[]) => {
     navigate({
@@ -63,6 +66,13 @@ export function useExploreFilters() {
     });
   };
 
+  const setPanelTab = (tab: FilterPanelTab) => {
+    navigate({
+      to: "/explore",
+      search: (prev) => ({ ...withDefaults(prev), ft: tab }),
+    });
+  };
+
   const setFilters = (partial: Partial<typeof filters>) => {
     navigate({
       to: "/explore",
@@ -85,17 +95,19 @@ export function useExploreFilters() {
   };
 
   const { data: options } = useSuspenseQuery(
-    convexQuery(api.explore.filterOptions, {}),
+    convexQuery(api.explore.filterOptions, {})
   );
 
   return {
     filters,
+    panelTab,
 
     setTermCodes,
     setDepartmentPrefixes,
     setProfessorExternalIds,
     setDays,
     setRsgKeys,
+    setPanelTab,
     setFilters,
     clearFilters,
 

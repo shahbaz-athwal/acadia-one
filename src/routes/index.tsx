@@ -9,6 +9,8 @@ export const Route = createFileRoute("/")({
         dept: [],
         prof: [],
         day: [],
+        rsg: [],
+        ft: "filters",
         sv: "calendar",
         st: "",
         q: "",

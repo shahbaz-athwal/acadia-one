@@ -11,7 +11,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { getOrCreateSessionId } from "@/hooks/use-auth";
+import { getOrCreateSessionId, getStoredTokenHash } from "@/hooks/use-auth";
 import { api } from "../../convex/_generated/api";
 
 function parseStringArray(value: unknown): string[] {
@@ -39,6 +39,7 @@ const exploreSearchSchema = z.object({
   prof: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
   day: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
   rsg: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
+  ft: z.enum(["filters", "progress"]).catch("filters"),
   sv: z.enum(["calendar", "agenda"]).catch("calendar"),
   st: z.string().catch(""),
   q: z.string().catch(""),
@@ -53,6 +54,7 @@ export const SEARCH_DEFAULTS: ExploreSearchParams = {
   prof: [],
   day: [],
   rsg: [],
+  ft: "filters",
   sv: "calendar",
   st: "",
   q: "",
@@ -97,6 +99,7 @@ export const Route = createFileRoute("/explore")({
         prof: [],
         day: [],
         rsg: [],
+        ft: "filters",
         sv: "calendar",
         st: "",
         q: "",
@@ -110,12 +113,13 @@ export const Route = createFileRoute("/explore")({
     prof: search.prof,
     day: search.day,
     rsg: search.rsg,
+    ft: search.ft,
     q: search.q,
     page: search.page,
   }),
   loader: async ({ context, deps }) => {
     const sessionId = getOrCreateSessionId();
-    const tokenHash = localStorage.getItem("acadia-one-session-token-hash");
+    const tokenHash = getStoredTokenHash();
     const convexFilters = buildConvexFilters(deps);
 
     const prefetches: Promise<unknown>[] = [
@@ -133,18 +137,19 @@ export const Route = createFileRoute("/explore")({
           searchQuery: deps.q || undefined,
         })
       ),
+      context.queryClient.ensureQueryData(
+        convexQuery(api.sessions.validateSession, {
+          sessionId,
+          tokenHash: tokenHash ?? "",
+        })
+      ),
+      context.queryClient.ensureQueryData(
+        convexQuery(api.sessions.getUserData, {
+          sessionId,
+          tokenHash: tokenHash ?? "",
+        })
+      ),
     ];
-
-    if (tokenHash) {
-      prefetches.push(
-        context.queryClient.ensureQueryData(
-          convexQuery(api.sessions.validateSession, { sessionId, tokenHash })
-        ),
-        context.queryClient.ensureQueryData(
-          convexQuery(api.sessions.getUserData, { sessionId, tokenHash })
-        )
-      );
-    }
 
     await Promise.all(prefetches);
   },

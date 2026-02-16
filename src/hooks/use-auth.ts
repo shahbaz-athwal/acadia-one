@@ -1,7 +1,7 @@
 import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useAction } from "convex/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { api } from "../../convex/_generated/api";
 
@@ -20,6 +20,18 @@ export function getOrCreateSessionId(): string {
   return id;
 }
 
+export function getStoredTokenHash(): string | null {
+  const raw = localStorage.getItem(TOKEN_HASH_KEY);
+  if (raw === null || raw === "null" || raw === "undefined") {
+    return null;
+  }
+  try {
+    return JSON.parse(raw) as string;
+  } catch {
+    return raw;
+  }
+}
+
 export function useAuth() {
   const sessionId = getOrCreateSessionId();
   const [token, setToken] = useLocalStorage<string | null>(TOKEN_KEY, null);
@@ -33,20 +45,14 @@ export function useAuth() {
   const authenticateUser = useAction(api.auth.authenticateUser);
 
   const { data: validation } = useSuspenseQuery(
-    convexQuery(
-      api.sessions.validateSession,
-      tokenHash ? { sessionId, tokenHash } : "skip"
-    )
+    convexQuery(api.sessions.validateSession, {
+      sessionId,
+      tokenHash: tokenHash ?? "",
+    })
   );
 
-  useEffect(() => {
-    if (!validation.valid && token) {
-      setToken(null);
-      setTokenHash(null);
-    }
-  }, [validation, token, setToken, setTokenHash]);
-
-  const isAuthenticated = validation?.valid === true;
+  const isAuthenticated = validation.valid === true;
+  const userDataStatus = validation.valid ? validation.userDataStatus : null;
 
   async function login(username: string, password: string) {
     setIsLoading(true);
@@ -81,7 +87,9 @@ export function useAuth() {
   return {
     sessionId,
     token,
+    tokenHash,
     isAuthenticated,
+    userDataStatus,
     isLoading,
     error,
     login,
