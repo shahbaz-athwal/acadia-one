@@ -12,6 +12,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { getOrCreateSessionId, getStoredTokenHash } from "@/hooks/use-auth";
+import { SchedulePreviewProvider } from "@/hooks/use-schedule-preview";
 import { api } from "../../convex/_generated/api";
 
 function parseStringArray(value: unknown): string[] {
@@ -171,25 +172,27 @@ function RouteComponent() {
     storage: localStorage,
   });
   return (
-    <main className="h-dvh overflow-hidden">
-      <ResizablePanelGroup
-        className="m-0 h-full min-h-0 p-0"
-        defaultLayout={defaultLayout}
-        onLayoutChanged={onLayoutChanged}
-        orientation="horizontal"
-      >
-        <ResizablePanel {...PANEL_CONFIG.filters}>
-          <FilterPanel />
-        </ResizablePanel>
-        <ResizableHandle className={pillClasses} />
-        <ResizablePanel {...PANEL_CONFIG.courses}>
-          <CourseView />
-        </ResizablePanel>
-        <ResizableHandle className={pillClasses} />
-        <ResizablePanel {...PANEL_CONFIG.schedule}>
-          <ScheduleView />
-        </ResizablePanel>
-      </ResizablePanelGroup>
-    </main>
+    <SchedulePreviewProvider>
+      <main className="h-dvh overflow-hidden">
+        <ResizablePanelGroup
+          className="m-0 h-full min-h-0 p-0"
+          defaultLayout={defaultLayout}
+          onLayoutChanged={onLayoutChanged}
+          orientation="horizontal"
+        >
+          <ResizablePanel {...PANEL_CONFIG.filters}>
+            <FilterPanel />
+          </ResizablePanel>
+          <ResizableHandle className={pillClasses} />
+          <ResizablePanel {...PANEL_CONFIG.courses}>
+            <CourseView />
+          </ResizablePanel>
+          <ResizableHandle className={pillClasses} />
+          <ResizablePanel {...PANEL_CONFIG.schedule}>
+            <ScheduleView />
+          </ResizablePanel>
+        </ResizablePanelGroup>
+      </main>
+    </SchedulePreviewProvider>
   );
 }

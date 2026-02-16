@@ -354,6 +354,7 @@ async function enrichWithSections(ctx: QueryCtx, courses: Doc<"courses">[]) {
             ? professorById.get(section.professorId)
             : null;
           return {
+            _id: section._id,
             id: section.externalId,
             termCode: section.termCode,
             sectionCode: section.sectionCode,

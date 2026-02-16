@@ -4,8 +4,10 @@ import {
   type ScheduleItem,
   useScheduleItems,
 } from "@/hooks/use-schedule-items";
+import { useSchedulePreview } from "@/hooks/use-schedule-preview";
 import {
   GRID_START_MINUTES,
+  getBlockPosition,
   getTimeSlots,
   HEADER_HEIGHT,
   SLOT_COUNT,
@@ -34,10 +36,14 @@ function groupByDay(items: ScheduleItem[]): Map<number, ScheduleItem[]> {
   return map;
 }
 
+const PREVIEW_COLOR = "#6366f1";
+
 export function ScheduleCalendar() {
   const { items } = useScheduleItems();
+  const { previewSection } = useSchedulePreview();
   const timeSlots = useMemo(() => getTimeSlots(), []);
   const itemsByDay = useMemo(() => groupByDay(items ?? []), [items]);
+  const isPreviewing = previewSection !== null;
 
   const gridHeight = SLOT_COUNT * SLOT_HEIGHT;
   const gutterRef = useRef<HTMLDivElement>(null);
@@ -146,13 +152,69 @@ export function ScheduleCalendar() {
 
                   {/* Schedule blocks */}
                   {(itemsByDay.get(day) ?? []).map((item) => (
-                    <ScheduleBlock item={item} key={item.scheduleItemId} />
+                    <ScheduleBlock
+                      dimmed={isPreviewing}
+                      item={item}
+                      key={item.scheduleItemId}
+                    />
                   ))}
+
+                  {/* Preview ghost block */}
+                  {previewSection?.section.days.includes(day) && (
+                    <PreviewBlock preview={previewSection} />
+                  )}
                 </div>
               </div>
             ))}
           </div>
         </ScrollArea>
+      </div>
+    </div>
+  );
+}
+
+function PreviewBlock({
+  preview,
+}: {
+  preview: NonNullable<ReturnType<typeof useSchedulePreview>["previewSection"]>;
+}) {
+  const { top, height } = getBlockPosition(
+    preview.section.classStartTime,
+    preview.section.classEndTime
+  );
+
+  const isCompact = height <= 40;
+
+  return (
+    <div
+      className="absolute inset-x-0.5 animate-pulse overflow-hidden rounded-md border border-dashed px-1.5 py-1 text-xs leading-tight"
+      style={{
+        top,
+        height,
+        backgroundColor: `${PREVIEW_COLOR}15`,
+        borderColor: `${PREVIEW_COLOR}80`,
+        color: PREVIEW_COLOR,
+      }}
+    >
+      <div className="flex flex-col gap-0.5 overflow-hidden">
+        <span
+          className="truncate font-semibold"
+          style={{ color: PREVIEW_COLOR }}
+        >
+          {preview.course.code}
+        </span>
+        {!isCompact && (
+          <>
+            <span className="truncate text-[10px] opacity-80">
+              {preview.section.classStartTime} – {preview.section.classEndTime}
+            </span>
+            <span className="truncate text-[10px] opacity-70">
+              {preview.section.isOnline
+                ? "Online"
+                : `${preview.section.buildingName} ${preview.section.roomNumber}`}
+            </span>
+          </>
+        )}
       </div>
     </div>
   );
