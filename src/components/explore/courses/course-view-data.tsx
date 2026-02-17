@@ -1,5 +1,6 @@
 import { useMutation } from "convex/react";
 import { CheckIcon, PlusIcon, SearchXIcon } from "lucide-react";
+import { useRef } from "react";
 import {
   Empty,
   EmptyDescription,
@@ -13,13 +14,58 @@ import { useScheduleItems } from "@/hooks/use-schedule-items";
 import { useSchedulePreview } from "@/hooks/use-schedule-preview";
 import { cn } from "@/lib/utils";
 import { api } from "../../../../convex/_generated/api";
+import { SCHEDULE_COLORS } from "../../../../convex/lib/constants";
+
+interface PendingSection {
+  section: {
+    id: string;
+    termCode: string;
+    sectionCode: string;
+    classStartTime: string;
+    classEndTime: string;
+    days: number[];
+    buildingName: string;
+    roomNumber: string;
+    isOnline: boolean;
+    professorName: string;
+  };
+  course: {
+    code: string;
+    title: string;
+    credits: number;
+  };
+}
 
 export function CourseViewData() {
   const { courses } = useExploreCourses();
   const { allItems } = useScheduleItems();
   const { setPreviewSection } = useSchedulePreview();
-  const addSection = useMutation(api.schedule.addSection);
   const sessionId = getOrCreateSessionId();
+
+  const pendingRef = useRef<PendingSection | null>(null);
+
+  const addSection = useMutation(
+    api.schedule.addSection
+  ).withOptimisticUpdate((localStore, args) => {
+    const current = localStore.getQuery(api.schedule.get, {
+      sessionId: args.sessionId,
+    });
+    if (current === undefined || !pendingRef.current) {
+      return;
+    }
+
+    const color =
+      SCHEDULE_COLORS[current.length % SCHEDULE_COLORS.length] ?? "#94a3b8";
+
+    localStore.setQuery(api.schedule.get, { sessionId: args.sessionId }, [
+      ...current,
+      {
+        scheduleItemId: `__optimistic_${Date.now()}` as never,
+        color,
+        ...pendingRef.current,
+      },
+    ]);
+  });
 
   const addedSectionIds = new Set(allItems.map((item) => item.section.id));
 
@@ -74,6 +120,25 @@ export function CourseViewData() {
                       if (isAdded) {
                         return;
                       }
+                      pendingRef.current = {
+                        section: {
+                          id: s.id,
+                          termCode: s.termCode,
+                          sectionCode: s.sectionCode,
+                          classStartTime: s.classStartTime,
+                          classEndTime: s.classEndTime,
+                          days: s.days,
+                          buildingName: s.buildingName,
+                          roomNumber: s.roomNumber,
+                          isOnline: s.isOnline,
+                          professorName: s.professorName,
+                        },
+                        course: {
+                          code: course.code,
+                          title: course.title,
+                          credits: course.credits,
+                        },
+                      };
                       addSection({ sessionId, sectionId: s._id });
                     }}
                     onMouseEnter={() => {

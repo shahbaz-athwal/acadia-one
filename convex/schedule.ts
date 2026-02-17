@@ -1,18 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-
-const SCHEDULE_COLORS = [
-  "#4A90D9", // Soft blue
-  "#D96B6B", // Muted coral
-  "#5BAE7C", // Sage green
-  "#C07ED4", // Soft purple
-  "#E09B4F", // Warm amber
-  "#4DC4C4", // Teal
-  "#D47EA3", // Dusty rose
-  "#7B8FD4", // Periwinkle
-  "#A0B856", // Olive green
-  "#D4A04E", // Golden
-];
+import { SCHEDULE_COLORS } from "./lib/constants";
 
 export const addSection = mutation({
   args: {
