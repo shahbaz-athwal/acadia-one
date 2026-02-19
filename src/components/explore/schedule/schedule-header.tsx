@@ -1,5 +1,7 @@
-import { CalendarDaysIcon, ListIcon } from "lucide-react";
+import { CalendarDaysIcon, CalendarIcon, ListIcon } from "lucide-react";
 import { CardTitle } from "@/components/ui/card";
+import type { TabItem } from "@/components/kokonutui/smooth-tab";
+import SmoothTab from "@/components/kokonutui/smooth-tab";
 import { Toggle, ToggleGroup } from "@/components/ui/toggle-group";
 import {
   type ScheduleViewMode,
@@ -9,15 +11,24 @@ import {
 export function ScheduleHeader() {
   const { view, termCode, terms, setView, setTermCode } = useScheduleView();
 
+  const termTabs: TabItem[] = terms
+    .filter((t) => !t.code.endsWith("COI"))
+    .map((term) => ({
+      id: term.code,
+      title: term.name,
+    }));
+
   return (
-    <div className="flex flex-col pb-2">
+    <div className="flex flex-col gap-1 pb-2">
       <div className="flex items-center justify-between gap-2 px-3 py-2">
-        <CardTitle className="font-semibold text-base">Schedule</CardTitle>
-        {/* View toggle */}
+        <CardTitle className="flex items-center gap-1.5 font-semibold text-base">
+          <CalendarIcon className="size-4" />
+          Schedule
+        </CardTitle>
         <ToggleGroup
-          onValueChange={(value: ScheduleViewMode[]) => {
+          onValueChange={(value: string[]) => {
             if (value.length > 0) {
-              setView(value[0]);
+              setView(value[0] as ScheduleViewMode);
             }
           }}
           size="sm"
@@ -32,29 +43,15 @@ export function ScheduleHeader() {
           </Toggle>
         </ToggleGroup>
       </div>
-      {/* Term switcher */}
-      {terms.length > 0 && (
+      {termTabs.length > 0 && (
         <div className="px-3">
-          <ToggleGroup
-            onValueChange={(value: string[]) => {
-              if (value.length > 0) {
-                setTermCode(value[0]);
-              }
-            }}
-            size="sm"
-            value={[termCode]}
-            variant="outline"
-          >
-            {terms.map((term) => (
-              <Toggle
-                className="h-6! font-normal! text-xs!"
-                key={term.code}
-                value={term.code}
-              >
-                {term.name}
-              </Toggle>
-            ))}
-          </ToggleGroup>
+          <SmoothTab
+            activeColor="bg-primary"
+            compact
+            items={termTabs}
+            onChange={setTermCode}
+            value={termCode}
+          />
         </div>
       )}
     </div>

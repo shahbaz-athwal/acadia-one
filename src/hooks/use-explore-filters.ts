@@ -19,6 +19,7 @@ export function useExploreFilters() {
       day: state.day,
       rsg: state.rsg,
       ft: state.ft,
+      q: state.q,
     }),
   });
   const navigate = useNavigate();
@@ -30,6 +31,14 @@ export function useExploreFilters() {
     rsgKeys: search.rsg,
   };
   const panelTab = search.ft;
+  const searchQuery = search.q;
+
+  const setSearchQuery = (q: string) => {
+    navigate({
+      to: "/explore",
+      search: (prev) => ({ ...withDefaults(prev), q, page: 1 }),
+    });
+  };
 
   const setTermCodes = (termCodes: string[]) => {
     navigate({
@@ -101,7 +110,9 @@ export function useExploreFilters() {
   return {
     filters,
     panelTab,
+    searchQuery,
 
+    setSearchQuery,
     setTermCodes,
     setDepartmentPrefixes,
     setProfessorExternalIds,
