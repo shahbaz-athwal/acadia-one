@@ -17,9 +17,9 @@ export function useScheduleView() {
     }),
   });
   const navigate = useNavigate();
-  const { data: { terms } } = useSuspenseQuery(
-    convexQuery(api.explore.filterOptions, {}),
-  );
+  const {
+    data: { terms },
+  } = useSuspenseQuery(convexQuery(api.explore.filterOptions, {}));
 
   const view = search.sv;
   const selectedTermCode = search.st;

@@ -4,6 +4,7 @@ import { DepartmentFilter } from "@/components/explore/filters/department-filter
 import { ProfessorFilter } from "@/components/explore/filters/professor-filter";
 import { TermFilter } from "@/components/explore/filters/term-filter";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
 
 export function FiltersTab() {
@@ -15,25 +16,29 @@ export function FiltersTab() {
     filters.days.length > 0;
 
   return (
-    <div className="flex min-h-full flex-col gap-6">
-      <FilterSection label="Term">
-        <TermFilter />
-      </FilterSection>
+    <div className="flex h-full flex-col">
+      <ScrollArea className="-mr-4" scrollFade>
+        <div className="flex flex-col gap-6 pr-4">
+          <FilterSection label="Term">
+            <TermFilter />
+          </FilterSection>
 
-      <FilterSection label="Department">
-        <DepartmentFilter />
-      </FilterSection>
+          <FilterSection label="Department">
+            <DepartmentFilter />
+          </FilterSection>
 
-      <FilterSection label="Professor">
-        <ProfessorFilter />
-      </FilterSection>
+          <FilterSection label="Professor">
+            <ProfessorFilter />
+          </FilterSection>
 
-      <FilterSection label="Days">
-        <DaysFilter />
-      </FilterSection>
+          <FilterSection label="Days">
+            <DaysFilter />
+          </FilterSection>
+        </div>
+      </ScrollArea>
 
       {hasFilters && (
-        <div className="mt-auto pt-2">
+        <div className="shrink-0 border-t pt-3">
           <Button
             className="w-full"
             onClick={() =>

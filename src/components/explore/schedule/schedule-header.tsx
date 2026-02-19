@@ -1,7 +1,7 @@
 import { CalendarDaysIcon, CalendarIcon, ListIcon } from "lucide-react";
-import { CardTitle } from "@/components/ui/card";
 import type { TabItem } from "@/components/kokonutui/smooth-tab";
 import SmoothTab from "@/components/kokonutui/smooth-tab";
+import { CardTitle } from "@/components/ui/card";
 import { Toggle, ToggleGroup } from "@/components/ui/toggle-group";
 import {
   type ScheduleViewMode,

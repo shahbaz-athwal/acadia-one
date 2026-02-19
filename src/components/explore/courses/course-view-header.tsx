@@ -34,7 +34,7 @@ export function CourseViewHeader() {
         Courses
       </CardTitle>
       <div className="relative max-w-56">
-        <SearchIcon className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <SearchIcon className="pointer-events-none absolute top-1/2 left-2 z-10 size-3.5 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="rounded-md **:data-[slot=input]:pr-7 **:data-[slot=input]:pl-7"
           onChange={(e) => handleChange(e.target.value)}
@@ -46,7 +46,7 @@ export function CourseViewHeader() {
         />
         {localQuery && (
           <button
-            className="absolute top-1/2 right-2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute top-1/2 right-2 z-10 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             onClick={handleClear}
             type="button"
           >

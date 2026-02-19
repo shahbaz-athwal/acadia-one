@@ -13,6 +13,11 @@
 import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipPopup,
+} from "@/components/ui/tooltip";
 
 export interface TabItem {
   id: string;
@@ -345,16 +350,19 @@ export default function SmoothTab({
   const selected = value ?? internalSelected;
   const [direction, setDirection] = React.useState(0);
   const [dimensions, setDimensions] = React.useState({ width: 0, left: 0 });
+  const [labelsHidden, setLabelsHidden] = React.useState(false);
 
-  // Reference for the selected button
   const buttonRefs = React.useRef<Map<string, HTMLButtonElement>>(new Map());
   const containerRef = React.useRef<HTMLDivElement>(null);
+  const spanRefs = React.useRef<Map<string, HTMLSpanElement>>(new Map());
+  const canHideLabels = items.every((item) => item.icon != null);
 
-  // Update dimensions whenever selected tab changes or on mount
+  // Update dimensions whenever selected tab changes, on mount, or container resizes
   React.useLayoutEffect(() => {
+    const container = containerRef.current;
+
     const updateDimensions = () => {
       const selectedButton = buttonRefs.current.get(selected);
-      const container = containerRef.current;
 
       if (selectedButton && container) {
         const rect = selectedButton.getBoundingClientRect();
@@ -367,15 +375,30 @@ export default function SmoothTab({
       }
     };
 
-    // Initial update
     requestAnimationFrame(() => {
       updateDimensions();
     });
 
-    // Update on resize
-    window.addEventListener("resize", updateDimensions);
-    return () => window.removeEventListener("resize", updateDimensions);
+    if (!container) return;
+
+    const ro = new ResizeObserver(() => {
+      updateDimensions();
+      setLabelsHidden(false);
+    });
+    ro.observe(container);
+
+    return () => ro.disconnect();
   }, [selected]);
+
+  React.useLayoutEffect(() => {
+    if (labelsHidden || !canHideLabels) return;
+    for (const span of spanRefs.current.values()) {
+      if (span && span.scrollWidth > span.clientWidth + 0.5) {
+        setLabelsHidden(true);
+        return;
+      }
+    }
+  });
 
   const handleTabClick = (tabId: string) => {
     const currentIndex = items.findIndex((item) => item.id === selected);
@@ -449,7 +472,8 @@ export default function SmoothTab({
         {items.map((item) => {
           const isSelected = selected === item.id;
           const Icon = item.icon;
-          return (
+          const showTooltip = canHideLabels && labelsHidden;
+          const button = (
             <motion.button
               aria-controls={`panel-${item.id}`}
               aria-selected={isSelected}
@@ -479,7 +503,17 @@ export default function SmoothTab({
               type="button"
             >
               {Icon && <TabIcon icon={Icon} isSelected={isSelected} compact={compact} />}
-              <span className="truncate">{item.title}</span>
+              {!showTooltip && (
+                <span
+                  className="truncate"
+                  ref={(el) => {
+                    if (el) spanRefs.current.set(item.id, el);
+                    else spanRefs.current.delete(item.id);
+                  }}
+                >
+                  {item.title}
+                </span>
+              )}
               {item.badge != null && item.badge !== 0 && (
                 <span
                   className={cn(
@@ -494,6 +528,17 @@ export default function SmoothTab({
               )}
             </motion.button>
           );
+
+          if (showTooltip) {
+            return (
+              <Tooltip key={item.id}>
+                <TooltipTrigger render={button} />
+                <TooltipPopup side="bottom">{item.title}</TooltipPopup>
+              </Tooltip>
+            );
+          }
+
+          return button;
         })}
       </div>
     </div>

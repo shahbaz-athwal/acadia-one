@@ -41,6 +41,7 @@ export function FilterPanel() {
     <div className="h-full p-4">
       <SmoothTab
         activeColor="bg-primary"
+        className="-mt-1"
         items={panelTabs}
         onChange={handleTabChange}
         value={panelTab}

@@ -49,7 +49,10 @@ async function resolveFilters(
   const rsgCourseCodeSet = new Set<string>();
   if (rsgKeys.length > 0) {
     const entries = await asyncMap(rsgKeys, (key) =>
-      ctx.db.query("rsg").withIndex("by_key", (q) => q.eq("key", key)).first()
+      ctx.db
+        .query("rsg")
+        .withIndex("by_key", (q) => q.eq("key", key))
+        .first()
     );
     for (const entry of entries) {
       if (!entry) {
@@ -154,7 +157,10 @@ async function collectByCourseCodes(
   courseCodes: string[]
 ): Promise<Doc<"courses">[]> {
   const courses = await asyncMap(courseCodes, (courseCode) =>
-    ctx.db.query("courses").withIndex("by_code", (q) => q.eq("code", courseCode)).first()
+    ctx.db
+      .query("courses")
+      .withIndex("by_code", (q) => q.eq("code", courseCode))
+      .first()
   );
   return courses.filter(
     (course): course is NonNullable<typeof course> => !!course

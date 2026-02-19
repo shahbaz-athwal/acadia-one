@@ -8,7 +8,12 @@
     }
   },
   "files": {
-    "includes": ["!bun.lock", "!src/components/ui", "!src/components/kokonutui", "!convex/_generated"]
+    "includes": [
+      "!bun.lock",
+      "!src/components/ui",
+      "!src/components/kokonutui",
+      "!convex/_generated"
+    ]
   },
   "linter": {
     "rules": {}
