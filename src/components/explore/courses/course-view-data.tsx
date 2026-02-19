@@ -43,29 +43,29 @@ export function CourseViewData() {
   const sessionId = getOrCreateSessionId();
 
   const pendingRef = useRef<PendingSection | null>(null);
+  const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const addSection = useMutation(
-    api.schedule.addSection
-  ).withOptimisticUpdate((localStore, args) => {
-    const current = localStore.getQuery(api.schedule.get, {
-      sessionId: args.sessionId,
-    });
-    if (current === undefined || !pendingRef.current) {
-      return;
+  const addSection = useMutation(api.schedule.addSection).withOptimisticUpdate(
+    (localStore, args) => {
+      const current = localStore.getQuery(api.schedule.get, {
+        sessionId: args.sessionId,
+      });
+      if (current === undefined || !pendingRef.current) {
+        return;
+      }
+
+      const color = SCHEDULE_COLORS[current.length % SCHEDULE_COLORS.length];
+
+      localStore.setQuery(api.schedule.get, { sessionId: args.sessionId }, [
+        ...current,
+        {
+          scheduleItemId: `__optimistic_${Date.now()}` as never,
+          color,
+          ...pendingRef.current,
+        },
+      ]);
     }
-
-    const color =
-      SCHEDULE_COLORS[current.length % SCHEDULE_COLORS.length] ?? "#94a3b8";
-
-    localStore.setQuery(api.schedule.get, { sessionId: args.sessionId }, [
-      ...current,
-      {
-        scheduleItemId: `__optimistic_${Date.now()}` as never,
-        color,
-        ...pendingRef.current,
-      },
-    ]);
-  });
+  );
 
   const addedSectionIds = new Set(allItems.map((item) => item.section.id));
 
@@ -145,21 +145,33 @@ export function CourseViewData() {
                       if (isAdded) {
                         return;
                       }
-                      setPreviewSection({
-                        section: {
-                          classStartTime: s.classStartTime,
-                          classEndTime: s.classEndTime,
-                          days: s.days,
-                          sectionCode: s.sectionCode,
-                          isOnline: s.isOnline,
-                          buildingName: s.buildingName,
-                          roomNumber: s.roomNumber,
-                          professorName: s.professorName,
-                        },
-                        course: { code: course.code, title: course.title },
-                      });
+                      previewTimerRef.current = setTimeout(() => {
+                        setPreviewSection({
+                          color:
+                            SCHEDULE_COLORS[
+                              allItems.length % SCHEDULE_COLORS.length
+                            ] ?? "#94a3b8",
+                          section: {
+                            classStartTime: s.classStartTime,
+                            classEndTime: s.classEndTime,
+                            days: s.days,
+                            sectionCode: s.sectionCode,
+                            isOnline: s.isOnline,
+                            buildingName: s.buildingName,
+                            roomNumber: s.roomNumber,
+                            professorName: s.professorName,
+                          },
+                          course: { code: course.code, title: course.title },
+                        });
+                      }, 250);
                     }}
-                    onMouseLeave={() => setPreviewSection(null)}
+                    onMouseLeave={() => {
+                      if (previewTimerRef.current !== null) {
+                        clearTimeout(previewTimerRef.current);
+                        previewTimerRef.current = null;
+                      }
+                      setPreviewSection(null);
+                    }}
                     type="button"
                   >
                     {isAdded ? (

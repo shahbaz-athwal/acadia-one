@@ -36,8 +36,6 @@ function groupByDay(items: ScheduleItem[]): Map<number, ScheduleItem[]> {
   return map;
 }
 
-const PREVIEW_COLOR = "#6366f1";
-
 export function ScheduleCalendar() {
   const { items } = useScheduleItems();
   const { previewSection } = useSchedulePreview();
@@ -191,15 +189,15 @@ function PreviewBlock({
       style={{
         top,
         height,
-        backgroundColor: `${PREVIEW_COLOR}15`,
-        borderColor: `${PREVIEW_COLOR}80`,
-        color: PREVIEW_COLOR,
+        backgroundColor: `${preview.color}15`,
+        borderColor: `${preview.color}80`,
+        color: preview.color,
       }}
     >
       <div className="flex flex-col gap-0.5 overflow-hidden">
         <span
           className="truncate font-semibold"
-          style={{ color: PREVIEW_COLOR }}
+          style={{ color: preview.color }}
         >
           {preview.course.code}
         </span>

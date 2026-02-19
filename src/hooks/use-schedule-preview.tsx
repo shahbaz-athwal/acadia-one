@@ -1,6 +1,7 @@
 import { createContext, type ReactNode, useContext, useState } from "react";
 
 export interface PreviewSection {
+  color: string;
   section: {
     classStartTime: string;
     classEndTime: string;
