@@ -16,9 +16,9 @@ export function FiltersTab() {
     filters.days.length > 0;
 
   return (
-    <div className="flex h-full flex-col">
-      <ScrollArea className="-mr-4" scrollFade>
-        <div className="flex flex-col gap-6 pr-4">
+    <div className="flex h-full flex-col p-2">
+      <ScrollArea className="-mr-4 w-full" scrollFade>
+        <div className="flex flex-col gap-6">
           <FilterSection label="Term">
             <TermFilter />
           </FilterSection>
@@ -38,7 +38,7 @@ export function FiltersTab() {
       </ScrollArea>
 
       {hasFilters && (
-        <div className="shrink-0 border-t pt-3">
+        <div className="shrink-0 pt-3">
           <Button
             className="w-full"
             onClick={() =>

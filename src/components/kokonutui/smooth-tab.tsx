@@ -92,7 +92,7 @@ const DEFAULT_TABS: TabItem[] = [
         </div>
         <div className="relative flex h-full flex-col p-6">
           <div className="space-y-2">
-            <h3 className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-2xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
+            <h3 className="bg-linear-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-2xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
               Models
             </h3>
             <p className="max-w-[90%] text-black/50 text-sm leading-relaxed dark:text-white/50">
@@ -142,7 +142,7 @@ const DEFAULT_TABS: TabItem[] = [
         </div>
         <div className="relative flex h-full flex-col p-6">
           <div className="space-y-2">
-            <h3 className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
+            <h3 className="bg-linear-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
               MCPs
             </h3>
             <p className="max-w-[90%] text-black/50 text-sm leading-relaxed dark:text-white/50">
@@ -192,7 +192,7 @@ const DEFAULT_TABS: TabItem[] = [
         </div>
         <div className="relative flex h-full flex-col p-6">
           <div className="space-y-2">
-            <h3 className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-2xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
+            <h3 className="bg-linear-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-2xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
               Agents
             </h3>
             <p className="max-w-[90%] text-black/50 text-sm leading-relaxed dark:text-white/50">
@@ -242,7 +242,7 @@ const DEFAULT_TABS: TabItem[] = [
         </div>
         <div className="relative flex h-full flex-col p-6">
           <div className="space-y-2">
-            <h3 className="bg-gradient-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-2xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
+            <h3 className="bg-linear-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-2xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
               Users
             </h3>
             <p className="max-w-[90%] text-black/50 text-sm leading-relaxed dark:text-white/50">
@@ -311,7 +311,7 @@ const contentVariants = {
 
 const contentTransition = {
   duration: 0.15,
-  ease: [0.32, 0.72, 0, 1],
+  ease: [0.32, 0.72, 0, 1] as const,
 };
 
 function TabIcon({
@@ -487,7 +487,7 @@ export default function SmoothTab({
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 "truncate",
                 isSelected
-                  ? "text-white"
+                  ? "text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
               )}
               id={`tab-${item.id}`}
@@ -519,7 +519,7 @@ export default function SmoothTab({
                   className={cn(
                     "ml-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold leading-none",
                     isSelected
-                      ? "bg-white/25 text-white"
+                      ? "bg-primary-foreground/25 text-primary-foreground"
                       : "bg-primary/15 text-primary"
                   )}
                 >

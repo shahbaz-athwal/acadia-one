@@ -1,3 +1,4 @@
+import { FilterPanelFooter } from "@/components/explore/filters/filter-panel-footer";
 import { FiltersTab } from "@/components/explore/filters/filters-tab";
 import { ProgressTab } from "@/components/explore/filters/progress-tab";
 import type { TabItem } from "@/components/kokonutui/smooth-tab";
@@ -38,14 +39,16 @@ export function FilterPanel() {
   };
 
   return (
-    <div className="h-full p-4">
-      <SmoothTab
-        activeColor="bg-primary"
-        className="-mt-1"
-        items={panelTabs}
-        onChange={handleTabChange}
-        value={panelTab}
-      />
+    <div className="flex h-full flex-col p-2.5">
+      <div className="min-h-0 flex-1 overflow-auto">
+        <SmoothTab
+          activeColor="bg-primary"
+          items={panelTabs}
+          onChange={handleTabChange}
+          value={panelTab}
+        />
+      </div>
+      <FilterPanelFooter />
     </div>
   );
 }

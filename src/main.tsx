@@ -4,6 +4,7 @@ import { RouterProvider } from "@tanstack/react-router";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { ThemeProvider } from "./hooks/use-theme";
 import { getRouter } from "./router";
 import "./styles/globals.css";
 
@@ -42,10 +43,12 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ConvexProvider client={convex}>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </ConvexProvider>
+    <ThemeProvider defaultTheme="dark" storageKey="theme">
+      <ConvexProvider client={convex}>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
+      </ConvexProvider>
+    </ThemeProvider>
   </StrictMode>
 );
