@@ -1,4 +1,3 @@
-// import { scan } from "react-scan";
 import { ConvexQueryClient } from "@convex-dev/react-query";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
@@ -40,11 +39,6 @@ const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Root element not found");
 }
-
-// TODO: Figure out why affecting bundle size in production
-// scan({
-//   enabled: true,
-// });
 
 createRoot(rootElement).render(
   <StrictMode>

@@ -1,8 +1,8 @@
-import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useAction } from "convex/react";
 import { useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
+import { validateSessionQuery } from "@/queries/explore";
 import { api } from "../../convex/_generated/api";
 
 const SESSION_KEY = "acadia-one-session-id";
@@ -20,10 +20,10 @@ export function getOrCreateSessionId(): string {
   return id;
 }
 
-export function getStoredTokenHash(): string | null {
+export function getStoredTokenHash(): string {
   const raw = localStorage.getItem(TOKEN_HASH_KEY);
   if (raw === null || raw === "null" || raw === "undefined") {
-    return null;
+    return "";
   }
   try {
     return JSON.parse(raw) as string;
@@ -35,20 +35,14 @@ export function getStoredTokenHash(): string | null {
 export function useAuth() {
   const sessionId = getOrCreateSessionId();
   const [token, setToken] = useLocalStorage<string | null>(TOKEN_KEY, null);
-  const [tokenHash, setTokenHash] = useLocalStorage<string | null>(
-    TOKEN_HASH_KEY,
-    null
-  );
+  const [tokenHash, setTokenHash] = useLocalStorage<string>(TOKEN_HASH_KEY, "");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const authenticateUser = useAction(api.auth.authenticateUser);
 
   const { data: validation } = useSuspenseQuery(
-    convexQuery(api.sessions.validateSession, {
-      sessionId,
-      tokenHash: tokenHash ?? "",
-    })
+    validateSessionQuery(sessionId, tokenHash)
   );
 
   const isAuthenticated = validation.valid === true;
@@ -80,7 +74,7 @@ export function useAuth() {
 
   function logout() {
     setToken(null);
-    setTokenHash(null);
+    setTokenHash("");
     setError(null);
   }
 

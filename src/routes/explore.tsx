@@ -1,4 +1,3 @@
-import { convexQuery } from "@convex-dev/react-query";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { useDefaultLayout } from "react-resizable-panels";
@@ -13,7 +12,14 @@ import {
 } from "@/components/ui/resizable";
 import { getOrCreateSessionId, getStoredTokenHash } from "@/hooks/use-auth";
 import { SchedulePreviewProvider } from "@/hooks/use-schedule-preview";
-import { api } from "../../convex/_generated/api";
+import {
+  buildConvexFilters,
+  coursesQuery,
+  filterOptionsQuery,
+  scheduleQuery,
+  userDataQuery,
+  validateSessionQuery,
+} from "@/queries/explore";
 
 function parseStringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
@@ -68,45 +74,10 @@ export function withSearchDefaults(
   return { ...SEARCH_DEFAULTS, ...prev };
 }
 
-export function buildConvexFilters(
-  search: Pick<ExploreSearchParams, "term" | "dept" | "prof" | "day" | "rsg">
-) {
-  const f: Record<string, string[] | number[]> = {};
-  if (search.term.length > 0) {
-    f.termCodes = [...search.term].sort();
-  }
-  if (search.dept.length > 0) {
-    f.departmentPrefixes = [...search.dept].sort();
-  }
-  if (search.prof.length > 0) {
-    f.professorExternalIds = [...search.prof].sort();
-  }
-  if (search.day.length > 0) {
-    f.days = [...search.day].sort((a, b) => a - b);
-  }
-  if (search.rsg.length > 0) {
-    f.rsgKeys = [...search.rsg].sort();
-  }
-  return Object.keys(f).length > 0 ? f : undefined;
-}
-
 export const Route = createFileRoute("/explore")({
   validateSearch: zodValidator(exploreSearchSchema),
   search: {
-    middlewares: [
-      stripSearchParams({
-        term: [],
-        dept: [],
-        prof: [],
-        day: [],
-        rsg: [],
-        ft: "filters",
-        sv: "calendar",
-        st: "",
-        q: "",
-        page: 1,
-      } as Record<string, unknown>),
-    ],
+    middlewares: [stripSearchParams(SEARCH_DEFAULTS)],
   },
   loaderDeps: ({ search }) => ({
     term: search.term,
@@ -120,39 +91,24 @@ export const Route = createFileRoute("/explore")({
   }),
   loader: async ({ context, deps }) => {
     const sessionId = getOrCreateSessionId();
-    const tokenHash = getStoredTokenHash();
-    const convexFilters = buildConvexFilters(deps);
+    const tokenHash = getStoredTokenHash() ?? "";
+    const filters = buildConvexFilters(deps);
 
-    const prefetches: Promise<unknown>[] = [
+    await Promise.all([
+      context.queryClient.ensureQueryData(filterOptionsQuery()),
+      context.queryClient.ensureQueryData(scheduleQuery(sessionId)),
       context.queryClient.ensureQueryData(
-        convexQuery(api.explore.filterOptions, {})
-      ),
-      context.queryClient.ensureQueryData(
-        convexQuery(api.schedule.get, { sessionId })
-      ),
-      context.queryClient.ensureQueryData(
-        convexQuery(api.courses.listForExplore, {
+        coursesQuery({
           page: deps.page,
-          pageSize: 10,
-          filters: convexFilters,
-          searchQuery: deps.q || undefined,
+          filters,
+          searchQuery: deps.q,
         })
       ),
       context.queryClient.ensureQueryData(
-        convexQuery(api.sessions.validateSession, {
-          sessionId,
-          tokenHash: tokenHash ?? "",
-        })
+        validateSessionQuery(sessionId, tokenHash)
       ),
-      context.queryClient.ensureQueryData(
-        convexQuery(api.sessions.getUserData, {
-          sessionId,
-          tokenHash: tokenHash ?? "",
-        })
-      ),
-    ];
-
-    await Promise.all(prefetches);
+      context.queryClient.ensureQueryData(userDataQuery(sessionId, tokenHash)),
+    ]);
   },
   component: RouteComponent,
 });

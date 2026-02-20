@@ -15,7 +15,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/hooks/use-auth";
 
 export function ProgressTab() {
-  const { isAuthenticated, userDataStatus, tokenHash, sessionId } = useAuth();
+  const { isAuthenticated, userDataStatus } = useAuth();
   const [isSignInOpen, setIsSignInOpen] = useState(false);
 
   let content: React.ReactNode;
@@ -35,7 +35,7 @@ export function ProgressTab() {
       </Empty>
     );
   } else if (userDataStatus === "ready") {
-    content = <YourProgress sessionId={sessionId} tokenHash={tokenHash} />;
+    content = <YourProgress />;
   } else if (userDataStatus === "error") {
     content = (
       <Empty className="h-2/3 gap-4 p-4">

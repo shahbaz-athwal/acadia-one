@@ -1,9 +1,8 @@
-import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
+import { filterOptionsQuery } from "@/queries/explore";
 import { withSearchDefaults as withDefaults } from "@/routes/explore";
-import { api } from "../../convex/_generated/api";
 
 const routeApi = getRouteApi("/explore");
 
@@ -19,7 +18,7 @@ export function useScheduleView() {
   const navigate = useNavigate();
   const {
     data: { terms },
-  } = useSuspenseQuery(convexQuery(api.explore.filterOptions, {}));
+  } = useSuspenseQuery(filterOptionsQuery());
 
   const view = search.sv;
   const selectedTermCode = search.st;

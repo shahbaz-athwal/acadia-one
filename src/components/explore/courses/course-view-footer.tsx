@@ -8,7 +8,8 @@ import {
   PaginationItem,
   PaginationLink,
 } from "@/components/ui/pagination";
-import { PAGE_SIZE, useExploreCourses } from "@/hooks/use-explore-courses";
+import { useExploreCourses } from "@/hooks/use-explore-courses";
+import { PAGE_SIZE } from "@/queries/explore";
 import { withSearchDefaults } from "@/routes/explore";
 
 const routeApi = getRouteApi("/explore");
@@ -29,10 +30,13 @@ function getPageRange(current: number, total: number) {
 }
 
 export function CourseViewFooter() {
-  const search = routeApi.useSearch();
+  const { page } = routeApi.useSearch({
+    select: (state) => ({
+      page: state.page,
+    }),
+  });
   const { totalCount } = useExploreCourses();
 
-  const page = search.page;
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const start = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
   const end = Math.min(page * PAGE_SIZE, totalCount);

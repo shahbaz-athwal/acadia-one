@@ -1,19 +1,11 @@
-import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { api } from "convex/_generated/api";
+import { useAuth } from "@/hooks/use-auth";
+import { userDataQuery } from "@/queries/explore";
 
-function YourProgress({
-  sessionId,
-  tokenHash,
-}: {
-  sessionId: string;
-  tokenHash: string | null;
-}) {
+function YourProgress() {
+  const { sessionId, tokenHash } = useAuth();
   const { data: userData } = useSuspenseQuery(
-    convexQuery(api.sessions.getUserData, {
-      sessionId,
-      tokenHash: tokenHash ?? "",
-    })
+    userDataQuery(sessionId, tokenHash)
   );
   console.log(userData);
   return (

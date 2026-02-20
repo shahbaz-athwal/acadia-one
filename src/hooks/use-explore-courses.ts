@@ -1,14 +1,8 @@
-import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
-import { buildConvexFilters } from "@/routes/explore";
-import { api } from "../../convex/_generated/api";
+import { buildConvexFilters, coursesQuery } from "@/queries/explore";
 
 const routeApi = getRouteApi("/explore");
-
-const PAGE_SIZE = 10;
-
-export { PAGE_SIZE };
 
 export function useExploreCourses() {
   const search = routeApi.useSearch({
@@ -22,14 +16,12 @@ export function useExploreCourses() {
       rsg: state.rsg,
     }),
   });
-  const convexFilters = buildConvexFilters(search);
 
   const { data } = useSuspenseQuery(
-    convexQuery(api.courses.listForExplore, {
+    coursesQuery({
       page: search.page,
-      pageSize: PAGE_SIZE,
-      filters: convexFilters,
-      searchQuery: search.q || undefined,
+      filters: buildConvexFilters(search),
+      searchQuery: search.q,
     })
   );
 

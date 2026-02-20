@@ -1,11 +1,10 @@
-import { convexQuery } from "@convex-dev/react-query";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { filterOptionsQuery } from "@/queries/explore";
 import {
   SEARCH_DEFAULTS as DEFAULTS,
   withSearchDefaults as withDefaults,
 } from "@/routes/explore";
-import { api } from "../../convex/_generated/api";
 
 const routeApi = getRouteApi("/explore");
 export type FilterPanelTab = "filters" | "progress";
@@ -103,9 +102,7 @@ export function useExploreFilters() {
     });
   };
 
-  const { data: options } = useSuspenseQuery(
-    convexQuery(api.explore.filterOptions, {})
-  );
+  const { data: options } = useSuspenseQuery(filterOptionsQuery());
 
   return {
     filters,
