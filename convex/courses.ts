@@ -1,12 +1,15 @@
 import { ConvexError, v } from "convex/values";
 import { asyncMap } from "convex-helpers";
-import type { Doc } from "./_generated/dataModel";
+import {
+  getManyFrom,
+  getManyVia,
+  getOneFrom,
+} from "convex-helpers/server/relationships";
+import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { query } from "./_generated/server";
 
 interface ResolvedFilters {
-  courseExternalIds: string[];
-  hasRsgFilter: boolean;
   rsgCourseCodes: string[];
   searchQuery: string;
   departmentPrefixes: string[];
@@ -18,7 +21,6 @@ interface ResolvedFilters {
 async function resolveFilters(
   ctx: QueryCtx,
   args: {
-    courseExternalIds?: string[];
     filters?: {
       rsgKeys?: string[];
       termCodes?: string[];
@@ -32,14 +34,11 @@ async function resolveFilters(
   const raw = args.filters;
   const rsgKeys = raw?.rsgKeys ?? [];
 
-  let professorIds: string[] = [];
+  let professorIds: Id<"professors">[] = [];
   const professorExternalIds = raw?.professorExternalIds;
   if (professorExternalIds && professorExternalIds.length > 0) {
     const resolved = await asyncMap(professorExternalIds, (extId) =>
-      ctx.db
-        .query("professors")
-        .withIndex("by_externalId", (q) => q.eq("externalId", extId))
-        .first()
+      getOneFrom(ctx.db, "professors", "by_externalId", extId)
     );
     professorIds = resolved
       .filter((prof): prof is NonNullable<typeof prof> => !!prof)
@@ -49,10 +48,7 @@ async function resolveFilters(
   const rsgCourseCodeSet = new Set<string>();
   if (rsgKeys.length > 0) {
     const entries = await asyncMap(rsgKeys, (key) =>
-      ctx.db
-        .query("rsg")
-        .withIndex("by_key", (q) => q.eq("key", key))
-        .first()
+      getOneFrom(ctx.db, "rsg", "by_key", key)
     );
     for (const entry of entries) {
       if (!entry) {
@@ -65,8 +61,6 @@ async function resolveFilters(
   }
 
   return {
-    courseExternalIds: args.courseExternalIds ?? [],
-    hasRsgFilter: rsgKeys.length > 0,
     rsgCourseCodes: [...rsgCourseCodeSet],
     searchQuery: args.searchQuery?.trim() ?? "",
     departmentPrefixes: raw?.departmentPrefixes ?? [],
@@ -81,18 +75,10 @@ async function collectCourses(
   filters: ResolvedFilters,
   pagination: { page: number; pageSize: number }
 ): Promise<{ courses: Doc<"courses">[]; totalCount: number | null }> {
-  // Strategy 0: RSG keys — resolve to course codes and short-circuit all other strategies
-  if (filters.hasRsgFilter) {
+  // Strategy 1: RSG keys — resolve to course codes and short-circuit all other strategies
+  if (filters.rsgCourseCodes.length > 0) {
     return {
       courses: await collectByCourseCodes(ctx, filters.rsgCourseCodes),
-      totalCount: null,
-    };
-  }
-
-  // Strategy 1: Explicit course IDs — direct lookup by externalId
-  if (filters.courseExternalIds.length > 0) {
-    return {
-      courses: await collectByCourseIds(ctx, filters.courseExternalIds),
       totalCount: null,
     };
   }
@@ -127,7 +113,10 @@ async function collectCourses(
   // Strategy 4: Professor(s) — use courseProfessors junction table
   if (filters.professorIds.length > 0) {
     return {
-      courses: await collectByProfessor(ctx, filters.professorIds),
+      courses: await collectByProfessor(
+        ctx,
+        filters.professorIds as Id<"professors">[]
+      ),
       totalCount: null,
     };
   }
@@ -137,30 +126,12 @@ async function collectCourses(
   return { courses, totalCount: null };
 }
 
-async function collectByCourseIds(
-  ctx: QueryCtx,
-  courseExternalIds: string[]
-): Promise<Doc<"courses">[]> {
-  const courses = await asyncMap(courseExternalIds, (extId) =>
-    ctx.db
-      .query("courses")
-      .withIndex("by_externalId", (q) => q.eq("externalId", extId))
-      .first()
-  );
-  return courses.filter(
-    (course): course is NonNullable<typeof course> => !!course
-  );
-}
-
 async function collectByCourseCodes(
   ctx: QueryCtx,
   courseCodes: string[]
 ): Promise<Doc<"courses">[]> {
   const courses = await asyncMap(courseCodes, (courseCode) =>
-    ctx.db
-      .query("courses")
-      .withIndex("by_code", (q) => q.eq("code", courseCode))
-      .first()
+    getOneFrom(ctx.db, "courses", "by_code", courseCode)
   );
   return courses.filter(
     (course): course is NonNullable<typeof course> => !!course
@@ -181,7 +152,7 @@ async function collectViaSearch(
       const s = q.search("searchText", searchQuery);
       return singleDept ? s.eq("departmentPrefix", singleDept) : s;
     })
-    .take(256);
+    .take(800);
 
   // Multi-department filter in JS (search index only supports single .eq())
   if (departmentPrefixes.length > 1) {
@@ -224,33 +195,27 @@ async function collectByDepartment(
   departmentPrefixes: string[]
 ): Promise<Doc<"courses">[]> {
   const perDept = await asyncMap(departmentPrefixes, (prefix) =>
-    ctx.db
-      .query("courses")
-      .withIndex("by_departmentPrefix", (q) => q.eq("departmentPrefix", prefix))
-      .collect()
+    getManyFrom(ctx.db, "courses", "by_departmentPrefix", prefix)
   );
-
-  if (departmentPrefixes.length === 1) {
-    return perDept[0];
-  }
 
   return perDept.flat().sort((a, b) => a.code.localeCompare(b.code));
 }
 
 async function collectByProfessor(
   ctx: QueryCtx,
-  professorIds: string[]
+  professorIds: Id<"professors">[]
 ): Promise<Doc<"courses">[]> {
   const courseIdSet = new Set<string>();
   const courseDocs: Doc<"courses">[] = [];
 
   await asyncMap(professorIds, async (profId) => {
-    const links = await ctx.db
-      .query("courseProfessors")
-      .withIndex("by_professorId", (q) => q.eq("professorId", profId as never))
-      .collect();
-
-    const courses = await asyncMap(links, (link) => ctx.db.get(link.courseId));
+    const courses = await getManyVia(
+      ctx.db,
+      "courseProfessors",
+      "courseId",
+      "by_professorId",
+      profId
+    );
 
     for (const course of courses) {
       if (course && !courseIdSet.has(course._id)) {

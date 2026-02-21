@@ -1,4 +1,5 @@
 import { v } from "convex/values";
+import { getOneFrom } from "convex-helpers/server/relationships";
 import { literals } from "convex-helpers/validators";
 import { query } from "./_generated/server";
 import { vv } from "./schema";
@@ -20,14 +21,8 @@ export const validateSession = query({
   ),
   handler: async (ctx, args) => {
     const [user, session] = await Promise.all([
-      ctx.db
-        .query("acadiaUsers")
-        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
-        .first(),
-      ctx.db
-        .query("acadiaSessions")
-        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
-        .first(),
+      getOneFrom(ctx.db, "acadiaUsers", "by_sessionId", args.sessionId),
+      getOneFrom(ctx.db, "acadiaSessions", "by_sessionId", args.sessionId),
     ]);
 
     if (!user || user.tokenHash !== args.tokenHash) {
@@ -55,14 +50,8 @@ export const getUserData = query({
   returns: v.union(vv.doc("acadiaUserData"), v.null()),
   handler: async (ctx, args) => {
     const [user, userData] = await Promise.all([
-      ctx.db
-        .query("acadiaUsers")
-        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
-        .first(),
-      ctx.db
-        .query("acadiaUserData")
-        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
-        .first(),
+      getOneFrom(ctx.db, "acadiaUsers", "by_sessionId", args.sessionId),
+      getOneFrom(ctx.db, "acadiaUserData", "by_sessionId", args.sessionId),
     ]);
 
     if (!user || user.tokenHash !== args.tokenHash) {
