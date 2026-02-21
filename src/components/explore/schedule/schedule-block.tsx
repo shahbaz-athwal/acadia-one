@@ -4,11 +4,10 @@ import { cn } from "@/lib/utils";
 
 interface ScheduleBlockProps {
   item: ScheduleItem;
-  dimmed?: boolean;
   className?: string;
 }
 
-export function ScheduleBlock({ item, dimmed, className }: ScheduleBlockProps) {
+export function ScheduleBlock({ item, className }: ScheduleBlockProps) {
   const { top, height } = getBlockPosition(
     item.section.classStartTime,
     item.section.classEndTime
@@ -19,8 +18,7 @@ export function ScheduleBlock({ item, dimmed, className }: ScheduleBlockProps) {
   return (
     <div
       className={cn(
-        "absolute inset-x-0.5 overflow-hidden rounded-md border px-1.5 py-1 text-xs leading-tight transition-opacity",
-        dimmed && "opacity-20",
+        "absolute inset-x-0.5 overflow-hidden rounded-md border px-1.5 py-1 text-xs leading-tight",
         className
       )}
       data-section-id={item.section.id}

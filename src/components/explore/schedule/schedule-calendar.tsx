@@ -150,12 +150,12 @@ export function ScheduleCalendar() {
 
                   {/* Schedule blocks */}
                   {(itemsByDay.get(day) ?? []).map((item) => (
-                    <ScheduleBlock
-                      dimmed={isPreviewing}
-                      item={item}
-                      key={item.scheduleItemId}
-                    />
+                    <ScheduleBlock item={item} key={item.scheduleItemId} />
                   ))}
+
+                  {isPreviewing && (
+                    <div className="absolute inset-0 z-[1] bg-background/60" />
+                  )}
 
                   {/* Preview ghost block */}
                   {previewSection?.section.days.includes(day) && (
@@ -185,7 +185,7 @@ function PreviewBlock({
 
   return (
     <div
-      className="absolute inset-x-0.5 animate-pulse overflow-hidden rounded-md border border-dashed px-1.5 py-1 text-xs leading-tight"
+      className="absolute inset-x-0.5 z-[2] overflow-hidden rounded-md border border-dashed px-1.5 py-1 text-xs leading-tight"
       style={{
         top,
         height,
