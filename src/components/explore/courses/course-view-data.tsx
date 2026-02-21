@@ -54,13 +54,11 @@ export function CourseViewData() {
         return;
       }
 
-      const color = SCHEDULE_COLORS[current.length % SCHEDULE_COLORS.length];
-
       localStore.setQuery(api.schedule.get, { sessionId: args.sessionId }, [
         ...current,
         {
           scheduleItemId: `__optimistic_${Date.now()}` as never,
-          color,
+          color: args.color,
           ...pendingRef.current,
         },
       ]);
@@ -120,6 +118,10 @@ export function CourseViewData() {
                       if (isAdded) {
                         return;
                       }
+                      const color =
+                        SCHEDULE_COLORS[
+                          allItems.length % SCHEDULE_COLORS.length
+                        ] ?? "#94a3b8";
                       pendingRef.current = {
                         section: {
                           id: s.id,
@@ -139,7 +141,7 @@ export function CourseViewData() {
                           credits: course.credits,
                         },
                       };
-                      addSection({ sessionId, sectionId: s._id });
+                      addSection({ sessionId, sectionId: s._id, color });
                     }}
                     onMouseEnter={() => {
                       if (isAdded) {
