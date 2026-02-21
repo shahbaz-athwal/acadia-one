@@ -14,6 +14,8 @@ export function useExploreCourses() {
       prof: state.prof,
       day: state.day,
       rsg: state.rsg,
+      ts: state.ts,
+      te: state.te,
     }),
   });
 

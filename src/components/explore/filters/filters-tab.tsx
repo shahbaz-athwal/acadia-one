@@ -3,6 +3,7 @@ import { DaysFilter } from "@/components/explore/filters/days-filter";
 import { DepartmentFilter } from "@/components/explore/filters/department-filter";
 import { ProfessorFilter } from "@/components/explore/filters/professor-filter";
 import { TermFilter } from "@/components/explore/filters/term-filter";
+import { TimeRangeFilter } from "@/components/explore/filters/time-range-filter";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
@@ -13,7 +14,9 @@ export function FiltersTab() {
     filters.termCodes.length > 0 ||
     filters.departmentPrefixes.length > 0 ||
     filters.professorExternalIds.length > 0 ||
-    filters.days.length > 0;
+    filters.days.length > 0 ||
+    filters.timeStart > 0 ||
+    filters.timeEnd > 0;
 
   return (
     <div className="flex h-full flex-col p-2">
@@ -34,6 +37,10 @@ export function FiltersTab() {
           <FilterSection label="Days">
             <DaysFilter />
           </FilterSection>
+
+          <FilterSection label="Time Range">
+            <TimeRangeFilter />
+          </FilterSection>
         </div>
       </ScrollArea>
 
@@ -47,6 +54,8 @@ export function FiltersTab() {
                 departmentPrefixes: [],
                 professorExternalIds: [],
                 days: [],
+                timeStart: 0,
+                timeEnd: 0,
               })
             }
             size="sm"

@@ -17,6 +17,8 @@ export function useExploreFilters() {
       prof: state.prof,
       day: state.day,
       rsg: state.rsg,
+      ts: state.ts,
+      te: state.te,
       ft: state.ft,
       q: state.q,
     }),
@@ -28,6 +30,8 @@ export function useExploreFilters() {
     professorExternalIds: search.prof,
     days: search.day,
     rsgKeys: search.rsg,
+    timeStart: search.ts,
+    timeEnd: search.te,
   };
   const panelTab = search.ft;
   const searchQuery = search.q;
@@ -74,6 +78,13 @@ export function useExploreFilters() {
     });
   };
 
+  const setTimeRange = (timeStart: number, timeEnd: number) => {
+    navigate({
+      to: "/explore",
+      search: (prev) => ({ ...withDefaults(prev), ts: timeStart, te: timeEnd }),
+    });
+  };
+
   const setPanelTab = (tab: FilterPanelTab) => {
     navigate({
       to: "/explore",
@@ -91,6 +102,8 @@ export function useExploreFilters() {
         prof: partial.professorExternalIds ?? prev.prof,
         day: partial.days ?? prev.day,
         rsg: partial.rsgKeys ?? prev.rsg,
+        ts: partial.timeStart ?? prev.ts,
+        te: partial.timeEnd ?? prev.te,
       }),
     });
   };
@@ -115,6 +128,7 @@ export function useExploreFilters() {
     setProfessorExternalIds,
     setDays,
     setRsgKeys,
+    setTimeRange,
     setPanelTab,
     setFilters,
     clearFilters,

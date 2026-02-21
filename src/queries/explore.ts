@@ -9,8 +9,10 @@ export function buildConvexFilters(search: {
   prof: string[];
   day: number[];
   rsg: string[];
+  ts: number;
+  te: number;
 }) {
-  const f: Record<string, string[] | number[]> = {};
+  const f: Record<string, string[] | number[] | number> = {};
   if (search.term.length > 0) {
     f.termCodes = [...search.term].sort();
   }
@@ -25,6 +27,12 @@ export function buildConvexFilters(search: {
   }
   if (search.rsg.length > 0) {
     f.rsgKeys = [...search.rsg].sort();
+  }
+  if (search.ts > 0) {
+    f.timeStart = search.ts;
+  }
+  if (search.te > 0) {
+    f.timeEnd = search.te;
   }
   return Object.keys(f).length > 0 ? f : undefined;
 }

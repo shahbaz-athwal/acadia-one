@@ -14,7 +14,8 @@ export function FilterPanel() {
     filters.termCodes.length +
     filters.departmentPrefixes.length +
     filters.professorExternalIds.length +
-    filters.days.length;
+    filters.days.length +
+    (filters.timeStart > 0 || filters.timeEnd > 0 ? 1 : 0);
 
   const panelTabs: TabItem[] = [
     {

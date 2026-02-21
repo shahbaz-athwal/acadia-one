@@ -16,6 +16,8 @@ interface ResolvedFilters {
   termCodes: string[];
   professorIds: string[];
   days: number[];
+  timeStart: number;
+  timeEnd: number;
 }
 
 async function resolveFilters(
@@ -27,6 +29,8 @@ async function resolveFilters(
       departmentPrefixes?: string[];
       professorExternalIds?: string[];
       days?: number[];
+      timeStart?: number;
+      timeEnd?: number;
     };
     searchQuery?: string;
   }
@@ -67,6 +71,8 @@ async function resolveFilters(
     termCodes: raw?.termCodes ?? [],
     professorIds,
     days: raw?.days ?? [],
+    timeStart: raw?.timeStart ?? 0,
+    timeEnd: raw?.timeEnd ?? 0,
   };
 }
 
@@ -274,16 +280,75 @@ function paginate(
   return courses.slice(start, start + pagination.pageSize);
 }
 
-async function enrichWithSections(ctx: QueryCtx, courses: Doc<"courses">[]) {
+const AMPM_REGEX = /^(\d{1,2}):(\d{2})\s*(AM|PM|am|pm|a\.m\.|p\.m\.)$/;
+const TIME_24H_REGEX = /^(\d{1,2}):(\d{2})$/;
+
+function parseTimeToMinutes(time: string): number {
+  const trimmed = time.trim();
+  const ampmMatch = trimmed.match(AMPM_REGEX);
+  if (ampmMatch) {
+    let hours = Number.parseInt(ampmMatch[1], 10);
+    const minutes = Number.parseInt(ampmMatch[2], 10);
+    const period = ampmMatch[3].toLowerCase().replace(/\./g, "");
+    if (period === "pm" && hours !== 12) {
+      hours += 12;
+    }
+    if (period === "am" && hours === 12) {
+      hours = 0;
+    }
+    return hours * 60 + minutes;
+  }
+
+  const match24 = trimmed.match(TIME_24H_REGEX);
+  if (match24) {
+    return (
+      Number.parseInt(match24[1], 10) * 60 + Number.parseInt(match24[2], 10)
+    );
+  }
+  return 0;
+}
+
+function isSectionInTimeRange(
+  section: Doc<"sections">,
+  filters: ResolvedFilters
+): boolean {
+  if (filters.timeStart <= 0 && filters.timeEnd <= 0) {
+    return true;
+  }
+  const sectionStartMinutes = parseTimeToMinutes(section.classStartTime);
+  if (filters.timeStart > 0 && sectionStartMinutes < filters.timeStart) {
+    return false;
+  }
+  if (filters.timeEnd > 0 && sectionStartMinutes > filters.timeEnd) {
+    return false;
+  }
+  return true;
+}
+
+async function enrichWithSections(
+  ctx: QueryCtx,
+  courses: Doc<"courses">[],
+  filters: ResolvedFilters
+) {
   return await asyncMap(courses, async (course) => {
     const sections = await ctx.db
       .query("sections")
       .withIndex("by_courseId", (q) => q.eq("courseId", course._id))
       .collect();
+    const filteredSections = sections.filter((section) =>
+      isSectionInTimeRange(section, filters)
+    );
+
+    if (
+      filteredSections.length === 0 &&
+      (filters.timeStart > 0 || filters.timeEnd > 0)
+    ) {
+      return null;
+    }
 
     const sectionProfessorIds = Array.from(
       new Set(
-        sections
+        filteredSections
           .map((section) => section.professorId)
           .filter((id): id is NonNullable<typeof id> => !!id)
       )
@@ -319,7 +384,7 @@ async function enrichWithSections(ctx: QueryCtx, courses: Doc<"courses">[]) {
       avgDifficulty: course.avgDifficulty,
       ratingCount: course.ratingCount,
       requisites,
-      sections: sections
+      sections: filteredSections
         .map((section) => {
           const professor = section.professorId
             ? professorById.get(section.professorId)
@@ -359,6 +424,8 @@ export const listForExplore = query({
         departmentPrefixes: v.optional(v.array(v.string())),
         professorExternalIds: v.optional(v.array(v.string())),
         days: v.optional(v.array(v.number())),
+        timeStart: v.optional(v.number()),
+        timeEnd: v.optional(v.number()),
       })
     ),
     searchQuery: v.optional(v.string()),
@@ -376,7 +443,9 @@ export const listForExplore = query({
     );
     const filtered = applyPostFilters(courses, filters);
     const pageCourses = paginate(filtered, paginationOptions);
-    const page = await enrichWithSections(ctx, pageCourses);
+    const page = (await enrichWithSections(ctx, pageCourses, filters)).filter(
+      (course): course is NonNullable<typeof course> => course !== null
+    );
 
     return {
       page,
