@@ -163,12 +163,20 @@ export async function getAcadiaImpersonator(
     return new AcadiaImpersonator(user.studentId.slice(0, -1), cookies);
   }
 
-  const { username, password } = decryptCredentials(
+  const decryptedCredentials = decryptCredentials(
     user.encryptedCredentials,
     decryptionToken
   );
+  if (!decryptedCredentials.ok) {
+    throw new Error(decryptedCredentials.error);
+  }
+  const { username, password } = decryptedCredentials.value;
   if (!cookies || isAcadiaSessionExpired(session.lastAcadiaAuth)) {
-    cookies = await authenticateWithAxios(username, password);
+    const authResult = await authenticateWithAxios(username, password);
+    if (!authResult.ok) {
+      throw new Error(authResult.error);
+    }
+    cookies = authResult.cookies;
     await ctx.runMutation(internal.internal.upsertAcadiaSession, {
       sessionId,
       cookies,

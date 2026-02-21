@@ -7,7 +7,7 @@ import { action } from "./_generated/server";
 import { authenticateWithAxios } from "./acadia/auth";
 import { encryptCredentials } from "./lib/encryption";
 
-type AuthResult =
+type AuthenticateUserResult =
   | {
       success: true;
       token: string;
@@ -32,40 +32,43 @@ export const authenticateUser = action(
       username: string;
       password: string;
     }
-  ): Promise<AuthResult> => {
+  ): Promise<AuthenticateUserResult> => {
+    const authResult = await authenticateWithAxios(username, password);
+    if (!authResult.ok) {
+      console.error("Authentication failed.", authResult.error);
+      return {
+        success: false,
+        error: "Authentication failed. Please check your credentials.",
+        details: authResult.error,
+        status: 401,
+      };
+    }
+    const cookies = authResult.cookies;
+
+    const token = crypto.randomBytes(32).toString("hex");
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(Buffer.from(token, "hex"))
+      .digest("hex");
+
+    // Encrypt credentials using the token as the encryption key
+    const encryptedResult = encryptCredentials(username, password, token);
+    if (!encryptedResult.ok) {
+      return {
+        success: false,
+        error: "Failed to secure credentials",
+        details: encryptedResult.error,
+        status: 500,
+      };
+    }
+    const encryptedCredentials = encryptedResult.value;
+
+    // Calculate expiration (7 days from now)
+    const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const expiresAt = now + sevenDaysInMs;
+
     try {
-      // Authenticate with Acadia
-      let cookies: string;
-      try {
-        cookies = await authenticateWithAxios(username, password);
-      } catch (error) {
-        console.error("Authentication failed.", error);
-        return {
-          success: false,
-          error: "Authentication failed. Please check your credentials.",
-          details: error instanceof Error ? error.message : "Unknown error",
-          status: 401,
-        };
-      }
-
-      const token = crypto.randomBytes(32).toString("hex");
-      const tokenHash = crypto
-        .createHash("sha256")
-        .update(Buffer.from(token, "hex"))
-        .digest("hex");
-
-      // Encrypt credentials using the token as the encryption key
-      const encryptedCredentials = encryptCredentials(
-        username,
-        password,
-        token
-      );
-
-      // Calculate expiration (7 days from now)
-      const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
-      const now = Date.now();
-      const expiresAt = now + sevenDaysInMs;
-
       await ctx.runMutation(internal.internal.createAcadiaSessionAndUser, {
         sessionId,
         cookies,

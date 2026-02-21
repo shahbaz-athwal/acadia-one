@@ -133,7 +133,11 @@ export async function getAcadiaScraper(ctx: ActionCtx) {
     throw new Error("ACADIA_PASSWORD is not set");
   }
 
-  const cookies = await authenticateWithAxios(username, password);
+  const authResult = await authenticateWithAxios(username, password);
+  if (!authResult.ok) {
+    throw new Error(authResult.error);
+  }
+  const cookies = authResult.cookies;
 
   const expiresAt = now + DEFAULT_AUTH_TIMEOUT_MS;
   await ctx.runMutation(internal.internal.upsertAcadiaSession, {

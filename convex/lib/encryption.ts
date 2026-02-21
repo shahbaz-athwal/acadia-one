@@ -2,6 +2,8 @@
 
 import crypto from "node:crypto";
 
+export type Result<T> = { ok: true; value: T } | { ok: false; error: string };
+
 /**
  * Encrypts user credentials using AES-256-GCM with the provided token as the encryption key.
  *
@@ -9,13 +11,12 @@ import crypto from "node:crypto";
  * @param password - The password to encrypt
  * @param token - The 32-byte hex token used as the encryption key
  * @returns Encrypted string in format: ${iv}:${authTag}:${encryptedData} (hex encoded)
- * @throws Error if encryption fails
  */
 export function encryptCredentials(
   username: string,
   password: string,
   token: string
-): string {
+): Result<string> {
   try {
     // Create the plaintext JSON object
     const plaintext = JSON.stringify({ username, password });
@@ -37,11 +38,17 @@ export function encryptCredentials(
     const authTag = cipher.getAuthTag();
 
     // Return format: iv:authTag:encryptedData (all hex encoded)
-    return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
+    return {
+      ok: true,
+      value: `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`,
+    };
   } catch (error) {
-    throw new Error(
-      `Encryption failed: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
+    return {
+      ok: false,
+      error: `Encryption failed: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
+    };
   }
 }
 
@@ -51,17 +58,19 @@ export function encryptCredentials(
  * @param encryptedString - The encrypted string in format: ${iv}:${authTag}:${encryptedData}
  * @param token - The 32-byte hex token used as the decryption key
  * @returns Object containing the decrypted username and password
- * @throws Error if decryption fails (invalid token or tampered data)
  */
 export function decryptCredentials(
   encryptedString: string,
   token: string
-): { username: string; password: string } {
+): Result<{ username: string; password: string }> {
   try {
     // Split the encrypted string to extract components
     const parts = encryptedString.split(":");
     if (parts.length !== 3) {
-      throw new Error("Invalid encrypted string format");
+      return {
+        ok: false,
+        error: "Decryption failed: Invalid encrypted format",
+      };
     }
 
     const [ivHex, authTagHex, encryptedHex] = parts;
@@ -87,10 +96,13 @@ export function decryptCredentials(
       password: string;
     };
 
-    return credentials;
+    return { ok: true, value: credentials };
   } catch (error) {
-    throw new Error(
-      `Decryption failed: ${error instanceof Error ? error.message : "Unknown error"}`
-    );
+    return {
+      ok: false,
+      error: `Decryption failed: ${
+        error instanceof Error ? error.message : "Unknown error"
+      }`,
+    };
   }
 }
