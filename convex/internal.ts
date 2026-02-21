@@ -295,6 +295,12 @@ function buildSearchText(course: { code: string; title: string }) {
   return `${course.code} ${course.title} ${splitCode}`;
 }
 
+const IS_LAB_COURSE_REGEX = /\d+L$/i;
+
+function isLabCourse(code: string): boolean {
+  return IS_LAB_COURSE_REGEX.test(code);
+}
+
 export const upsertCourses = internalMutation({
   args: {
     courses: v.array(
@@ -331,6 +337,7 @@ export const upsertCourses = internalMutation({
         )
         .first();
       const searchText = buildSearchText(course);
+      const isLab = isLabCourse(course.code);
       if (existing) {
         await ctx.db.patch(existing._id, {
           code: course.code,
@@ -341,11 +348,13 @@ export const upsertCourses = internalMutation({
           credits: course.credits,
           requisites: course.requisites,
           searchText,
+          isLab,
         });
       } else {
         await ctx.db.insert("courses", {
           ...course,
           searchText,
+          isLab,
           lastSectionPulledAt: undefined,
           ratingCount: 0,
           avgDifficulty: null,
@@ -392,6 +401,21 @@ export const backfillSearchText = internalMutation({
     for (const course of courses) {
       await ctx.db.patch(course._id, {
         searchText: buildSearchText(course),
+      });
+      updated += 1;
+    }
+    return updated;
+  },
+});
+
+export const backfillIsLab = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const courses = await ctx.db.query("courses").collect();
+    let updated = 0;
+    for (const course of courses) {
+      await ctx.db.patch(course._id, {
+        isLab: isLabCourse(course.code),
       });
       updated += 1;
     }
