@@ -1,11 +1,11 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { SCHEDULE_COLORS } from "./lib/constants";
 
 export const addSection = mutation({
   args: {
     sessionId: v.string(),
     sectionId: v.id("sections"),
+    color: v.string(),
   },
   returns: v.object({
     id: v.id("scheduleItems"),
@@ -30,23 +30,14 @@ export const addSection = mutation({
       throw new ConvexError("Section already in schedule");
     }
 
-    // Count existing items to determine color
-    const existingItems = await ctx.db
-      .query("scheduleItems")
-      .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
-      .collect();
-
-    const color =
-      SCHEDULE_COLORS[existingItems.length % SCHEDULE_COLORS.length];
-
     const id = await ctx.db.insert("scheduleItems", {
       sessionId: args.sessionId,
       sectionId: args.sectionId,
-      color,
+      color: args.color,
       addedAt: Date.now(),
     });
 
-    return { id, color };
+    return { id, color: args.color };
   },
 });
 
