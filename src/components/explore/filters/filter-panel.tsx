@@ -14,7 +14,8 @@ export function FilterPanel() {
     filters.termCodes.length +
     filters.departmentPrefixes.length +
     filters.professorExternalIds.length +
-    filters.days.length;
+    filters.days.length +
+    filters.academicLevels.length;
 
   const panelTabs: TabItem[] = [
     {

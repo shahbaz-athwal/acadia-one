@@ -295,6 +295,21 @@ function buildSearchText(course: { code: string; title: string }) {
   return `${course.code} ${course.title} ${splitCode}`;
 }
 
+const STARTS_WITH_DIGIT_REGEX = /^\d/;
+
+function getAcademicLevel(code: string): number {
+  const parts = code.match(/([A-Z]+|\d+)/g);
+  if (!parts) {
+    return 0;
+  }
+  const numericPart = parts.find((part) => STARTS_WITH_DIGIT_REGEX.test(part));
+  if (!numericPart) {
+    return 0;
+  }
+  const level = Number.parseInt(numericPart[0], 10);
+  return Number.isFinite(level) ? level : 0;
+}
+
 export const upsertCourses = internalMutation({
   args: {
     courses: v.array(
@@ -331,6 +346,7 @@ export const upsertCourses = internalMutation({
         )
         .first();
       const searchText = buildSearchText(course);
+      const academicLevel = getAcademicLevel(course.code);
       if (existing) {
         await ctx.db.patch(existing._id, {
           code: course.code,
@@ -341,11 +357,13 @@ export const upsertCourses = internalMutation({
           credits: course.credits,
           requisites: course.requisites,
           searchText,
+          academicLevel,
         });
       } else {
         await ctx.db.insert("courses", {
           ...course,
           searchText,
+          academicLevel,
           lastSectionPulledAt: undefined,
           ratingCount: 0,
           avgDifficulty: null,
@@ -392,6 +410,21 @@ export const backfillSearchText = internalMutation({
     for (const course of courses) {
       await ctx.db.patch(course._id, {
         searchText: buildSearchText(course),
+      });
+      updated += 1;
+    }
+    return updated;
+  },
+});
+
+export const backfillAcademicLevel = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const courses = await ctx.db.query("courses").collect();
+    let updated = 0;
+    for (const course of courses) {
+      await ctx.db.patch(course._id, {
+        academicLevel: getAcademicLevel(course.code),
       });
       updated += 1;
     }

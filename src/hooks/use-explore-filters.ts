@@ -16,6 +16,7 @@ export function useExploreFilters() {
       dept: state.dept,
       prof: state.prof,
       day: state.day,
+      lvl: state.lvl,
       rsg: state.rsg,
       ft: state.ft,
       q: state.q,
@@ -27,6 +28,7 @@ export function useExploreFilters() {
     departmentPrefixes: search.dept,
     professorExternalIds: search.prof,
     days: search.day,
+    academicLevels: search.lvl,
     rsgKeys: search.rsg,
   };
   const panelTab = search.ft;
@@ -67,6 +69,13 @@ export function useExploreFilters() {
     });
   };
 
+  const setAcademicLevels = (academicLevels: number[]) => {
+    navigate({
+      to: "/explore",
+      search: (prev) => ({ ...withDefaults(prev), lvl: academicLevels }),
+    });
+  };
+
   const setRsgKeys = (rsgKeys: string[]) => {
     navigate({
       to: "/explore",
@@ -90,6 +99,7 @@ export function useExploreFilters() {
         dept: partial.departmentPrefixes ?? prev.dept,
         prof: partial.professorExternalIds ?? prev.prof,
         day: partial.days ?? prev.day,
+        lvl: partial.academicLevels ?? prev.lvl,
         rsg: partial.rsgKeys ?? prev.rsg,
       }),
     });
@@ -114,6 +124,7 @@ export function useExploreFilters() {
     setDepartmentPrefixes,
     setProfessorExternalIds,
     setDays,
+    setAcademicLevels,
     setRsgKeys,
     setPanelTab,
     setFilters,

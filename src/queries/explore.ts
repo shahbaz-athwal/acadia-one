@@ -8,6 +8,7 @@ export function buildConvexFilters(search: {
   dept: string[];
   prof: string[];
   day: number[];
+  lvl: number[];
   rsg: string[];
 }) {
   const f: Record<string, string[] | number[]> = {};
@@ -22,6 +23,9 @@ export function buildConvexFilters(search: {
   }
   if (search.day.length > 0) {
     f.days = [...search.day].sort((a, b) => a - b);
+  }
+  if (search.lvl.length > 0) {
+    f.academicLevels = [...search.lvl].sort((a, b) => a - b);
   }
   if (search.rsg.length > 0) {
     f.rsgKeys = [...search.rsg].sort();

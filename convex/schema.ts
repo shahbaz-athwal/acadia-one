@@ -175,6 +175,7 @@ const schema = defineSchema({
     departmentPrefix: v.string(),
     matchingSectionIds: v.array(v.string()),
     credits: v.number(),
+    academicLevel: v.optional(v.number()),
     requisites: v.optional(
       v.array(
         v.object({

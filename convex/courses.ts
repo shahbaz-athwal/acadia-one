@@ -16,6 +16,7 @@ interface ResolvedFilters {
   termCodes: string[];
   professorIds: string[];
   days: number[];
+  academicLevels: number[];
 }
 
 async function resolveFilters(
@@ -27,6 +28,7 @@ async function resolveFilters(
       departmentPrefixes?: string[];
       professorExternalIds?: string[];
       days?: number[];
+      academicLevels?: number[];
     };
     searchQuery?: string;
   }
@@ -67,6 +69,7 @@ async function resolveFilters(
     termCodes: raw?.termCodes ?? [],
     professorIds,
     days: raw?.days ?? [],
+    academicLevels: raw?.academicLevels ?? [],
   };
 }
 
@@ -236,7 +239,8 @@ function applyPostFilters(
   const hasPostFilters =
     filters.termCodes.length > 0 ||
     filters.professorIds.length > 0 ||
-    filters.days.length > 0;
+    filters.days.length > 0 ||
+    filters.academicLevels.length > 0;
 
   if (!hasPostFilters) {
     return courses;
@@ -248,6 +252,8 @@ function applyPostFilters(
   const profSet =
     filters.professorIds.length > 0 ? new Set(filters.professorIds) : null;
   const daySet = filters.days.length > 0 ? new Set(filters.days) : null;
+  const levelSet =
+    filters.academicLevels.length > 0 ? new Set(filters.academicLevels) : null;
 
   return courses.filter((course) => {
     if (termSet && !course.sectionTermCodes?.some((tc) => termSet.has(tc))) {
@@ -260,6 +266,9 @@ function applyPostFilters(
       return false;
     }
     if (daySet && !course.sectionDays?.some((d) => daySet.has(d))) {
+      return false;
+    }
+    if (levelSet && !levelSet.has(course.academicLevel ?? 0)) {
       return false;
     }
     return true;
@@ -359,6 +368,7 @@ export const listForExplore = query({
         departmentPrefixes: v.optional(v.array(v.string())),
         professorExternalIds: v.optional(v.array(v.string())),
         days: v.optional(v.array(v.number())),
+        academicLevels: v.optional(v.array(v.number())),
       })
     ),
     searchQuery: v.optional(v.string()),
