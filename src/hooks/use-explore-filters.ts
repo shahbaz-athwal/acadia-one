@@ -1,5 +1,9 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import {
+  TIME_RANGE_MAX_MINUTES,
+  TIME_RANGE_MINUTES,
+} from "@/lib/explore-filter-constants";
 import { filterOptionsQuery } from "@/queries/explore";
 import {
   SEARCH_DEFAULTS as DEFAULTS,
@@ -8,6 +12,13 @@ import {
 
 const routeApi = getRouteApi("/explore");
 export type FilterPanelTab = "filters" | "progress";
+function normalizeMinute(value: number): number {
+  const roundedToHalfHour = Math.round(value / 30) * 30;
+  return Math.max(
+    TIME_RANGE_MINUTES,
+    Math.min(TIME_RANGE_MAX_MINUTES, roundedToHalfHour)
+  );
+}
 
 export function useExploreFilters() {
   const search = routeApi.useSearch({
@@ -16,7 +27,10 @@ export function useExploreFilters() {
       dept: state.dept,
       prof: state.prof,
       day: state.day,
+      lvl: state.lvl,
       rsg: state.rsg,
+      ts: state.ts,
+      te: state.te,
       ft: state.ft,
       q: state.q,
     }),
@@ -27,6 +41,9 @@ export function useExploreFilters() {
     departmentPrefixes: search.dept,
     professorExternalIds: search.prof,
     days: search.day,
+    academicLevels: search.lvl,
+    timeStart: search.ts,
+    timeEnd: search.te,
     rsgKeys: search.rsg,
   };
   const panelTab = search.ft;
@@ -74,6 +91,27 @@ export function useExploreFilters() {
     });
   };
 
+  const setAcademicLevels = (academicLevels: number[]) => {
+    navigate({
+      to: "/explore",
+      search: (prev) => ({ ...withDefaults(prev), lvl: academicLevels }),
+    });
+  };
+
+  const setTimeRange = (timeRange: [number, number]) => {
+    const [rawStart, rawEnd] = timeRange;
+    const start = normalizeMinute(rawStart);
+    const end = normalizeMinute(rawEnd);
+    navigate({
+      to: "/explore",
+      search: (prev) => ({
+        ...withDefaults(prev),
+        ts: Math.min(start, end),
+        te: Math.max(start, end),
+      }),
+    });
+  };
+
   const setPanelTab = (tab: FilterPanelTab) => {
     navigate({
       to: "/explore",
@@ -90,6 +128,9 @@ export function useExploreFilters() {
         dept: partial.departmentPrefixes ?? prev.dept,
         prof: partial.professorExternalIds ?? prev.prof,
         day: partial.days ?? prev.day,
+        lvl: partial.academicLevels ?? prev.lvl,
+        ts: partial.timeStart ?? prev.ts,
+        te: partial.timeEnd ?? prev.te,
         rsg: partial.rsgKeys ?? prev.rsg,
       }),
     });
@@ -114,6 +155,8 @@ export function useExploreFilters() {
     setDepartmentPrefixes,
     setProfessorExternalIds,
     setDays,
+    setAcademicLevels,
+    setTimeRange,
     setRsgKeys,
     setPanelTab,
     setFilters,

@@ -5,6 +5,9 @@ import type { Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery } from "./_generated/server";
 import { vv } from "./schema";
 
+const IS_LAB_COURSE_CODE_RE = /\d+L$/;
+const ACADEMIC_LEVEL_RE = /(\d{3,4})[A-Z]?$/;
+
 export const getAcadiaSession = internalQuery({
   args: { sessionId: v.string() },
   returns: v.union(
@@ -295,6 +298,18 @@ function buildSearchText(course: { code: string; title: string }) {
   return `${course.code} ${course.title} ${splitCode}`;
 }
 
+function isLabCourseCode(courseCode: string) {
+  return IS_LAB_COURSE_CODE_RE.test(courseCode.trim().toUpperCase());
+}
+
+function getAcademicLevel(courseCode: string) {
+  const normalizedCode = courseCode.trim().toUpperCase();
+  const match = normalizedCode.match(ACADEMIC_LEVEL_RE);
+  const levelDigit = match?.[1]?.[0];
+  const parsed = levelDigit ? Number.parseInt(levelDigit, 10) : Number.NaN;
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 export const upsertCourses = internalMutation({
   args: {
     courses: v.array(
@@ -331,6 +346,8 @@ export const upsertCourses = internalMutation({
         )
         .first();
       const searchText = buildSearchText(course);
+      const isLab = isLabCourseCode(course.code);
+      const academicLevel = getAcademicLevel(course.code);
       if (existing) {
         await ctx.db.patch(existing._id, {
           code: course.code,
@@ -339,12 +356,16 @@ export const upsertCourses = internalMutation({
           departmentPrefix: course.departmentPrefix,
           matchingSectionIds: course.matchingSectionIds,
           credits: course.credits,
+          isLab,
+          academicLevel,
           requisites: course.requisites,
           searchText,
         });
       } else {
         await ctx.db.insert("courses", {
           ...course,
+          isLab,
+          academicLevel,
           searchText,
           lastSectionPulledAt: undefined,
           ratingCount: 0,

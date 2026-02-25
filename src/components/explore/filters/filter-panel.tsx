@@ -6,6 +6,7 @@ import SmoothTab from "@/components/kokonutui/smooth-tab";
 import { SlidersHorizontalIcon } from "@/components/ui/sliders-horizontal";
 import { TrendingUpIcon } from "@/components/ui/trending-up";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
+import { SEARCH_DEFAULTS } from "@/routes/explore";
 
 export function FilterPanel() {
   const { filters, panelTab, setPanelTab } = useExploreFilters();
@@ -14,7 +15,12 @@ export function FilterPanel() {
     filters.termCodes.length +
     filters.departmentPrefixes.length +
     filters.professorExternalIds.length +
-    filters.days.length;
+    filters.days.length +
+    filters.academicLevels.length +
+    (filters.timeStart !== SEARCH_DEFAULTS.ts ||
+    filters.timeEnd !== SEARCH_DEFAULTS.te
+      ? 1
+      : 0);
 
   const panelTabs: TabItem[] = [
     {
