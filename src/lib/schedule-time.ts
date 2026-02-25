@@ -13,7 +13,7 @@ export const GRID_END_MINUTES = 21 * 60 + 30;
 export const SLOT_COUNT = (GRID_END_MINUTES - GRID_START_MINUTES) / 30; // 27
 
 /** Height of a single 30-minute slot in pixels. */
-export const SLOT_HEIGHT = 25;
+export const SLOT_HEIGHT = 45;
 
 /** Width of the time gutter column in pixels. */
 export const TIME_GUTTER_WIDTH = 56;
@@ -68,9 +68,12 @@ export function parseTimeToMinutes(time: string): number {
  * Convert total minutes since midnight to a Y-pixel offset relative to
  * the top of the grid body (where GRID_START_MINUTES begins).
  */
-export function minutesToPixelOffset(minutes: number): number {
+export function minutesToPixelOffset(
+  minutes: number,
+  slotHeight: number = SLOT_HEIGHT
+): number {
   const elapsed = minutes - GRID_START_MINUTES;
-  return (elapsed / 30) * SLOT_HEIGHT;
+  return (elapsed / 30) * slotHeight;
 }
 
 /**
@@ -78,12 +81,13 @@ export function minutesToPixelOffset(minutes: number): number {
  */
 export function getBlockPosition(
   startTime: string,
-  endTime: string
+  endTime: string,
+  slotHeight: number = SLOT_HEIGHT
 ): { top: number; height: number } {
   const startMinutes = parseTimeToMinutes(startTime);
   const endMinutes = parseTimeToMinutes(endTime);
-  const top = minutesToPixelOffset(startMinutes);
-  const height = ((endMinutes - startMinutes) / 30) * SLOT_HEIGHT;
+  const top = minutesToPixelOffset(startMinutes, slotHeight);
+  const height = ((endMinutes - startMinutes) / 30) * slotHeight;
   return { top, height };
 }
 

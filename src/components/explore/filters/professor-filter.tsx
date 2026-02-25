@@ -44,6 +44,7 @@ export function ProfessorFilter() {
                 <ComboboxChip key={prof.value}>{prof.label}</ComboboxChip>
               ))}
               <ComboboxInput
+                className="text-sm sm:text-xs"
                 placeholder={values.length > 0 ? "" : "Search professors..."}
               />
             </>
@@ -54,7 +55,11 @@ export function ProfessorFilter() {
         <ComboboxEmpty>No professors found</ComboboxEmpty>
         <ComboboxList>
           {(prof: FilterOption) => (
-            <ComboboxItem key={prof.value} value={prof}>
+            <ComboboxItem
+              className="min-h-7 py-0.5 text-sm sm:min-h-6 sm:text-xs"
+              key={prof.value}
+              value={prof}
+            >
               {prof.label}
             </ComboboxItem>
           )}

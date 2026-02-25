@@ -6,12 +6,19 @@ interface ScheduleBlockProps {
   item: ScheduleItem;
   dimmed?: boolean;
   className?: string;
+  slotHeight?: number;
 }
 
-export function ScheduleBlock({ item, dimmed, className }: ScheduleBlockProps) {
+export function ScheduleBlock({
+  item,
+  dimmed,
+  className,
+  slotHeight,
+}: ScheduleBlockProps) {
   const { top, height } = getBlockPosition(
     item.section.classStartTime,
-    item.section.classEndTime
+    item.section.classEndTime,
+    slotHeight
   );
 
   const isCompact = height <= 40;

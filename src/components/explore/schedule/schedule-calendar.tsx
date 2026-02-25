@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   type ScheduleItem,
@@ -19,6 +19,9 @@ import { cn } from "@/lib/utils";
 import { ScheduleBlock } from "./schedule-block";
 
 const DAY_MIN_WIDTH = 100;
+const MIN_SLOT_HEIGHT = 14;
+const MAX_SLOT_HEIGHT = SLOT_HEIGHT;
+const HEADER_ROW_CHROME = 1;
 
 /** Group schedule items by day number for efficient lookup. */
 function groupByDay(items: ScheduleItem[]): Map<number, ScheduleItem[]> {
@@ -40,48 +43,56 @@ export function ScheduleCalendar() {
   const { items } = useScheduleItems();
   const { previewSection } = useSchedulePreview();
   const timeSlots = useMemo(() => getTimeSlots(), []);
+  const gridLineSlots = useMemo(() => timeSlots.slice(0, -1), [timeSlots]);
   const itemsByDay = useMemo(() => groupByDay(items ?? []), [items]);
   const isPreviewing = previewSection !== null;
 
-  const gridHeight = SLOT_COUNT * SLOT_HEIGHT;
+  const calendarRef = useRef<HTMLDivElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
-  const scrollWrapperRef = useRef<HTMLDivElement>(null);
-
-  // Sync the time gutter's vertical scroll with the ScrollArea viewport.
-  const syncGutter = useCallback(() => {
-    const wrapper = scrollWrapperRef.current;
-    if (!wrapper) {
-      return;
-    }
-    const gutter = gutterRef.current;
-    if (!gutter) {
-      return;
-    }
-    const viewport = wrapper.querySelector<HTMLElement>(
-      '[data-slot="scroll-area-viewport"]'
+  const [availableBodyHeight, setAvailableBodyHeight] = useState<number | null>(
+    null
+  );
+  const measuredBodyHeight = useMemo(
+    () => availableBodyHeight ?? SLOT_COUNT * SLOT_HEIGHT,
+    [availableBodyHeight]
+  );
+  const { slotHeight, gridHeight } = useMemo(() => {
+    const rawSlotHeight = measuredBodyHeight / SLOT_COUNT;
+    const clampedSlotHeight = Math.min(
+      MAX_SLOT_HEIGHT,
+      Math.max(MIN_SLOT_HEIGHT, rawSlotHeight)
     );
-    if (viewport) {
-      gutter.scrollTop = viewport.scrollTop;
-    }
-  }, []);
+    // Prevent tiny overflow from borders/subpixel rounding by never exceeding
+    // the measured body height.
+    const nextGridHeight = Math.min(
+      measuredBodyHeight,
+      clampedSlotHeight * SLOT_COUNT
+    );
+    return {
+      slotHeight: nextGridHeight / SLOT_COUNT,
+      gridHeight: nextGridHeight,
+    };
+  }, [measuredBodyHeight]);
 
   useEffect(() => {
-    const wrapper = scrollWrapperRef.current;
-    if (!wrapper) {
+    const root = calendarRef.current;
+    if (!root) {
       return;
     }
-    const viewport = wrapper.querySelector<HTMLElement>(
-      '[data-slot="scroll-area-viewport"]'
-    );
-    if (!viewport) {
-      return;
-    }
-    viewport.addEventListener("scroll", syncGutter);
-    return () => viewport.removeEventListener("scroll", syncGutter);
-  }, [syncGutter]);
+    const measure = () => {
+      const rootHeight = root.clientHeight;
+      setAvailableBodyHeight(
+        Math.max(0, rootHeight - HEADER_HEIGHT - HEADER_ROW_CHROME)
+      );
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="flex min-h-0 flex-1">
+    <div className="flex min-h-0 flex-1" ref={calendarRef}>
       {/* ── Time gutter (outside scroll container) ── */}
       <div
         className="shrink-0 overflow-hidden border-r bg-card"
@@ -101,8 +112,8 @@ export function ScheduleCalendar() {
               )}
               key={slot.minutes}
               style={{
-                top: ((slot.minutes - GRID_START_MINUTES) / 30) * SLOT_HEIGHT,
-                height: SLOT_HEIGHT,
+                top: ((slot.minutes - GRID_START_MINUTES) / 30) * slotHeight,
+                height: slotHeight,
               }}
             >
               <span className="-translate-y-1/2">{slot.label}</span>
@@ -112,8 +123,12 @@ export function ScheduleCalendar() {
       </div>
 
       {/* ── Day columns (inside ScrollArea with fading edges) ── */}
-      <div className="min-w-0 flex-1" ref={scrollWrapperRef}>
-        <ScrollArea scrollFade>
+      <div className="min-h-0 min-w-0 flex-1">
+        <ScrollArea
+          hideVerticalScrollbar
+          scrollFade
+          viewportClassName="overflow-y-hidden"
+        >
           <div className="flex">
             {WEEKDAYS.map(({ day, short }) => (
               <div
@@ -130,9 +145,12 @@ export function ScheduleCalendar() {
                 </div>
 
                 {/* Day body: time grid + positioned blocks */}
-                <div className="relative" style={{ height: gridHeight }}>
+                <div
+                  className="relative overflow-hidden"
+                  style={{ height: gridHeight }}
+                >
                   {/* Grid lines */}
-                  {timeSlots.map((slot) => (
+                  {gridLineSlots.map((slot) => (
                     <div
                       className={cn(
                         "absolute right-0 left-0 border-b",
@@ -142,8 +160,8 @@ export function ScheduleCalendar() {
                       style={{
                         top:
                           ((slot.minutes - GRID_START_MINUTES) / 30) *
-                            SLOT_HEIGHT +
-                          SLOT_HEIGHT,
+                            slotHeight +
+                          slotHeight,
                       }}
                     />
                   ))}
@@ -154,12 +172,16 @@ export function ScheduleCalendar() {
                       dimmed={isPreviewing}
                       item={item}
                       key={item.scheduleItemId}
+                      slotHeight={slotHeight}
                     />
                   ))}
 
                   {/* Preview ghost block */}
                   {previewSection?.section.days.includes(day) && (
-                    <PreviewBlock preview={previewSection} />
+                    <PreviewBlock
+                      preview={previewSection}
+                      slotHeight={slotHeight}
+                    />
                   )}
                 </div>
               </div>
@@ -173,12 +195,15 @@ export function ScheduleCalendar() {
 
 function PreviewBlock({
   preview,
+  slotHeight,
 }: {
   preview: NonNullable<ReturnType<typeof useSchedulePreview>["previewSection"]>;
+  slotHeight: number;
 }) {
   const { top, height } = getBlockPosition(
     preview.section.classStartTime,
-    preview.section.classEndTime
+    preview.section.classEndTime,
+    slotHeight
   );
 
   const isCompact = height <= 40;

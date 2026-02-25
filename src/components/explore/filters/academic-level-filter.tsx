@@ -55,8 +55,8 @@ export function AcademicLevelFilter() {
   const gradIndeterminate = gradSelectedCount > 0 && !gradChecked;
 
   return (
-    <div className="mb-4 flex flex-col gap-3">
-      <Label className="flex items-center gap-2">
+    <div className="mb-4 flex flex-col gap-2">
+      <Label className="flex items-center gap-2 text-sm sm:text-xs">
         <Checkbox
           checked={undergradChecked}
           indeterminate={undergradIndeterminate}
@@ -67,7 +67,10 @@ export function AcademicLevelFilter() {
         Undergraduate
       </Label>
       {UNDERGRAD_LEVEL_OPTIONS.map((level) => (
-        <Label className="ms-4 flex items-center gap-2" key={level.value}>
+        <Label
+          className="ms-4 flex items-center gap-2 text-sm sm:text-xs"
+          key={level.value}
+        >
           <Checkbox
             checked={selectedSet.has(String(level.value))}
             name={`lvl-${level.value}`}
@@ -79,7 +82,7 @@ export function AcademicLevelFilter() {
         </Label>
       ))}
 
-      <Label className="flex items-center gap-2">
+      <Label className="flex items-center gap-2 text-sm sm:text-xs">
         <Checkbox
           checked={gradChecked}
           indeterminate={gradIndeterminate}
@@ -90,7 +93,10 @@ export function AcademicLevelFilter() {
         Graduate
       </Label>
       {GRAD_LEVEL_OPTIONS.map((level) => (
-        <Label className="ms-4 flex items-center gap-2" key={level.value}>
+        <Label
+          className="ms-4 flex items-center gap-2 text-sm sm:text-xs"
+          key={level.value}
+        >
           <Checkbox
             checked={selectedSet.has(String(level.value))}
             name={`lvl-${level.value}`}
@@ -103,7 +109,10 @@ export function AcademicLevelFilter() {
       ))}
 
       {STANDALONE_LEVEL_OPTIONS.map((level) => (
-        <Label className="flex items-center gap-2" key={level.value}>
+        <Label
+          className="flex items-center gap-2 text-sm sm:text-xs"
+          key={level.value}
+        >
           <Checkbox
             checked={selectedSet.has(String(level.value))}
             name={`lvl-${level.value}`}

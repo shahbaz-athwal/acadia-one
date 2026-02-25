@@ -21,7 +21,7 @@ export function DepartmentFilter() {
 
   const items: FilterOption[] = (options.departments ?? []).map((d) => ({
     value: d.prefix,
-    label: `${d.prefix} — ${d.name}`,
+    label: `${d.prefix} - ${d.name}`,
   }));
 
   const selected = items.filter((i) =>
@@ -44,6 +44,7 @@ export function DepartmentFilter() {
                 <ComboboxChip key={dept.value}>{dept.label}</ComboboxChip>
               ))}
               <ComboboxInput
+                className="text-sm sm:text-xs"
                 placeholder={values.length > 0 ? "" : "Search departments..."}
               />
             </>
@@ -54,7 +55,11 @@ export function DepartmentFilter() {
         <ComboboxEmpty>No departments found</ComboboxEmpty>
         <ComboboxList>
           {(dept: FilterOption) => (
-            <ComboboxItem key={dept.value} value={dept}>
+            <ComboboxItem
+              className="min-h-7 py-0.5 text-sm sm:min-h-6 sm:text-xs"
+              key={dept.value}
+              value={dept}
+            >
               {dept.label}
             </ComboboxItem>
           )}

@@ -6,12 +6,9 @@ import { withSearchDefaults as withDefaults } from "@/routes/explore";
 
 const routeApi = getRouteApi("/explore");
 
-export type ScheduleViewMode = "calendar" | "agenda";
-
 export function useScheduleView() {
   const search = routeApi.useSearch({
     select: (state) => ({
-      sv: state.sv,
       st: state.st,
     }),
   });
@@ -20,7 +17,6 @@ export function useScheduleView() {
     data: { terms },
   } = useSuspenseQuery(filterOptionsQuery());
 
-  const view = search.sv;
   const selectedTermCode = search.st;
 
   // Terms are sorted by startDate descending (newest first) from the backend.
@@ -56,13 +52,6 @@ export function useScheduleView() {
   const canGoNext = termIndex > 0;
   const canGoPrev = termIndex < terms.length - 1;
 
-  const setView = (mode: ScheduleViewMode) => {
-    navigate({
-      to: "/explore",
-      search: (prev) => ({ ...withDefaults(prev), sv: mode }),
-    });
-  };
-
   const setTermCode = (code: string) => {
     navigate({
       to: "/explore",
@@ -85,12 +74,10 @@ export function useScheduleView() {
   };
 
   return {
-    view,
     termCode,
     termName,
     terms,
 
-    setView,
     setTermCode,
     goToNextTerm,
     goToPrevTerm,

@@ -64,7 +64,6 @@ const exploreSearchSchema = z.object({
     .max(TIME_RANGE_MAX_MINUTES)
     .catch(TIME_RANGE_MAX_MINUTES),
   ft: z.enum(["filters", "progress"]).catch("filters"),
-  sv: z.enum(["calendar", "agenda"]).catch("calendar"),
   st: z.string().catch(""),
   q: z.string().catch(""),
   page: z.coerce.number().int().positive().catch(1),
@@ -82,7 +81,6 @@ export const SEARCH_DEFAULTS: ExploreSearchParams = {
   ts: TIME_RANGE_MINUTES,
   te: TIME_RANGE_MAX_MINUTES,
   ft: "filters",
-  sv: "calendar",
   st: "",
   q: "",
   page: 1,
@@ -152,7 +150,7 @@ function RouteComponent() {
   });
   return (
     <SchedulePreviewProvider>
-      <main className="h-dvh overflow-hidden">
+      <main className="h-dvh overflow-hidden overscroll-none overscroll-y-none">
         <ResizablePanelGroup
           className="m-0 h-full min-h-0 p-0"
           defaultLayout={defaultLayout}

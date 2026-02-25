@@ -1,15 +1,11 @@
-import { CalendarDaysIcon, CalendarIcon, ListIcon } from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import type { TabItem } from "@/components/kokonutui/smooth-tab";
 import SmoothTab from "@/components/kokonutui/smooth-tab";
 import { CardTitle } from "@/components/ui/card";
-import { Toggle, ToggleGroup } from "@/components/ui/toggle-group";
-import {
-  type ScheduleViewMode,
-  useScheduleView,
-} from "@/hooks/use-schedule-view";
+import { useScheduleView } from "@/hooks/use-schedule-view";
 
 export function ScheduleHeader() {
-  const { view, termCode, terms, setView, setTermCode } = useScheduleView();
+  const { termCode, terms, setTermCode } = useScheduleView();
 
   const termTabs: TabItem[] = terms
     .filter((t) => !t.code.endsWith("COI"))
@@ -19,40 +15,21 @@ export function ScheduleHeader() {
     }));
 
   return (
-    <div className="flex flex-col gap-1 pb-2">
-      <div className="flex items-center justify-between gap-2 px-3 py-2">
-        <CardTitle className="flex items-center gap-1.5 font-semibold text-base">
-          <CalendarIcon className="size-4" />
-          Schedule
-        </CardTitle>
-        <ToggleGroup
-          onValueChange={(value: string[]) => {
-            if (value.length > 0) {
-              setView(value[0] as ScheduleViewMode);
-            }
-          }}
-          size="sm"
-          value={[view]}
-          variant="outline"
-        >
-          <Toggle aria-label="Calendar view" value="calendar">
-            <CalendarDaysIcon />
-          </Toggle>
-          <Toggle aria-label="Agenda view" value="agenda">
-            <ListIcon />
-          </Toggle>
-        </ToggleGroup>
-      </div>
+    <div className="flex items-center gap-2 px-3 py-2">
+      <CardTitle className="flex shrink-0 items-center gap-1.5 font-semibold text-base">
+        <CalendarIcon className="size-4" />
+        Schedule
+      </CardTitle>
       {termTabs.length > 0 && (
-        <div className="px-3">
-          <SmoothTab
-            activeColor="bg-primary"
-            compact
-            items={termTabs}
-            onChange={setTermCode}
-            value={termCode}
-          />
-        </div>
+        <SmoothTab
+          activeColor="bg-primary"
+          className="mx-0 mt-0 ml-auto w-56"
+          compact
+          defaultTabId={termTabs[0].id}
+          items={termTabs}
+          onChange={setTermCode}
+          value={termCode}
+        />
       )}
     </div>
   );

@@ -30,6 +30,7 @@ export function TermFilter() {
                 </ComboboxChip>
               ))}
               <ComboboxInput
+                className="text-sm sm:text-xs"
                 placeholder={values.length > 0 ? "" : "Select terms..."}
               />
             </>
@@ -39,7 +40,11 @@ export function TermFilter() {
       <ComboboxPopup>
         <ComboboxList>
           {terms.map((term) => (
-            <ComboboxItem key={term.code} value={term.code}>
+            <ComboboxItem
+              className="min-h-7 py-0.5 text-sm sm:min-h-6 sm:text-xs"
+              key={term.code}
+              value={term.code}
+            >
               {term.name}
             </ComboboxItem>
           ))}

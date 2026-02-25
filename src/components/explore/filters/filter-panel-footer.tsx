@@ -39,7 +39,7 @@ export function FilterPanelFooter() {
         </Button>
       )}
 
-      <div className="flex items-center justify-between border-t p-2">
+      <div className="flex items-center justify-between p-2">
         <Avatar>
           <AvatarFallback>
             <UserIcon className="size-4" />
