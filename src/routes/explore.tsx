@@ -12,7 +12,10 @@ import {
 } from "@/components/ui/resizable";
 import { getOrCreateSessionId, getStoredTokenHash } from "@/hooks/use-auth";
 import { SchedulePreviewProvider } from "@/hooks/use-schedule-preview";
-import { TIME_RANGE_MAX_MINUTES } from "@/lib/explore-filter-constants";
+import {
+  TIME_RANGE_MAX_MINUTES,
+  TIME_RANGE_MINUTES,
+} from "@/lib/explore-filter-constants";
 import {
   buildConvexFilters,
   coursesQuery,
@@ -51,15 +54,15 @@ const exploreSearchSchema = z.object({
   ts: z.coerce
     .number()
     .int()
-    .min(0)
+    .min(TIME_RANGE_MINUTES)
     .max(TIME_RANGE_MAX_MINUTES)
-    .catch(7 * 60 + 30),
+    .catch(TIME_RANGE_MINUTES),
   te: z.coerce
     .number()
     .int()
-    .min(0)
+    .min(TIME_RANGE_MINUTES)
     .max(TIME_RANGE_MAX_MINUTES)
-    .catch(21 * 60 + 30),
+    .catch(TIME_RANGE_MAX_MINUTES),
   ft: z.enum(["filters", "progress"]).catch("filters"),
   sv: z.enum(["calendar", "agenda"]).catch("calendar"),
   st: z.string().catch(""),
@@ -76,8 +79,8 @@ export const SEARCH_DEFAULTS: ExploreSearchParams = {
   day: [],
   lvl: [],
   rsg: [],
-  ts: 7 * 60 + 30,
-  te: 21 * 60 + 30,
+  ts: TIME_RANGE_MINUTES,
+  te: TIME_RANGE_MAX_MINUTES,
   ft: "filters",
   sv: "calendar",
   st: "",

@@ -459,6 +459,8 @@ export const upsertSections = internalMutation({
         sectionSearchName: v.string(),
         classStartTime: v.string(),
         classEndTime: v.string(),
+        classStartMin: v.optional(v.number()),
+        classEndMin: v.optional(v.number()),
         buildingName: v.string(),
         roomNumber: v.string(),
         days: v.array(v.number()),

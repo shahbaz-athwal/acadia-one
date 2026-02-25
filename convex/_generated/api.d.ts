@@ -26,6 +26,7 @@ import type * as lib_constants from "../lib/constants.js";
 import type * as lib_encryption from "../lib/encryption.js";
 import type * as lib_posthog from "../lib/posthog.js";
 import type * as lib_rmp from "../lib/rmp.js";
+import type * as lib_time from "../lib/time.js";
 import type * as schedule from "../schedule.js";
 import type * as sessions from "../sessions.js";
 import type * as terms from "../terms.js";
@@ -61,6 +62,7 @@ declare const fullApi: ApiFromModules<{
   "lib/encryption": typeof lib_encryption;
   "lib/posthog": typeof lib_posthog;
   "lib/rmp": typeof lib_rmp;
+  "lib/time": typeof lib_time;
   schedule: typeof schedule;
   sessions: typeof sessions;
   terms: typeof terms;

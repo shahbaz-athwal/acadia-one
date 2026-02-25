@@ -5,6 +5,7 @@ import type { Id } from "../_generated/dataModel";
 import type { ActionCtx } from "../_generated/server";
 import { internalAction } from "../_generated/server";
 import { getAcadiaScraper } from "../acadia/scraper";
+import { parseTimeToMinutes } from "../lib/time";
 
 const toTimestamp = (value: string) => {
   const parsed = Date.parse(value);
@@ -126,6 +127,8 @@ async function processCourseInternal(
         sectionSearchName: section.sectionSearchName,
         classStartTime: meetingTime.startTime,
         classEndTime: meetingTime.endTime,
+        classStartMin: parseTimeToMinutes(meetingTime.startTime) ?? undefined,
+        classEndMin: parseTimeToMinutes(meetingTime.endTime) ?? undefined,
         buildingName: meetingTime.buildingName,
         roomNumber: meetingTime.roomNumber,
         days: meetingTime.days,

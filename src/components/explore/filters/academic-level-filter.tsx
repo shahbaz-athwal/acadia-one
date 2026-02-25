@@ -55,7 +55,7 @@ export function AcademicLevelFilter() {
   const gradIndeterminate = gradSelectedCount > 0 && !gradChecked;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="mb-4 flex flex-col gap-3">
       <Label className="flex items-center gap-2">
         <Checkbox
           checked={undergradChecked}
@@ -83,7 +83,9 @@ export function AcademicLevelFilter() {
         <Checkbox
           checked={gradChecked}
           indeterminate={gradIndeterminate}
-          onCheckedChange={(checked) => toggleMany(gradValues, checked === true)}
+          onCheckedChange={(checked) =>
+            toggleMany(gradValues, checked === true)
+          }
         />
         Graduate
       </Label>

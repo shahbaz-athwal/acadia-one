@@ -13,7 +13,10 @@ export function useExploreCourses() {
       dept: state.dept,
       prof: state.prof,
       day: state.day,
+      lvl: state.lvl,
       rsg: state.rsg,
+      ts: state.ts,
+      te: state.te,
     }),
   });
 

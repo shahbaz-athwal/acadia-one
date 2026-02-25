@@ -1,5 +1,5 @@
-export const TIME_RANGE_MINUTES = 0;
-export const TIME_RANGE_MAX_MINUTES = 23 * 60 + 30;
+export const TIME_RANGE_MINUTES = 7 * 60 + 30;
+export const TIME_RANGE_MAX_MINUTES = 21 * 60;
 export const TIME_RANGE_STEP_MINUTES = 30;
 
 export const UNDERGRAD_LEVEL_OPTIONS = [

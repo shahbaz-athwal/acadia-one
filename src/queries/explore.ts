@@ -8,9 +8,12 @@ export function buildConvexFilters(search: {
   dept: string[];
   prof: string[];
   day: number[];
+  lvl: number[];
   rsg: string[];
+  ts: number;
+  te: number;
 }) {
-  const f: Record<string, string[] | number[]> = {};
+  const f: Record<string, string[] | number[] | number> = {};
   if (search.term.length > 0) {
     f.termCodes = [...search.term].sort();
   }
@@ -22,6 +25,15 @@ export function buildConvexFilters(search: {
   }
   if (search.day.length > 0) {
     f.days = [...search.day].sort((a, b) => a - b);
+  }
+  if (search.lvl.length > 0) {
+    f.academicLevels = [...search.lvl].sort((a, b) => a - b);
+  }
+  const defaultStart = 7 * 60 + 30;
+  const defaultEnd = 21 * 60 + 30;
+  if (search.ts !== defaultStart || search.te !== defaultEnd) {
+    f.timeStart = Math.min(search.ts, search.te);
+    f.timeEnd = Math.max(search.ts, search.te);
   }
   if (search.rsg.length > 0) {
     f.rsgKeys = [...search.rsg].sort();

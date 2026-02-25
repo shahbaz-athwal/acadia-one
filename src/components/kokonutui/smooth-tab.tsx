@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
   TooltipPopup,
 } from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export interface TabItem {
   id: string;
@@ -29,235 +30,9 @@ export interface TabItem {
   color?: string;
 }
 
-const WaveformPath = () => (
-  <motion.path
-    animate={{
-      x: [0, 10, 0],
-      transition: {
-        duration: 5,
-        ease: "linear",
-        repeat: Number.POSITIVE_INFINITY,
-      },
-    }}
-    d="M0 50 
-           C 20 40, 40 30, 60 50
-           C 80 70, 100 60, 120 50
-           C 140 40, 160 30, 180 50
-           C 200 70, 220 60, 240 50
-           C 260 40, 280 30, 300 50
-           C 320 70, 340 60, 360 50
-           C 380 40, 400 30, 420 50
-           L 420 100 L 0 100 Z"
-    initial={false}
-  />
-);
-
-const DEFAULT_TABS: TabItem[] = [
-  {
-    id: "Models",
-    title: "Models",
-    color: "bg-blue-500 hover:bg-blue-600",
-    cardContent: (
-      <div className="relative h-full">
-        <div className="absolute inset-0 overflow-hidden">
-          <svg
-            aria-hidden="true"
-            className="absolute bottom-0 h-32 w-full"
-            preserveAspectRatio="none"
-            role="presentation"
-            viewBox="0 0 420 100"
-          >
-            <motion.g
-              animate={{ opacity: 0.15 }}
-              className="fill-blue-500 stroke-blue-500"
-              initial={{ opacity: 0 }}
-              style={{ strokeWidth: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <WaveformPath />
-            </motion.g>
-            <motion.g
-              animate={{ opacity: 0.1 }}
-              className="fill-blue-500 stroke-blue-500"
-              initial={{ opacity: 0 }}
-              style={{
-                strokeWidth: 1,
-                transform: "translateY(10px)",
-              }}
-              transition={{ duration: 0.5 }}
-            >
-              <WaveformPath />
-            </motion.g>
-          </svg>
-        </div>
-        <div className="relative flex h-full flex-col p-6">
-          <div className="space-y-2">
-            <h3 className="bg-linear-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-2xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
-              Models
-            </h3>
-            <p className="max-w-[90%] text-black/50 text-sm leading-relaxed dark:text-white/50">
-              Choose the model you want to use
-            </p>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: "MCPs",
-    title: "MCPs",
-    color: "bg-purple-500 hover:bg-purple-600",
-    cardContent: (
-      <div className="relative h-full">
-        <div className="absolute inset-0 overflow-hidden">
-          <svg
-            aria-hidden="true"
-            className="absolute bottom-0 h-32 w-full"
-            preserveAspectRatio="none"
-            role="presentation"
-            viewBox="0 0 420 100"
-          >
-            <motion.g
-              animate={{ opacity: 0.15 }}
-              className="fill-purple-500 stroke-purple-500"
-              initial={{ opacity: 0 }}
-              style={{ strokeWidth: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <WaveformPath />
-            </motion.g>
-            <motion.g
-              animate={{ opacity: 0.1 }}
-              className="fill-purple-500 stroke-purple-500"
-              initial={{ opacity: 0 }}
-              style={{
-                strokeWidth: 1,
-                transform: "translateY(10px)",
-              }}
-              transition={{ duration: 0.5 }}
-            >
-              <WaveformPath />
-            </motion.g>
-          </svg>
-        </div>
-        <div className="relative flex h-full flex-col p-6">
-          <div className="space-y-2">
-            <h3 className="bg-linear-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
-              MCPs
-            </h3>
-            <p className="max-w-[90%] text-black/50 text-sm leading-relaxed dark:text-white/50">
-              Choose the MCP you want to use
-            </p>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: "Agents",
-    title: "Agents",
-    color: "bg-emerald-500 hover:bg-emerald-600",
-    cardContent: (
-      <div className="relative h-full">
-        <div className="absolute inset-0 overflow-hidden">
-          <svg
-            aria-hidden="true"
-            className="absolute bottom-0 h-32 w-full"
-            preserveAspectRatio="none"
-            role="presentation"
-            viewBox="0 0 420 100"
-          >
-            <motion.g
-              animate={{ opacity: 0.15 }}
-              className="fill-emerald-500 stroke-emerald-500"
-              initial={{ opacity: 0 }}
-              style={{ strokeWidth: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <WaveformPath />
-            </motion.g>
-            <motion.g
-              animate={{ opacity: 0.1 }}
-              className="fill-emerald-500 stroke-emerald-500"
-              initial={{ opacity: 0 }}
-              style={{
-                strokeWidth: 1,
-                transform: "translateY(10px)",
-              }}
-              transition={{ duration: 0.5 }}
-            >
-              <WaveformPath />
-            </motion.g>
-          </svg>
-        </div>
-        <div className="relative flex h-full flex-col p-6">
-          <div className="space-y-2">
-            <h3 className="bg-linear-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-2xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
-              Agents
-            </h3>
-            <p className="max-w-[90%] text-black/50 text-sm leading-relaxed dark:text-white/50">
-              Choose the agent you want to use
-            </p>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    id: "Users",
-    title: "Users",
-    color: "bg-amber-500 hover:bg-amber-600",
-    cardContent: (
-      <div className="relative h-full">
-        <div className="absolute inset-0 overflow-hidden">
-          <svg
-            aria-hidden="true"
-            className="absolute bottom-0 h-32 w-full"
-            preserveAspectRatio="none"
-            role="presentation"
-            viewBox="0 0 420 100"
-          >
-            <motion.g
-              animate={{ opacity: 0.15 }}
-              className="fill-amber-500 stroke-amber-500"
-              initial={{ opacity: 0 }}
-              style={{ strokeWidth: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              <WaveformPath />
-            </motion.g>
-            <motion.g
-              animate={{ opacity: 0.1 }}
-              className="fill-amber-500 stroke-amber-500"
-              initial={{ opacity: 0 }}
-              style={{
-                strokeWidth: 1,
-                transform: "translateY(10px)",
-              }}
-              transition={{ duration: 0.5 }}
-            >
-              <WaveformPath />
-            </motion.g>
-          </svg>
-        </div>
-        <div className="relative flex h-full flex-col p-6">
-          <div className="space-y-2">
-            <h3 className="bg-linear-to-r from-foreground via-foreground/90 to-foreground/70 font-semibold text-2xl tracking-tight [text-shadow:_0_1px_1px_rgb(0_0_0_/_10%)]">
-              Users
-            </h3>
-            <p className="max-w-[90%] text-black/50 text-sm leading-relaxed dark:text-white/50">
-              Choose the user you want to use
-            </p>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-];
-
 interface SmoothTabProps {
-  items?: TabItem[];
-  defaultTabId?: string;
+  items: TabItem[];
+  defaultTabId: string;
   value?: string;
   className?: string;
   activeColor?: string;
@@ -337,8 +112,8 @@ function TabIcon({
 }
 
 export default function SmoothTab({
-  items = DEFAULT_TABS,
-  defaultTabId = DEFAULT_TABS[0].id,
+  items,
+  defaultTabId,
   value,
   className,
   activeColor = "bg-[#1F9CFE]",
@@ -585,25 +360,27 @@ export default function SmoothTab({
     return (
       <div className="flex h-full min-h-0 flex-col gap-2">
         {tabBar}
-        <div className="relative min-h-0 flex-1 overflow-hidden">
-          <AnimatePresence
-            custom={direction}
-            initial={false}
-            mode="wait"
-          >
-            <motion.div
-              animate="center"
-              className="h-full overflow-y-auto"
+        <div className="relative min-h-0 flex-1">
+          <ScrollArea className="h-full" scrollFade>
+            <AnimatePresence
               custom={direction}
-              exit="exit"
-              initial="enter"
-              key={`content-${selected}`}
-              transition={contentTransition}
-              variants={contentVariants}
+              initial={false}
+              mode="wait"
             >
-              {selectedItem?.content}
-            </motion.div>
-          </AnimatePresence>
+              <motion.div
+                animate="center"
+                className="h-full"
+                custom={direction}
+                exit="exit"
+                initial="enter"
+                key={`content-${selected}`}
+                transition={contentTransition}
+                variants={contentVariants}
+              >
+                {selectedItem?.content}
+              </motion.div>
+            </AnimatePresence>
+          </ScrollArea>
         </div>
       </div>
     );

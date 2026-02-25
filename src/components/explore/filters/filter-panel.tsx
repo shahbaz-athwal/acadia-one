@@ -46,14 +46,13 @@ export function FilterPanel() {
 
   return (
     <div className="flex h-full flex-col p-2.5">
-      <div className="min-h-0 flex-1 overflow-auto">
-        <SmoothTab
-          activeColor="bg-primary"
-          items={panelTabs}
-          onChange={handleTabChange}
-          value={panelTab}
-        />
-      </div>
+      <SmoothTab
+        activeColor="bg-primary"
+        defaultTabId={panelTabs[0].id}
+        items={panelTabs}
+        onChange={handleTabChange}
+        value={panelTab}
+      />
       <FilterPanelFooter />
     </div>
   );

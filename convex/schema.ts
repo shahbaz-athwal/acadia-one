@@ -202,6 +202,7 @@ const schema = defineSchema({
     .index("by_externalId", ["externalId"])
     .index("by_code", ["code"])
     .index("by_departmentPrefix", ["departmentPrefix"])
+    .index("by_academicLevel", ["academicLevel"])
     .searchIndex("search_courses", {
       searchField: "searchText",
       filterFields: ["departmentPrefix"],
@@ -229,6 +230,8 @@ const schema = defineSchema({
     sectionSearchName: v.string(),
     classStartTime: v.string(),
     classEndTime: v.string(),
+    classStartMin: v.optional(v.number()),
+    classEndMin: v.optional(v.number()),
     buildingName: v.string(),
     roomNumber: v.string(),
     days: v.array(v.number()),
@@ -239,6 +242,8 @@ const schema = defineSchema({
     .index("by_courseId", ["courseId"])
     .index("by_courseExternalId", ["courseExternalId"])
     .index("by_termCode", ["termCode"])
+    .index("by_classStartMin", ["classStartMin"])
+    .index("by_termCode_and_classStartMin", ["termCode", "classStartMin"])
     .index("by_professorId", ["professorId"])
     .index("by_externalId_and_termCode", ["externalId", "termCode"]),
 

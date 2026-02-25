@@ -9,13 +9,38 @@ import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { query } from "./_generated/server";
 
+interface TimeRange {
+  start: number;
+  end: number;
+}
+
 interface ResolvedFilters {
   rsgCourseCodes: string[];
   searchQuery: string;
   departmentPrefixes: string[];
   termCodes: string[];
-  professorIds: string[];
+  professorIds: Id<"professors">[];
   days: number[];
+  academicLevels: number[];
+  timeRange: TimeRange | null;
+}
+
+function normalizeTimeRange(
+  startRaw?: number,
+  endRaw?: number
+): TimeRange | null {
+  if (
+    typeof startRaw !== "number" ||
+    Number.isNaN(startRaw) ||
+    typeof endRaw !== "number" ||
+    Number.isNaN(endRaw)
+  ) {
+    return null;
+  }
+
+  const start = Math.max(0, Math.min(24 * 60, Math.trunc(startRaw)));
+  const end = Math.max(0, Math.min(24 * 60, Math.trunc(endRaw)));
+  return start <= end ? { start, end } : { start: end, end: start };
 }
 
 async function resolveFilters(
@@ -27,6 +52,9 @@ async function resolveFilters(
       departmentPrefixes?: string[];
       professorExternalIds?: string[];
       days?: number[];
+      academicLevels?: number[];
+      timeStart?: number;
+      timeEnd?: number;
     };
     searchQuery?: string;
   }
@@ -67,63 +95,57 @@ async function resolveFilters(
     termCodes: raw?.termCodes ?? [],
     professorIds,
     days: raw?.days ?? [],
+    academicLevels: [...new Set(raw?.academicLevels ?? [])].sort(
+      (a, b) => a - b
+    ),
+    timeRange: normalizeTimeRange(raw?.timeStart, raw?.timeEnd),
   };
+}
+
+function hasAnyActiveFilter(filters: ResolvedFilters): boolean {
+  return (
+    filters.rsgCourseCodes.length > 0 ||
+    filters.searchQuery.length > 0 ||
+    filters.departmentPrefixes.length > 0 ||
+    filters.termCodes.length > 0 ||
+    filters.professorIds.length > 0 ||
+    filters.days.length > 0 ||
+    filters.academicLevels.length > 0 ||
+    filters.timeRange !== null
+  );
 }
 
 async function collectCourses(
   ctx: QueryCtx,
-  filters: ResolvedFilters,
-  pagination: { page: number; pageSize: number }
-): Promise<{ courses: Doc<"courses">[]; totalCount: number | null }> {
+  filters: ResolvedFilters
+): Promise<Doc<"courses">[]> {
   // Strategy 1: RSG keys — resolve to course codes and short-circuit all other strategies
   if (filters.rsgCourseCodes.length > 0) {
-    return {
-      courses: await collectByCourseCodes(ctx, filters.rsgCourseCodes),
-      totalCount: null,
-    };
+    return await collectByCourseCodes(ctx, filters.rsgCourseCodes);
   }
 
   // Strategy 2: Full-text search
   if (filters.searchQuery) {
-    return {
-      courses: await collectViaSearch(ctx, filters),
-      totalCount: null,
-    };
-  }
-
-  const hasAnyFilter =
-    filters.departmentPrefixes.length > 0 ||
-    filters.termCodes.length > 0 ||
-    filters.professorIds.length > 0 ||
-    filters.days.length > 0;
-
-  // Strategy 2: No filters — use by_code index with take() + courseStats count
-  if (!hasAnyFilter) {
-    return await collectUnfiltered(ctx, pagination);
+    return await collectViaSearch(ctx, filters);
   }
 
   // Strategy 3: Department(s) — use by_departmentPrefix index
   if (filters.departmentPrefixes.length > 0) {
-    return {
-      courses: await collectByDepartment(ctx, filters.departmentPrefixes),
-      totalCount: null,
-    };
+    return await collectByDepartment(ctx, filters.departmentPrefixes);
   }
 
   // Strategy 4: Professor(s) — use courseProfessors junction table
   if (filters.professorIds.length > 0) {
-    return {
-      courses: await collectByProfessor(
-        ctx,
-        filters.professorIds as Id<"professors">[]
-      ),
-      totalCount: null,
-    };
+    return await collectByProfessor(ctx, filters.professorIds);
   }
 
-  // Strategy 5: Fallback — full scan (only term/days filters active)
-  const courses = await ctx.db.query("courses").withIndex("by_code").collect();
-  return { courses, totalCount: null };
+  // Strategy 5: Academic level(s)
+  if (filters.academicLevels.length > 0) {
+    return await collectByAcademicLevel(ctx, filters.academicLevels);
+  }
+
+  // Strategy 6: Fallback — full scan (only post filters active)
+  return await ctx.db.query("courses").withIndex("by_code").collect();
 }
 
 async function collectByCourseCodes(
@@ -152,7 +174,7 @@ async function collectViaSearch(
       const s = q.search("searchText", searchQuery);
       return singleDept ? s.eq("departmentPrefix", singleDept) : s;
     })
-    .take(800);
+    .take(5000);
 
   // Multi-department filter in JS (search index only supports single .eq())
   if (departmentPrefixes.length > 1) {
@@ -169,7 +191,7 @@ async function collectUnfiltered(
 ): Promise<{ courses: Doc<"courses">[]; totalCount: number }> {
   const start = (pagination.page - 1) * pagination.pageSize;
 
-  const [stats, courses] = await Promise.all([
+  const [stats, collected] = await Promise.all([
     ctx.db
       .query("courseStats")
       .withIndex("by_key", (q) => q.eq("key", "total"))
@@ -185,7 +207,7 @@ async function collectUnfiltered(
   }
 
   return {
-    courses,
+    courses: collected.slice(start, start + pagination.pageSize),
     totalCount: stats.courseCount,
   };
 }
@@ -199,6 +221,16 @@ async function collectByDepartment(
   );
 
   return perDept.flat().sort((a, b) => a.code.localeCompare(b.code));
+}
+
+async function collectByAcademicLevel(
+  ctx: QueryCtx,
+  academicLevels: number[]
+): Promise<Doc<"courses">[]> {
+  const perLevel = await asyncMap(academicLevels, (academicLevel) =>
+    getManyFrom(ctx.db, "courses", "by_academicLevel", academicLevel)
+  );
+  return perLevel.flat().sort((a, b) => a.code.localeCompare(b.code));
 }
 
 async function collectByProfessor(
@@ -229,14 +261,64 @@ async function collectByProfessor(
   return courseDocs;
 }
 
-function applyPostFilters(
+async function collectCourseIdsByTimeRange(
+  ctx: QueryCtx,
+  filters: ResolvedFilters
+): Promise<Set<Id<"courses">> | null> {
+  const timeRange = filters.timeRange;
+  if (!timeRange) {
+    return null;
+  }
+
+  const sectionDocs =
+    filters.termCodes.length > 0
+      ? (
+          await asyncMap(filters.termCodes, (termCode) =>
+            ctx.db
+              .query("sections")
+              .withIndex("by_termCode_and_classStartMin", (q) =>
+                q.eq("termCode", termCode).lt("classStartMin", timeRange.end)
+              )
+              .collect()
+          )
+        ).flat()
+      : await ctx.db
+          .query("sections")
+          .withIndex("by_classStartMin", (q) =>
+            q.lt("classStartMin", timeRange.end)
+          )
+          .collect();
+
+  const courseIdSet = new Set<Id<"courses">>();
+  for (const section of sectionDocs) {
+    if (
+      typeof section.classStartMin !== "number" ||
+      typeof section.classEndMin !== "number"
+    ) {
+      continue;
+    }
+    const overlaps =
+      section.classStartMin < timeRange.end &&
+      section.classEndMin > timeRange.start;
+    if (overlaps) {
+      courseIdSet.add(section.courseId);
+    }
+  }
+
+  return courseIdSet;
+}
+
+async function applyPostFilters(
+  ctx: QueryCtx,
   courses: Doc<"courses">[],
   filters: ResolvedFilters
-): Doc<"courses">[] {
+): Promise<Doc<"courses">[]> {
   const hasPostFilters =
     filters.termCodes.length > 0 ||
     filters.professorIds.length > 0 ||
-    filters.days.length > 0;
+    filters.days.length > 0 ||
+    filters.academicLevels.length > 0 ||
+    filters.timeRange !== null;
 
   if (!hasPostFilters) {
     return courses;
@@ -248,22 +330,33 @@ function applyPostFilters(
   const profSet =
     filters.professorIds.length > 0 ? new Set(filters.professorIds) : null;
   const daySet = filters.days.length > 0 ? new Set(filters.days) : null;
+  const academicLevelSet =
+    filters.academicLevels.length > 0 ? new Set(filters.academicLevels) : null;
+  const timeCourseIdSet = await collectCourseIdsByTimeRange(ctx, filters);
 
-  return courses.filter((course) => {
-    if (termSet && !course.sectionTermCodes?.some((tc) => termSet.has(tc))) {
-      return false;
-    }
-    if (
-      profSet &&
-      !course.sectionProfessorIds?.some((pid) => profSet.has(pid as string))
-    ) {
-      return false;
-    }
-    if (daySet && !course.sectionDays?.some((d) => daySet.has(d))) {
-      return false;
-    }
-    return true;
-  });
+  return courses
+    .filter((course) => {
+      if (termSet && !course.sectionTermCodes?.some((tc) => termSet.has(tc))) {
+        return false;
+      }
+      if (
+        profSet &&
+        !course.sectionProfessorIds?.some((pid) => profSet.has(pid))
+      ) {
+        return false;
+      }
+      if (daySet && !course.sectionDays?.some((d) => daySet.has(d))) {
+        return false;
+      }
+      if (academicLevelSet && !academicLevelSet.has(course.academicLevel)) {
+        return false;
+      }
+      if (timeCourseIdSet && !timeCourseIdSet.has(course._id)) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => a.code.localeCompare(b.code));
 }
 
 function paginate(
@@ -359,6 +452,9 @@ export const listForExplore = query({
         departmentPrefixes: v.optional(v.array(v.string())),
         professorExternalIds: v.optional(v.array(v.string())),
         days: v.optional(v.array(v.number())),
+        academicLevels: v.optional(v.array(v.number())),
+        timeStart: v.optional(v.number()),
+        timeEnd: v.optional(v.number()),
       })
     ),
     searchQuery: v.optional(v.string()),
@@ -369,18 +465,25 @@ export const listForExplore = query({
       pageSize: args.pageSize,
     };
     const filters = await resolveFilters(ctx, args);
-    const { courses, totalCount } = await collectCourses(
-      ctx,
-      filters,
-      paginationOptions
-    );
-    const filtered = applyPostFilters(courses, filters);
+
+    if (!hasAnyActiveFilter(filters)) {
+      const { courses, totalCount } = await collectUnfiltered(
+        ctx,
+        paginationOptions
+      );
+      const page = await enrichWithSections(ctx, courses);
+      return { page, totalCount };
+    }
+
+    const courses = await collectCourses(ctx, filters);
+    const filtered = await applyPostFilters(ctx, courses, filters);
+    const totalCount = filtered.length;
     const pageCourses = paginate(filtered, paginationOptions);
     const page = await enrichWithSections(ctx, pageCourses);
 
     return {
       page,
-      totalCount: totalCount ?? filtered.length,
+      totalCount,
     };
   },
 });
