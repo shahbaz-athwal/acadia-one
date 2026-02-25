@@ -205,7 +205,7 @@ export default function SmoothTab({
     <div
       aria-label="Smooth tabs"
       className={cn(
-        "relative flex items-center justify-between gap-1",
+        "relative mx-2 mt-2 flex max-w-[95%] items-center justify-between self-center gap-1",
         compact ? "py-0.5" : "py-1",
         "w-full bg-background",
         compact ? "rounded-lg border" : "rounded-xl border",

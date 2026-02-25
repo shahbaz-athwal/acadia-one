@@ -7,7 +7,7 @@ import { TimeRangeFilter } from "@/components/explore/filters/time-range-filter"
 
 export function FiltersTab() {
   return (
-    <div className="flex h-full flex-col gap-6 p-2">
+    <div className="flex h-full flex-col gap-6 px-4">
       <FilterSection label="Term">
         <TermFilter />
       </FilterSection>

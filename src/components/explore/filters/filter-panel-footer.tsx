@@ -17,10 +17,10 @@ export function FilterPanelFooter() {
     filters.timeEnd !== SEARCH_DEFAULTS.te;
 
   return (
-    <div className="flex flex-col gap-2 px-2">
+    <div className="flex flex-col gap-2">
       {hasFilters && (
         <Button
-          className="w-full"
+          className="w-[90%] self-center"
           onClick={() =>
             setFilters({
               termCodes: [],
@@ -39,7 +39,7 @@ export function FilterPanelFooter() {
         </Button>
       )}
 
-      <div className="flex items-center justify-between border-t pt-3">
+      <div className="flex items-center justify-between border-t p-2">
         <Avatar>
           <AvatarFallback>
             <UserIcon className="size-4" />

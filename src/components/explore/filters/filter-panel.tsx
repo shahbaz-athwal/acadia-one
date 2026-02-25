@@ -45,7 +45,7 @@ export function FilterPanel() {
   };
 
   return (
-    <div className="flex h-full flex-col p-2.5">
+    <div className="flex h-full flex-col">
       <SmoothTab
         activeColor="bg-primary"
         defaultTabId={panelTabs[0].id}
