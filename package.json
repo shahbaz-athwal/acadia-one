@@ -10,7 +10,10 @@
     "dev:setup": "convex dev --configure --until-success",
     "build": "bun --bun vite build",
     "start": "bun --bun vite preview",
-    "lint": "ultracite fix"
+    "lint": "ultracite fix",
+    "lint:check": "ultracite check",
+    "lint:file": "ultracite fix --",
+    "typecheck": "tsc --noEmit && tsc -p convex/tsconfig.json --noEmit"
   },
   "dependencies": {
     "@ai-sdk/google": "^2.0.43",

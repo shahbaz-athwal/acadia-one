@@ -19,14 +19,6 @@
 - [ ] Add a full-background dim overlay (`bg-background/60`) when previewing instead of individually dimming sections
 - [ ] Ensure preview block z-index sits above the overlay
 
-## 3. `addSection` — Pass Color from Client
-
-> Research: [docs/add-section-color.md](docs/add-section-color.md)
-
-- [ ] Add `color` arg to `addSection` mutation in `convex/schedule.ts`
-- [ ] Remove server-side color calculation (no more counting existing items)
-- [ ] Update client (`course-view-data.tsx`) to pass computed color when calling `addSection`
-
 ## 4. Time Range Filter
 
 > Research: [docs/time-range-filter.md](docs/time-range-filter.md)
