@@ -9,7 +9,7 @@ export function CourseView() {
       <div className="flex h-full min-h-0 flex-col">
         <CourseViewHeader />
 
-        <ScrollArea className="min-h-0 flex-1" scrollFade>
+        <ScrollArea className="min-h-0 flex-1" hideVerticalScrollbar scrollFade>
           <CourseViewData />
         </ScrollArea>
 

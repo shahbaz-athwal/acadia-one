@@ -163,7 +163,7 @@ export function CourseViewData() {
   return (
     // pr-4 only if scrollbar is visible
     <TooltipProvider delay={100}>
-      <div className="space-y-2 p-2 pr-4">
+      <div className="space-y-2 p-2">
         {courses.map((course) => (
           <Frame className="overflow-hidden rounded-xl p-0" key={course.id}>
             <div className="px-3 py-2 text-xs">
