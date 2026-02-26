@@ -1,4 +1,8 @@
 import { convexQuery } from "@convex-dev/react-query";
+import {
+  TIME_RANGE_MAX_MINUTES,
+  TIME_RANGE_MINUTES,
+} from "@/lib/explore-filter-constants";
 import { api } from "../../convex/_generated/api";
 
 export const PAGE_SIZE = 10;
@@ -29,8 +33,8 @@ export function buildConvexFilters(search: {
   if (search.lvl.length > 0) {
     f.academicLevels = [...search.lvl].sort((a, b) => a - b);
   }
-  const defaultStart = 7 * 60 + 30;
-  const defaultEnd = 21 * 60 + 30;
+  const defaultStart = TIME_RANGE_MINUTES;
+  const defaultEnd = TIME_RANGE_MAX_MINUTES;
   if (search.ts !== defaultStart || search.te !== defaultEnd) {
     f.timeStart = Math.min(search.ts, search.te);
     f.timeEnd = Math.max(search.ts, search.te);

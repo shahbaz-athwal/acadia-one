@@ -11,9 +11,9 @@ export const UNDERGRAD_LEVEL_OPTIONS = [
 ] as const;
 
 export const GRAD_LEVEL_OPTIONS = [
-  { value: 5, label: "Graduate 5000" },
-  { value: 6, label: "Graduate 6000" },
-  { value: 7, label: "Graduate 7000" },
+  { value: 5, label: "First Master's 5000" },
+  { value: 6, label: "Second Master's 6000" },
+  { value: 7, label: "Third Master's 7000" },
 ] as const;
 
 export const STANDALONE_LEVEL_OPTIONS = [

@@ -7,7 +7,7 @@
 export const GRID_START_MINUTES = 7 * 60 + 30;
 
 /** Grid end in minutes since midnight (9:00 PM). */
-export const GRID_END_MINUTES = 21 * 60 + 30;
+export const GRID_END_MINUTES = 22 * 60 + 30;
 
 /** Total number of 30-minute slots in the grid. */
 export const SLOT_COUNT = (GRID_END_MINUTES - GRID_START_MINUTES) / 30; // 27
@@ -16,7 +16,7 @@ export const SLOT_COUNT = (GRID_END_MINUTES - GRID_START_MINUTES) / 30; // 27
 export const SLOT_HEIGHT = 45;
 
 /** Width of the time gutter column in pixels. */
-export const TIME_GUTTER_WIDTH = 56;
+export const TIME_GUTTER_WIDTH = 42;
 
 /** Height of the sticky day-header row in pixels. */
 export const HEADER_HEIGHT = 32;
@@ -105,6 +105,9 @@ export function formatTime(minutes: number): string {
     hours12 = hours24 - 12;
   } else {
     hours12 = hours24;
+  }
+  if (mins === 0) {
+    return `${hours12} ${period}`;
   }
   return `${hours12}:${mins.toString().padStart(2, "0")} ${period}`;
 }

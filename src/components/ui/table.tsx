@@ -1,6 +1,7 @@
 import type * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { ScrollArea } from "./scroll-area";
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
   return (
@@ -8,6 +9,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
       className="relative w-full overflow-x-auto"
       data-slot="table-container"
     >
+      <ScrollArea scrollbarGutter={false} scrollFade>
       <table
         className={cn(
           "w-full caption-bottom in-data-[slot=frame]:border-separate in-data-[slot=frame]:border-spacing-0 text-sm",
@@ -16,6 +18,7 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
         data-slot="table"
         {...props}
       />
+      </ScrollArea>
     </div>
   );
 }

@@ -408,6 +408,7 @@ async function enrichWithSections(ctx: QueryCtx, courses: Doc<"courses">[]) {
       code: course.code,
       title: course.title,
       credits: course.credits,
+      isLab: course.isLab,
       avgQuality: course.avgQuality,
       avgDifficulty: course.avgDifficulty,
       ratingCount: course.ratingCount,
@@ -426,6 +427,7 @@ async function enrichWithSections(ctx: QueryCtx, courses: Doc<"courses">[]) {
               professor?.name ??
               (section.instructorTBD ? "TBD" : "Unknown Instructor"),
             professorImageUrl: professor?.imageUrl,
+            professorAvgQuality: professor?.avgQuality ?? null,
             classStartTime: section.classStartTime,
             classEndTime: section.classEndTime,
             buildingName: section.buildingName,
