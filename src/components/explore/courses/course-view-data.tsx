@@ -285,10 +285,7 @@ export function CourseViewData() {
 
                       <TableCell className="text-right">
                         <Button
-                          className={cn(
-                            "min-w-28",
-                            isAdded && "cursor-default"
-                          )}
+                          className={cn(isAdded && "cursor-default")}
                           disabled={isAdded}
                           onClick={() => {
                             if (isAdded) {
@@ -346,7 +343,7 @@ export function CourseViewData() {
                             }
                             setPreviewSection(null);
                           }}
-                          size="xs"
+                          size={isAdded ? "xs" : "icon-xs"}
                           variant={isAdded ? "secondary" : "default"}
                         >
                           {isAdded ? (
@@ -355,10 +352,7 @@ export function CourseViewData() {
                               Added
                             </>
                           ) : (
-                            <>
-                              <PlusIcon className="size-3.5" />
-                              Add Section
-                            </>
+                            <PlusIcon className="size-4" />
                           )}
                         </Button>
                       </TableCell>

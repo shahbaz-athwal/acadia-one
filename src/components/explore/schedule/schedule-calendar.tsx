@@ -18,7 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ScheduleBlock } from "./schedule-block";
 
-const DAY_MIN_WIDTH = 100;
+const DAY_MIN_WIDTH = 85;
 const MIN_SLOT_HEIGHT = 14;
 const MAX_SLOT_HEIGHT = SLOT_HEIGHT;
 const HEADER_ROW_CHROME = 1;

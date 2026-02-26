@@ -43,7 +43,7 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="dark" storageKey="theme">
+    <ThemeProvider defaultTheme="light" storageKey="theme">
       <ConvexProvider client={convex}>
         <QueryClientProvider client={queryClient}>
           <RouterProvider router={router} />
