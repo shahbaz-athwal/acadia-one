@@ -361,7 +361,7 @@ export default function SmoothTab({
       <div className="flex h-full min-h-0 flex-col gap-2">
         {tabBar}
         <div className="relative min-h-0 flex-1">
-          <ScrollArea className="h-full" scrollFade>
+          <ScrollArea hideVerticalScrollbar className="h-full" scrollFade>
             <AnimatePresence
               custom={direction}
               initial={false}
