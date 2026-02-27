@@ -1,8 +1,7 @@
 import { CalendarIcon } from "lucide-react";
 import { useMemo } from "react";
-import type { TabItem } from "@/components/kokonutui/smooth-tab";
-import SmoothTab from "@/components/kokonutui/smooth-tab";
 import { CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 import { useScheduleView } from "@/hooks/use-schedule-view";
 import { formatTermLabelWithoutYear } from "@/lib/utils";
 
@@ -13,11 +12,11 @@ export function ScheduleHeader() {
     [terms]
   );
 
-  const termTabs: TabItem[] = terms
-    .filter((t) => !t.code.endsWith("COI"))
+  const termTabs = terms
+    .filter((term) => !term.code.endsWith("COI"))
     .map((term) => ({
-      id: term.code,
-      title: formatTermLabelWithoutYear(term.code, termNameByCode),
+      code: term.code,
+      label: formatTermLabelWithoutYear(term.code, termNameByCode),
     }));
 
   return (
@@ -27,15 +26,28 @@ export function ScheduleHeader() {
         Schedule
       </CardTitle>
       {termTabs.length > 0 && (
-        <SmoothTab
-          activeColor="bg-primary"
-          className="mx-0 mt-0 ml-auto w-56"
-          compact
-          defaultTabId={termTabs[0].id}
-          items={termTabs}
-          onChange={setTermCode}
+        <Tabs
+          className="ml-auto w-56 gap-0"
+          onValueChange={setTermCode}
           value={termCode}
-        />
+        >
+          <TabsList
+            className="grid w-full"
+            style={{
+              gridTemplateColumns: `repeat(${termTabs.length}, minmax(0, 1fr))`,
+            }}
+          >
+            {termTabs.map((term) => (
+              <TabsTab
+                className="h-7 min-w-0 px-2 text-xs"
+                key={term.code}
+                value={term.code}
+              >
+                <span className="truncate">{term.label}</span>
+              </TabsTab>
+            ))}
+          </TabsList>
+        </Tabs>
       )}
     </div>
   );

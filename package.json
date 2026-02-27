@@ -41,7 +41,6 @@
     "convex-helpers": "^0.1.112",
     "graphql-request": "^7.4.0",
     "lucide-react": "^0.575.0",
-    "motion": "^12.34.2",
     "neverthrow": "^8.2.0",
     "posthog-js": "^1.347.0",
     "posthog-node": "^5.24.1",
