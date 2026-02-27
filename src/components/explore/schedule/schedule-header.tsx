@@ -1,12 +1,23 @@
 import { CalendarIcon } from "lucide-react";
+import { useMemo } from "react";
 import { CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTab } from "@/components/ui/tabs";
 import { useScheduleView } from "@/hooks/use-schedule-view";
+import { formatTermLabelWithoutYear } from "@/lib/utils";
 
 export function ScheduleHeader() {
   const { termCode, terms, setTermCode } = useScheduleView();
+  const termNameByCode = useMemo(
+    () => new Map(terms.map((term) => [term.code, term.name])),
+    [terms]
+  );
 
-  const termTabs = terms.filter((term) => !term.code.endsWith("COI"));
+  const termTabs = terms
+    .filter((term) => !term.code.endsWith("COI"))
+    .map((term) => ({
+      code: term.code,
+      label: formatTermLabelWithoutYear(term.code, termNameByCode),
+    }));
 
   return (
     <div className="flex items-center gap-2 px-3 py-2">
@@ -32,7 +43,7 @@ export function ScheduleHeader() {
                 key={term.code}
                 value={term.code}
               >
-                <span className="truncate">{term.name}</span>
+                <span className="truncate">{term.label}</span>
               </TabsTab>
             ))}
           </TabsList>
