@@ -11,8 +11,10 @@ const TERM_YEAR_REGEX = /\b(20\d{2})\b/;
 const TERM_YEAR_FROM_CODE_REGEX = /(20\d{2})/;
 const TERM_CONTINUOUS_REGEX = /\bcontinuous\s+intake\b/i;
 const TERM_ACADEMIC_YEAR_REGEX = /\b(\d{4}\/\d{2})\b/;
+const TERM_TRAILING_YEAR_REGEX = /\s+(?:20\d{2}|\d{4}\/\d{2})$/;
 const WHITESPACE_REGEX = /\s+/;
 const WORD_REGEX = /[A-Za-z0-9]+/g;
+const PROFESSOR_SALUTATION_PREFIX_REGEX = /^(?:(?:mr|mrs|dr|prof)\.?\s+)+/i;
 
 const DAY_LABEL_BY_VALUE = new Map<number, string>([
   [1, "Mon"],
@@ -76,6 +78,15 @@ export function formatTermLabel(
   return season ?? termCode;
 }
 
+export function formatTermLabelWithoutYear(
+  termCode: string,
+  termNameByCode: Map<string, string>
+): string {
+  return formatTermLabel(termCode, termNameByCode)
+    .replace(TERM_TRAILING_YEAR_REGEX, "")
+    .trim();
+}
+
 export function isCoinTerm(
   termCode: string,
   termNameByCode: Map<string, string>
@@ -106,6 +117,19 @@ export function getInitials(name: string): string {
     .slice(0, 2)
     .map((piece) => piece.charAt(0).toUpperCase())
     .join("");
+}
+
+export function stripProfessorSalutations(name: string): string {
+  const trimmedName = name.trim();
+  if (trimmedName.length === 0) {
+    return "";
+  }
+
+  const strippedName = trimmedName
+    .replace(PROFESSOR_SALUTATION_PREFIX_REGEX, "")
+    .trim();
+
+  return strippedName || trimmedName;
 }
 
 function normalizeBuildingName(name: string): string {

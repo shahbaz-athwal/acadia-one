@@ -10,6 +10,7 @@ import {
   ComboboxValue,
 } from "@/components/ui/combobox";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
+import { stripProfessorSalutations } from "@/lib/utils";
 
 interface FilterOption {
   value: string;
@@ -21,7 +22,7 @@ export function ProfessorFilter() {
 
   const items: FilterOption[] = (options.professors ?? []).map((p) => ({
     value: p.id,
-    label: p.name,
+    label: stripProfessorSalutations(p.name),
   }));
 
   const selected = items.filter((i) =>
