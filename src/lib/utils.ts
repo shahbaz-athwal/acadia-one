@@ -13,8 +13,7 @@ const TERM_CONTINUOUS_REGEX = /\bcontinuous\s+intake\b/i;
 const TERM_ACADEMIC_YEAR_REGEX = /\b(\d{4}\/\d{2})\b/;
 const WHITESPACE_REGEX = /\s+/;
 const WORD_REGEX = /[A-Za-z0-9]+/g;
-const PROFESSOR_SALUTATION_PREFIX_REGEX =
-  /^(?:(?:mr|mrs|dr|prof)\.?\s+)+/i;
+const PROFESSOR_SALUTATION_PREFIX_REGEX = /^(?:(?:mr|mrs|dr|prof)\.?\s+)+/i;
 
 const DAY_LABEL_BY_VALUE = new Map<number, string>([
   [1, "Mon"],
