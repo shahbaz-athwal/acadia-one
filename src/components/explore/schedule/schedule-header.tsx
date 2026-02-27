@@ -1,17 +1,23 @@
 import { CalendarIcon } from "lucide-react";
+import { useMemo } from "react";
 import type { TabItem } from "@/components/kokonutui/smooth-tab";
 import SmoothTab from "@/components/kokonutui/smooth-tab";
 import { CardTitle } from "@/components/ui/card";
 import { useScheduleView } from "@/hooks/use-schedule-view";
+import { formatTermLabelWithoutYear } from "@/lib/utils";
 
 export function ScheduleHeader() {
   const { termCode, terms, setTermCode } = useScheduleView();
+  const termNameByCode = useMemo(
+    () => new Map(terms.map((term) => [term.code, term.name])),
+    [terms]
+  );
 
   const termTabs: TabItem[] = terms
     .filter((t) => !t.code.endsWith("COI"))
     .map((term) => ({
       id: term.code,
-      title: term.name,
+      title: formatTermLabelWithoutYear(term.code, termNameByCode),
     }));
 
   return (

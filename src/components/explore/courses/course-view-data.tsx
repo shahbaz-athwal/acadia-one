@@ -41,7 +41,7 @@ import {
   cn,
   formatCourseCode,
   formatDays,
-  formatTermLabel,
+  formatTermLabelWithoutYear,
   getBuildingAbbreviation,
   getInitials,
   isCoinTerm,
@@ -225,13 +225,87 @@ export function CourseViewData() {
                   const color =
                     SCHEDULE_COLORS[allItems.length % SCHEDULE_COLORS.length] ??
                     "#94a3b8";
+                  const actionButton = (
+                    <Button
+                      className={cn(isAdded && "cursor-default")}
+                      disabled={isAdded}
+                      onClick={() => {
+                        if (isAdded) {
+                          return;
+                        }
+                        pendingRef.current = {
+                          section: {
+                            id: s.id,
+                            termCode: s.termCode,
+                            sectionCode: s.sectionCode,
+                            classStartTime: s.classStartTime,
+                            classEndTime: s.classEndTime,
+                            days: s.days,
+                            buildingName: s.buildingName,
+                            roomNumber: s.roomNumber,
+                            isOnline: s.isOnline,
+                            professorName: professorDisplayName,
+                          },
+                          course: {
+                            code: course.code,
+                            title: course.title,
+                            credits: course.credits,
+                          },
+                        };
+                        addSection({ sessionId, sectionId: s._id, color });
+                      }}
+                      onMouseEnter={() => {
+                        if (isAdded) {
+                          return;
+                        }
+                        previewTimerRef.current = setTimeout(() => {
+                          setPreviewSection({
+                            color,
+                            section: {
+                              classStartTime: s.classStartTime,
+                              classEndTime: s.classEndTime,
+                              days: s.days,
+                              sectionCode: s.sectionCode,
+                              isOnline: s.isOnline,
+                              buildingName: s.buildingName,
+                              roomNumber: s.roomNumber,
+                              professorName: professorDisplayName,
+                            },
+                            course: {
+                              code: course.code,
+                              title: course.title,
+                            },
+                          });
+                        }, 250);
+                      }}
+                      onMouseLeave={() => {
+                        if (previewTimerRef.current !== null) {
+                          clearTimeout(previewTimerRef.current);
+                          previewTimerRef.current = null;
+                        }
+                        setPreviewSection(null);
+                      }}
+                      size={isAdded ? "xs" : "icon-xs"}
+                      variant={isAdded ? "secondary" : "default"}
+                    >
+                      {isAdded ? (
+                        <>
+                          <CheckIcon className="size-3.5" />
+                          Added
+                        </>
+                      ) : (
+                        <PlusIcon className="size-4" />
+                      )}
+                    </Button>
+                  );
+
                   return (
                     <TableRow key={s.id}>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{s.sectionCode}</span>
                           <Badge variant="info">
-                            {formatTermLabel(s.termCode, termNameByCode)}
+                            {formatTermLabelWithoutYear(s.termCode, termNameByCode)}
                           </Badge>
                         </div>
                       </TableCell>
@@ -290,77 +364,14 @@ export function CourseViewData() {
                       </TableCell>
 
                       <TableCell className="text-right">
-                        <Button
-                          className={cn(isAdded && "cursor-default")}
-                          disabled={isAdded}
-                          onClick={() => {
-                            if (isAdded) {
-                              return;
-                            }
-                            pendingRef.current = {
-                              section: {
-                                id: s.id,
-                                termCode: s.termCode,
-                                sectionCode: s.sectionCode,
-                                classStartTime: s.classStartTime,
-                                classEndTime: s.classEndTime,
-                                days: s.days,
-                                buildingName: s.buildingName,
-                                roomNumber: s.roomNumber,
-                                isOnline: s.isOnline,
-                                professorName: professorDisplayName,
-                              },
-                              course: {
-                                code: course.code,
-                                title: course.title,
-                                credits: course.credits,
-                              },
-                            };
-                            addSection({ sessionId, sectionId: s._id, color });
-                          }}
-                          onMouseEnter={() => {
-                            if (isAdded) {
-                              return;
-                            }
-                            previewTimerRef.current = setTimeout(() => {
-                              setPreviewSection({
-                                color,
-                                section: {
-                                  classStartTime: s.classStartTime,
-                                  classEndTime: s.classEndTime,
-                                  days: s.days,
-                                  sectionCode: s.sectionCode,
-                                  isOnline: s.isOnline,
-                                  buildingName: s.buildingName,
-                                  roomNumber: s.roomNumber,
-                                  professorName: professorDisplayName,
-                                },
-                                course: {
-                                  code: course.code,
-                                  title: course.title,
-                                },
-                              });
-                            }, 250);
-                          }}
-                          onMouseLeave={() => {
-                            if (previewTimerRef.current !== null) {
-                              clearTimeout(previewTimerRef.current);
-                              previewTimerRef.current = null;
-                            }
-                            setPreviewSection(null);
-                          }}
-                          size={isAdded ? "xs" : "icon-xs"}
-                          variant={isAdded ? "secondary" : "default"}
-                        >
-                          {isAdded ? (
-                            <>
-                              <CheckIcon className="size-3.5" />
-                              Added
-                            </>
-                          ) : (
-                            <PlusIcon className="size-4" />
-                          )}
-                        </Button>
+                        {isAdded ? (
+                          actionButton
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger render={actionButton} />
+                            <TooltipPopup>Add to schedule</TooltipPopup>
+                          </Tooltip>
+                        )}
                       </TableCell>
                     </TableRow>
                   );
