@@ -41,7 +41,7 @@ import {
   cn,
   formatCourseCode,
   formatDays,
-  formatTermLabel,
+  formatTermLabelWithoutYear,
   getBuildingAbbreviation,
   getInitials,
   isCoinTerm,
@@ -227,7 +227,7 @@ export function CourseViewData() {
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{s.sectionCode}</span>
                           <Badge variant="info">
-                            {formatTermLabel(s.termCode, termNameByCode)}
+                            {formatTermLabelWithoutYear(s.termCode, termNameByCode)}
                           </Badge>
                         </div>
                       </TableCell>
