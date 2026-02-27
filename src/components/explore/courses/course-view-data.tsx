@@ -45,6 +45,7 @@ import {
   getBuildingAbbreviation,
   getInitials,
   isCoinTerm,
+  stripProfessorSalutations,
 } from "@/lib/utils";
 import { filterOptionsQuery } from "@/queries/explore";
 import { api } from "../../../../convex/_generated/api";
@@ -218,6 +219,9 @@ export function CourseViewData() {
               <TableBody>
                 {course.sections.map((s) => {
                   const isAdded = addedSectionIds.has(s.id);
+                  const professorDisplayName = stripProfessorSalutations(
+                    s.professorName
+                  );
                   const color =
                     SCHEDULE_COLORS[allItems.length % SCHEDULE_COLORS.length] ??
                     "#94a3b8";
@@ -261,15 +265,17 @@ export function CourseViewData() {
                         <div className="flex items-center gap-2">
                           <Avatar className="size-7">
                             <AvatarImage
-                              alt={s.professorName}
+                              alt={professorDisplayName}
                               src={s.professorImageUrl}
                             />
                             <AvatarFallback>
-                              {getInitials(s.professorName)}
+                              {getInitials(professorDisplayName)}
                             </AvatarFallback>
                           </Avatar>
                           <div className="min-w-0">
-                            <div className="truncate">{s.professorName}</div>
+                            <div className="truncate">
+                              {professorDisplayName}
+                            </div>
                             {typeof s.professorAvgQuality === "number" && (
                               <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
                                 <StarIcon
@@ -302,7 +308,7 @@ export function CourseViewData() {
                                 buildingName: s.buildingName,
                                 roomNumber: s.roomNumber,
                                 isOnline: s.isOnline,
-                                professorName: s.professorName,
+                                professorName: professorDisplayName,
                               },
                               course: {
                                 code: course.code,
@@ -327,7 +333,7 @@ export function CourseViewData() {
                                   isOnline: s.isOnline,
                                   buildingName: s.buildingName,
                                   roomNumber: s.roomNumber,
-                                  professorName: s.professorName,
+                                  professorName: professorDisplayName,
                                 },
                                 course: {
                                   code: course.code,
