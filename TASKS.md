@@ -24,8 +24,6 @@ If 0 sections - dont show table
 
 Make the footer next previous buttons more visible.
 
-Remove the first render fluid animation in tab triggers.
-
 Remove the year from term chip in schedule view.
 
 Add to schedule tooltip on plus icon

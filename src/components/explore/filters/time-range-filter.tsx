@@ -8,6 +8,11 @@ import {
 } from "@/lib/explore-filter-constants";
 import { formatTime } from "@/lib/schedule-time";
 
+function formatTimeWithHourPadding(minutes: number): string {
+  const formatted = formatTime(minutes);
+  return formatted.includes(":") ? formatted : formatted.replace(" ", ":00 ");
+}
+
 export function TimeRangeFilter() {
   const { filters, setTimeRange } = useExploreFilters();
   const [range, setRange] = useState<[number, number]>([
@@ -22,7 +27,8 @@ export function TimeRangeFilter() {
   return (
     <div className="flex flex-col gap-2">
       <div className="text-muted-foreground text-xs">
-        {formatTime(range[0])} - {formatTime(range[1])}
+        {formatTimeWithHourPadding(range[0])} -{" "}
+        {formatTimeWithHourPadding(range[1])}
       </div>
       <Slider
         max={TIME_RANGE_MAX_MINUTES}
