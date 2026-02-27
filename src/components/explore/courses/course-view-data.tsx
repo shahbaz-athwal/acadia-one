@@ -220,8 +220,9 @@ export function CourseViewData() {
                   {course.sections.map((s) => {
                     const isAdded = addedSectionIds.has(s.id);
                     const color =
-                      SCHEDULE_COLORS[allItems.length % SCHEDULE_COLORS.length] ??
-                      "#94a3b8";
+                      SCHEDULE_COLORS[
+                        allItems.length % SCHEDULE_COLORS.length
+                      ] ?? "#94a3b8";
                     return (
                       <TableRow key={s.id}>
                         <TableCell>
@@ -277,7 +278,9 @@ export function CourseViewData() {
                                     className="size-3"
                                     fill="currentColor"
                                   />
-                                  <span>{s.professorAvgQuality.toFixed(1)}</span>
+                                  <span>
+                                    {s.professorAvgQuality.toFixed(1)}
+                                  </span>
                                 </div>
                               )}
                             </div>
@@ -311,7 +314,11 @@ export function CourseViewData() {
                                   credits: course.credits,
                                 },
                               };
-                              addSection({ sessionId, sectionId: s._id, color });
+                              addSection({
+                                sessionId,
+                                sectionId: s._id,
+                                color,
+                              });
                             }}
                             onMouseEnter={() => {
                               if (isAdded) {
