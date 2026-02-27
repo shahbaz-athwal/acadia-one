@@ -224,8 +224,9 @@ export function CourseViewData() {
                       s.professorName
                     );
                     const color =
-                      SCHEDULE_COLORS[allItems.length % SCHEDULE_COLORS.length] ??
-                      "#94a3b8";
+                      SCHEDULE_COLORS[
+                        allItems.length % SCHEDULE_COLORS.length
+                      ] ?? "#94a3b8";
                     const actionButton = (
                       <Button
                         className={cn(isAdded && "cursor-default")}
@@ -360,7 +361,9 @@ export function CourseViewData() {
                                     className="size-3"
                                     fill="currentColor"
                                   />
-                                  <span>{s.professorAvgQuality.toFixed(1)}</span>
+                                  <span>
+                                    {s.professorAvgQuality.toFixed(1)}
+                                  </span>
                                 </div>
                               )}
                             </div>
