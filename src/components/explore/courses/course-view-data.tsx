@@ -205,182 +205,187 @@ export function CourseViewData() {
               </div>
             </div>
 
-            <Table className="text-xs">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Section</TableHead>
-                  <TableHead>Seats</TableHead>
-                  <TableHead>Times</TableHead>
-                  <TableHead>Locations</TableHead>
-                  <TableHead>Instructors</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {course.sections.map((s) => {
-                  const isAdded = addedSectionIds.has(s.id);
-                  const professorDisplayName = stripProfessorSalutations(
-                    s.professorName
-                  );
-                  const color =
-                    SCHEDULE_COLORS[allItems.length % SCHEDULE_COLORS.length] ??
-                    "#94a3b8";
-                  const actionButton = (
-                    <Button
-                      className={cn(isAdded && "cursor-default")}
-                      disabled={isAdded}
-                      onClick={() => {
-                        if (isAdded) {
-                          return;
-                        }
-                        pendingRef.current = {
-                          section: {
-                            id: s.id,
-                            termCode: s.termCode,
-                            sectionCode: s.sectionCode,
-                            classStartTime: s.classStartTime,
-                            classEndTime: s.classEndTime,
-                            days: s.days,
-                            buildingName: s.buildingName,
-                            roomNumber: s.roomNumber,
-                            isOnline: s.isOnline,
-                            professorName: professorDisplayName,
-                          },
-                          course: {
-                            code: course.code,
-                            title: course.title,
-                            credits: course.credits,
-                          },
-                        };
-                        addSection({ sessionId, sectionId: s._id, color });
-                      }}
-                      onMouseEnter={() => {
-                        if (isAdded) {
-                          return;
-                        }
-                        previewTimerRef.current = setTimeout(() => {
-                          setPreviewSection({
-                            color,
+            {course.sections.length > 0 && (
+              <Table className="text-xs">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Section</TableHead>
+                    <TableHead>Seats</TableHead>
+                    <TableHead>Times</TableHead>
+                    <TableHead>Locations</TableHead>
+                    <TableHead>Instructors</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {course.sections.map((s) => {
+                    const isAdded = addedSectionIds.has(s.id);
+                    const professorDisplayName = stripProfessorSalutations(
+                      s.professorName
+                    );
+                    const color =
+                      SCHEDULE_COLORS[
+                        allItems.length % SCHEDULE_COLORS.length
+                      ] ?? "#94a3b8";
+                    const actionButton = (
+                      <Button
+                        className={cn(isAdded && "cursor-default")}
+                        disabled={isAdded}
+                        onClick={() => {
+                          if (isAdded) {
+                            return;
+                          }
+                          pendingRef.current = {
                             section: {
+                              id: s.id,
+                              termCode: s.termCode,
+                              sectionCode: s.sectionCode,
                               classStartTime: s.classStartTime,
                               classEndTime: s.classEndTime,
                               days: s.days,
-                              sectionCode: s.sectionCode,
-                              isOnline: s.isOnline,
                               buildingName: s.buildingName,
                               roomNumber: s.roomNumber,
+                              isOnline: s.isOnline,
                               professorName: professorDisplayName,
                             },
                             course: {
                               code: course.code,
                               title: course.title,
+                              credits: course.credits,
                             },
-                          });
-                        }, 250);
-                      }}
-                      onMouseLeave={() => {
-                        if (previewTimerRef.current !== null) {
-                          clearTimeout(previewTimerRef.current);
-                          previewTimerRef.current = null;
-                        }
-                        setPreviewSection(null);
-                      }}
-                      size={isAdded ? "xs" : "icon-xs"}
-                      variant={isAdded ? "secondary" : "default"}
-                    >
-                      {isAdded ? (
-                        <>
-                          <CheckIcon className="size-3.5" />
-                          Added
-                        </>
-                      ) : (
-                        <PlusIcon className="size-4" />
-                      )}
-                    </Button>
-                  );
-
-                  return (
-                    <TableRow key={s.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{s.sectionCode}</span>
-                          <Badge variant="info">
-                            {formatTermLabelWithoutYear(
-                              s.termCode,
-                              termNameByCode
-                            )}
-                          </Badge>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="font-medium">--</TableCell>
-
-                      <TableCell>
-                        {isCoinTerm(s.termCode, termNameByCode) ? (
-                          <span className="text-muted-foreground">-</span>
-                        ) : (
-                          <div className="space-y-0.5">
-                            <div>
-                              {s.classStartTime} - {s.classEndTime}
-                            </div>
-                            <div className="text-muted-foreground">
-                              {formatDays(s.days)}
-                            </div>
-                          </div>
-                        )}
-                      </TableCell>
-
-                      <TableCell className="whitespace-normal">
-                        <LocationDisplay
-                          buildingName={s.buildingName}
-                          isOnline={s.isOnline}
-                          roomNumber={s.roomNumber}
-                        />
-                      </TableCell>
-
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="size-7">
-                            <AvatarImage
-                              alt={professorDisplayName}
-                              src={s.professorImageUrl}
-                            />
-                            <AvatarFallback>
-                              {getInitials(professorDisplayName)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0">
-                            <div className="truncate">
-                              {professorDisplayName}
-                            </div>
-                            {typeof s.professorAvgQuality === "number" && (
-                              <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
-                                <StarIcon
-                                  className="size-3"
-                                  fill="currentColor"
-                                />
-                                <span>{s.professorAvgQuality.toFixed(1)}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="text-right">
+                          };
+                          addSection({ sessionId, sectionId: s._id, color });
+                        }}
+                        onMouseEnter={() => {
+                          if (isAdded) {
+                            return;
+                          }
+                          previewTimerRef.current = setTimeout(() => {
+                            setPreviewSection({
+                              color,
+                              section: {
+                                classStartTime: s.classStartTime,
+                                classEndTime: s.classEndTime,
+                                days: s.days,
+                                sectionCode: s.sectionCode,
+                                isOnline: s.isOnline,
+                                buildingName: s.buildingName,
+                                roomNumber: s.roomNumber,
+                                professorName: professorDisplayName,
+                              },
+                              course: {
+                                code: course.code,
+                                title: course.title,
+                              },
+                            });
+                          }, 250);
+                        }}
+                        onMouseLeave={() => {
+                          if (previewTimerRef.current !== null) {
+                            clearTimeout(previewTimerRef.current);
+                            previewTimerRef.current = null;
+                          }
+                          setPreviewSection(null);
+                        }}
+                        size={isAdded ? "xs" : "icon-xs"}
+                        variant={isAdded ? "secondary" : "default"}
+                      >
                         {isAdded ? (
-                          actionButton
+                          <>
+                            <CheckIcon className="size-3.5" />
+                            Added
+                          </>
                         ) : (
-                          <Tooltip>
-                            <TooltipTrigger render={actionButton} />
-                            <TooltipPopup>Add to schedule</TooltipPopup>
-                          </Tooltip>
+                          <PlusIcon className="size-4" />
                         )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                      </Button>
+                    );
+
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{s.sectionCode}</span>
+                            <Badge variant="info">
+                              {formatTermLabelWithoutYear(
+                                s.termCode,
+                                termNameByCode
+                              )}
+                            </Badge>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="font-medium">--</TableCell>
+
+                        <TableCell>
+                          {isCoinTerm(s.termCode, termNameByCode) ? (
+                            <span className="text-muted-foreground">-</span>
+                          ) : (
+                            <div className="space-y-0.5">
+                              <div>
+                                {s.classStartTime} - {s.classEndTime}
+                              </div>
+                              <div className="text-muted-foreground">
+                                {formatDays(s.days)}
+                              </div>
+                            </div>
+                          )}
+                        </TableCell>
+
+                        <TableCell className="whitespace-normal">
+                          <LocationDisplay
+                            buildingName={s.buildingName}
+                            isOnline={s.isOnline}
+                            roomNumber={s.roomNumber}
+                          />
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="size-7">
+                              <AvatarImage
+                                alt={professorDisplayName}
+                                src={s.professorImageUrl}
+                              />
+                              <AvatarFallback>
+                                {getInitials(professorDisplayName)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <div className="truncate">
+                                {professorDisplayName}
+                              </div>
+                              {typeof s.professorAvgQuality === "number" && (
+                                <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
+                                  <StarIcon
+                                    className="size-3"
+                                    fill="currentColor"
+                                  />
+                                  <span>
+                                    {s.professorAvgQuality.toFixed(1)}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-right">
+                          {isAdded ? (
+                            actionButton
+                          ) : (
+                            <Tooltip>
+                              <TooltipTrigger render={actionButton} />
+                              <TooltipPopup>Add to schedule</TooltipPopup>
+                            </Tooltip>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
           </Frame>
         ))}
       </div>
