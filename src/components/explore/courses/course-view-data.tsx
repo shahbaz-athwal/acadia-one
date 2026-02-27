@@ -204,163 +204,165 @@ export function CourseViewData() {
               </div>
             </div>
 
-            <Table className="text-xs">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Section</TableHead>
-                  <TableHead>Seats</TableHead>
-                  <TableHead>Times</TableHead>
-                  <TableHead>Locations</TableHead>
-                  <TableHead>Instructors</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {course.sections.map((s) => {
-                  const isAdded = addedSectionIds.has(s.id);
-                  const color =
-                    SCHEDULE_COLORS[allItems.length % SCHEDULE_COLORS.length] ??
-                    "#94a3b8";
-                  return (
-                    <TableRow key={s.id}>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{s.sectionCode}</span>
-                          <Badge variant="info">
-                            {formatTermLabel(s.termCode, termNameByCode)}
-                          </Badge>
-                        </div>
-                      </TableCell>
-
-                      <TableCell className="font-medium">--</TableCell>
-
-                      <TableCell>
-                        {isCoinTerm(s.termCode, termNameByCode) ? (
-                          <span className="text-muted-foreground">-</span>
-                        ) : (
-                          <div className="space-y-0.5">
-                            <div>
-                              {s.classStartTime} - {s.classEndTime}
-                            </div>
-                            <div className="text-muted-foreground">
-                              {formatDays(s.days)}
-                            </div>
+            {course.sections.length > 0 && (
+              <Table className="text-xs">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Section</TableHead>
+                    <TableHead>Seats</TableHead>
+                    <TableHead>Times</TableHead>
+                    <TableHead>Locations</TableHead>
+                    <TableHead>Instructors</TableHead>
+                    <TableHead className="text-right">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {course.sections.map((s) => {
+                    const isAdded = addedSectionIds.has(s.id);
+                    const color =
+                      SCHEDULE_COLORS[allItems.length % SCHEDULE_COLORS.length] ??
+                      "#94a3b8";
+                    return (
+                      <TableRow key={s.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{s.sectionCode}</span>
+                            <Badge variant="info">
+                              {formatTermLabel(s.termCode, termNameByCode)}
+                            </Badge>
                           </div>
-                        )}
-                      </TableCell>
+                        </TableCell>
 
-                      <TableCell className="whitespace-normal">
-                        <LocationDisplay
-                          buildingName={s.buildingName}
-                          isOnline={s.isOnline}
-                          roomNumber={s.roomNumber}
-                        />
-                      </TableCell>
+                        <TableCell className="font-medium">--</TableCell>
 
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="size-7">
-                            <AvatarImage
-                              alt={s.professorName}
-                              src={s.professorImageUrl}
-                            />
-                            <AvatarFallback>
-                              {getInitials(s.professorName)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="min-w-0">
-                            <div className="truncate">{s.professorName}</div>
-                            {typeof s.professorAvgQuality === "number" && (
-                              <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
-                                <StarIcon
-                                  className="size-3"
-                                  fill="currentColor"
-                                />
-                                <span>{s.professorAvgQuality.toFixed(1)}</span>
+                        <TableCell>
+                          {isCoinTerm(s.termCode, termNameByCode) ? (
+                            <span className="text-muted-foreground">-</span>
+                          ) : (
+                            <div className="space-y-0.5">
+                              <div>
+                                {s.classStartTime} - {s.classEndTime}
                               </div>
-                            )}
-                          </div>
-                        </div>
-                      </TableCell>
+                              <div className="text-muted-foreground">
+                                {formatDays(s.days)}
+                              </div>
+                            </div>
+                          )}
+                        </TableCell>
 
-                      <TableCell className="text-right">
-                        <Button
-                          className={cn(isAdded && "cursor-default")}
-                          disabled={isAdded}
-                          onClick={() => {
-                            if (isAdded) {
-                              return;
-                            }
-                            pendingRef.current = {
-                              section: {
-                                id: s.id,
-                                termCode: s.termCode,
-                                sectionCode: s.sectionCode,
-                                classStartTime: s.classStartTime,
-                                classEndTime: s.classEndTime,
-                                days: s.days,
-                                buildingName: s.buildingName,
-                                roomNumber: s.roomNumber,
-                                isOnline: s.isOnline,
-                                professorName: s.professorName,
-                              },
-                              course: {
-                                code: course.code,
-                                title: course.title,
-                                credits: course.credits,
-                              },
-                            };
-                            addSection({ sessionId, sectionId: s._id, color });
-                          }}
-                          onMouseEnter={() => {
-                            if (isAdded) {
-                              return;
-                            }
-                            previewTimerRef.current = setTimeout(() => {
-                              setPreviewSection({
-                                color,
+                        <TableCell className="whitespace-normal">
+                          <LocationDisplay
+                            buildingName={s.buildingName}
+                            isOnline={s.isOnline}
+                            roomNumber={s.roomNumber}
+                          />
+                        </TableCell>
+
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="size-7">
+                              <AvatarImage
+                                alt={s.professorName}
+                                src={s.professorImageUrl}
+                              />
+                              <AvatarFallback>
+                                {getInitials(s.professorName)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <div className="truncate">{s.professorName}</div>
+                              {typeof s.professorAvgQuality === "number" && (
+                                <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
+                                  <StarIcon
+                                    className="size-3"
+                                    fill="currentColor"
+                                  />
+                                  <span>{s.professorAvgQuality.toFixed(1)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+
+                        <TableCell className="text-right">
+                          <Button
+                            className={cn(isAdded && "cursor-default")}
+                            disabled={isAdded}
+                            onClick={() => {
+                              if (isAdded) {
+                                return;
+                              }
+                              pendingRef.current = {
                                 section: {
+                                  id: s.id,
+                                  termCode: s.termCode,
+                                  sectionCode: s.sectionCode,
                                   classStartTime: s.classStartTime,
                                   classEndTime: s.classEndTime,
                                   days: s.days,
-                                  sectionCode: s.sectionCode,
-                                  isOnline: s.isOnline,
                                   buildingName: s.buildingName,
                                   roomNumber: s.roomNumber,
+                                  isOnline: s.isOnline,
                                   professorName: s.professorName,
                                 },
                                 course: {
                                   code: course.code,
                                   title: course.title,
+                                  credits: course.credits,
                                 },
-                              });
-                            }, 250);
-                          }}
-                          onMouseLeave={() => {
-                            if (previewTimerRef.current !== null) {
-                              clearTimeout(previewTimerRef.current);
-                              previewTimerRef.current = null;
-                            }
-                            setPreviewSection(null);
-                          }}
-                          size={isAdded ? "xs" : "icon-xs"}
-                          variant={isAdded ? "secondary" : "default"}
-                        >
-                          {isAdded ? (
-                            <>
-                              <CheckIcon className="size-3.5" />
-                              Added
-                            </>
-                          ) : (
-                            <PlusIcon className="size-4" />
-                          )}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                              };
+                              addSection({ sessionId, sectionId: s._id, color });
+                            }}
+                            onMouseEnter={() => {
+                              if (isAdded) {
+                                return;
+                              }
+                              previewTimerRef.current = setTimeout(() => {
+                                setPreviewSection({
+                                  color,
+                                  section: {
+                                    classStartTime: s.classStartTime,
+                                    classEndTime: s.classEndTime,
+                                    days: s.days,
+                                    sectionCode: s.sectionCode,
+                                    isOnline: s.isOnline,
+                                    buildingName: s.buildingName,
+                                    roomNumber: s.roomNumber,
+                                    professorName: s.professorName,
+                                  },
+                                  course: {
+                                    code: course.code,
+                                    title: course.title,
+                                  },
+                                });
+                              }, 250);
+                            }}
+                            onMouseLeave={() => {
+                              if (previewTimerRef.current !== null) {
+                                clearTimeout(previewTimerRef.current);
+                                previewTimerRef.current = null;
+                              }
+                              setPreviewSection(null);
+                            }}
+                            size={isAdded ? "xs" : "icon-xs"}
+                            variant={isAdded ? "secondary" : "default"}
+                          >
+                            {isAdded ? (
+                              <>
+                                <CheckIcon className="size-3.5" />
+                                Added
+                              </>
+                            ) : (
+                              <PlusIcon className="size-4" />
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
           </Frame>
         ))}
       </div>
