@@ -118,6 +118,13 @@ export function CourseViewData() {
 
   const pendingRef = useRef<PendingSection | null>(null);
   const previewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clearPreview = () => {
+    if (previewTimerRef.current !== null) {
+      clearTimeout(previewTimerRef.current);
+      previewTimerRef.current = null;
+    }
+    setPreviewSection(null);
+  };
 
   const addSection = useMutation(api.schedule.addSection).withOptimisticUpdate(
     (localStore, args) => {
@@ -232,6 +239,7 @@ export function CourseViewData() {
                         className={cn(isAdded && "cursor-default")}
                         disabled={isAdded}
                         onClick={() => {
+                          clearPreview();
                           if (isAdded) {
                             return;
                           }
@@ -281,11 +289,7 @@ export function CourseViewData() {
                           }, 250);
                         }}
                         onMouseLeave={() => {
-                          if (previewTimerRef.current !== null) {
-                            clearTimeout(previewTimerRef.current);
-                            previewTimerRef.current = null;
-                          }
-                          setPreviewSection(null);
+                          clearPreview();
                         }}
                         size={isAdded ? "xs" : "icon-xs"}
                         variant={isAdded ? "secondary" : "default"}
