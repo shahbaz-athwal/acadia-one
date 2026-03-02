@@ -51,7 +51,7 @@ export function ScheduleBlock({
   return (
     <PreviewCard>
       <PreviewCardTrigger
-        delay={100}
+        delay={250}
         render={
           <div
             className={cn(

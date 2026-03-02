@@ -118,6 +118,48 @@ export function ScheduleCalendar() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!(isPreviewingCurrentTerm && previewSection)) {
+      return;
+    }
+
+    const previewDays = [...previewSection.section.days].sort((a, b) => a - b);
+    const targetDay = previewDays[0];
+    if (targetDay === undefined) {
+      return;
+    }
+
+    const root = calendarRef.current;
+    if (!root) {
+      return;
+    }
+    const viewport = root.querySelector<HTMLElement>(
+      '[data-slot="scroll-area-viewport"]'
+    );
+    if (!viewport) {
+      return;
+    }
+
+    const dayColumn = root.querySelector<HTMLElement>(
+      `[data-schedule-day="${targetDay}"]`
+    );
+    if (!dayColumn) {
+      return;
+    }
+
+    const viewportRect = viewport.getBoundingClientRect();
+    const dayRect = dayColumn.getBoundingClientRect();
+    const isHiddenLeft = dayRect.left < viewportRect.left;
+    const isHiddenRight = dayRect.right > viewportRect.right;
+    if (isHiddenLeft || isHiddenRight) {
+      dayColumn.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
+    }
+  }, [isPreviewingCurrentTerm, previewSection]);
+
   return (
     <div className="flex min-h-0 flex-1" ref={calendarRef}>
       {/* ── Time gutter (outside scroll container) ── */}
@@ -151,15 +193,12 @@ export function ScheduleCalendar() {
 
       {/* ── Day columns (inside ScrollArea with fading edges) ── */}
       <div className="min-h-0 min-w-0 flex-1">
-        <ScrollArea
-          hideVerticalScrollbar
-          scrollFade
-          viewportClassName="overflow-y-hidden"
-        >
+        <ScrollArea hideVerticalScrollbar viewportClassName="overflow-y-hidden">
           <div className="flex">
             {WEEKDAYS.map(({ day, short }) => (
               <div
                 className="flex flex-1 shrink-0 flex-col border-r last:border-r-0"
+                data-schedule-day={day}
                 key={day}
                 style={{ minWidth: DAY_MIN_WIDTH }}
               >
@@ -207,10 +246,10 @@ export function ScheduleCalendar() {
                   {/* Preview ghost block */}
                   {isPreviewingCurrentTerm &&
                     previewSection.section.days.includes(day) && (
-                    <PreviewBlock
-                      preview={previewSection}
-                      slotHeight={slotHeight}
-                    />
+                      <PreviewBlock
+                        preview={previewSection}
+                        slotHeight={slotHeight}
+                      />
                     )}
                 </div>
               </div>
@@ -254,7 +293,7 @@ function PreviewBlock({
           {formatCourseCode(preview.course.code)}
         </span>
         <span className="truncate text-[11px] leading-tight opacity-80">
-          Sec {preview.section.sectionCode}
+          {preview.section.sectionCode}
         </span>
       </div>
     </div>
