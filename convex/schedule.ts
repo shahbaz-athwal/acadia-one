@@ -64,6 +64,22 @@ export const removeSection = mutation({
   },
 });
 
+export const removeScheduleItem = mutation({
+  args: {
+    sessionId: v.string(),
+    scheduleItemId: v.id("scheduleItems"),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const item = await ctx.db.get(args.scheduleItemId);
+    if (!item || item.sessionId !== args.sessionId) {
+      throw new ConvexError("Schedule item not found");
+    }
+    await ctx.db.delete(args.scheduleItemId);
+    return null;
+  },
+});
+
 export const get = query({
   args: {
     sessionId: v.string(),
@@ -92,6 +108,7 @@ export const get = query({
 
         return {
           scheduleItemId: item._id,
+          sectionDbId: item.sectionId,
           color: item.color,
           section: {
             id: section.externalId,

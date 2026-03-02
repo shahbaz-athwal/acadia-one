@@ -10,7 +10,7 @@ export type ScheduleItem = NonNullable<
 
 export function useScheduleItems() {
   const sessionId = getOrCreateSessionId();
-  const { termCode } = useScheduleView();
+  const { termCode, setTermCode } = useScheduleView();
 
   const { data: allItems } = useSuspenseQuery(scheduleQuery(sessionId));
 
@@ -29,6 +29,8 @@ export function useScheduleItems() {
     items,
     allItems,
     termCodesInSchedule,
+    termCode,
+    setTermCode,
     sessionId,
   };
 }

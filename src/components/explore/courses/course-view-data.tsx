@@ -112,7 +112,7 @@ export function CourseViewData() {
   const {
     data: { terms },
   } = useSuspenseQuery(filterOptionsQuery());
-  const { allItems } = useScheduleItems();
+  const { allItems, termCode, setTermCode } = useScheduleItems();
   const { setPreviewSection } = useSchedulePreview();
   const sessionId = getOrCreateSessionId();
 
@@ -139,6 +139,7 @@ export function CourseViewData() {
         ...current,
         {
           scheduleItemId: `__optimistic_${Date.now()}` as never,
+          sectionDbId: args.sectionId,
           color: args.color,
           ...pendingRef.current,
         },
@@ -269,9 +270,13 @@ export function CourseViewData() {
                             return;
                           }
                           previewTimerRef.current = setTimeout(() => {
+                            if (s.termCode !== termCode) {
+                              setTermCode(s.termCode);
+                            }
                             setPreviewSection({
                               color,
                               section: {
+                                termCode: s.termCode,
                                 classStartTime: s.classStartTime,
                                 classEndTime: s.classEndTime,
                                 days: s.days,

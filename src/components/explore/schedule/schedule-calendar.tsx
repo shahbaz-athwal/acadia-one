@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMutation } from "convex/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   type ScheduleItem,
@@ -15,7 +16,8 @@ import {
   TIME_GUTTER_WIDTH,
   WEEKDAYS,
 } from "@/lib/schedule-time";
-import { cn } from "@/lib/utils";
+import { cn, formatCourseCode } from "@/lib/utils";
+import { api } from "../../../../convex/_generated/api";
 import { ScheduleBlock } from "./schedule-block";
 
 const DAY_MIN_WIDTH = 85;
@@ -40,12 +42,37 @@ function groupByDay(items: ScheduleItem[]): Map<number, ScheduleItem[]> {
 }
 
 export function ScheduleCalendar() {
-  const { items } = useScheduleItems();
+  const { items, termCode, sessionId } = useScheduleItems();
   const { previewSection } = useSchedulePreview();
   const timeSlots = useMemo(() => getTimeSlots(), []);
   const gridLineSlots = useMemo(() => timeSlots.slice(0, -1), [timeSlots]);
   const itemsByDay = useMemo(() => groupByDay(items ?? []), [items]);
-  const isPreviewing = previewSection !== null;
+  const isPreviewingCurrentTerm =
+    previewSection !== null && previewSection.section.termCode === termCode;
+  const removeScheduleItem = useMutation(
+    api.schedule.removeScheduleItem
+  ).withOptimisticUpdate((localStore, args) => {
+    const current = localStore.getQuery(api.schedule.get, {
+      sessionId: args.sessionId,
+    });
+    if (current === undefined) {
+      return;
+    }
+    localStore.setQuery(
+      api.schedule.get,
+      { sessionId: args.sessionId },
+      current.filter((item) => item.scheduleItemId !== args.scheduleItemId)
+    );
+  });
+  const handleRemoveSection = useCallback(
+    (scheduleItemId: ScheduleItem["scheduleItemId"]) => {
+      removeScheduleItem({
+        sessionId,
+        scheduleItemId,
+      });
+    },
+    [removeScheduleItem, sessionId]
+  );
 
   const calendarRef = useRef<HTMLDivElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
@@ -169,20 +196,22 @@ export function ScheduleCalendar() {
                   {/* Schedule blocks */}
                   {(itemsByDay.get(day) ?? []).map((item) => (
                     <ScheduleBlock
-                      dimmed={isPreviewing}
+                      dimmed={isPreviewingCurrentTerm}
                       item={item}
                       key={item.scheduleItemId}
+                      onRemove={handleRemoveSection}
                       slotHeight={slotHeight}
                     />
                   ))}
 
                   {/* Preview ghost block */}
-                  {previewSection?.section.days.includes(day) && (
+                  {isPreviewingCurrentTerm &&
+                    previewSection.section.days.includes(day) && (
                     <PreviewBlock
                       preview={previewSection}
                       slotHeight={slotHeight}
                     />
-                  )}
+                    )}
                 </div>
               </div>
             ))}
@@ -206,11 +235,9 @@ function PreviewBlock({
     slotHeight
   );
 
-  const isCompact = height <= 40;
-
   return (
     <div
-      className="absolute inset-x-0.5 animate-pulse overflow-hidden rounded-md border border-dashed px-1.5 py-1 text-xs leading-tight"
+      className="absolute inset-x-0.5 animate-pulse overflow-hidden rounded-md border border-dashed px-2 py-1.5 text-xs leading-tight"
       style={{
         top,
         height,
@@ -219,25 +246,16 @@ function PreviewBlock({
         color: preview.color,
       }}
     >
-      <div className="flex flex-col gap-0.5 overflow-hidden">
+      <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden">
         <span
-          className="truncate font-semibold"
+          className="truncate font-semibold leading-tight"
           style={{ color: preview.color }}
         >
-          {preview.course.code}
+          {formatCourseCode(preview.course.code)}
         </span>
-        {!isCompact && (
-          <>
-            <span className="truncate text-[10px] opacity-80">
-              {preview.section.classStartTime} – {preview.section.classEndTime}
-            </span>
-            <span className="truncate text-[10px] opacity-70">
-              {preview.section.isOnline
-                ? "Online"
-                : `${preview.section.buildingName} ${preview.section.roomNumber}`}
-            </span>
-          </>
-        )}
+        <span className="truncate text-[11px] leading-tight opacity-80">
+          Sec {preview.section.sectionCode}
+        </span>
       </div>
     </div>
   );
