@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -n \"VITE,CONVEX\" -c \"cyan,magenta\" \"bun run dev:vite\" \"bun run dev:convex\"",
-    "dev:vite": " portless acadia-one vite dev",
+    "dev:vite": "portless acadia-one vite dev",
     "dev:convex": "convex dev",
     "dev:setup": "convex dev --configure --until-success",
     "build": "vite build",
-    "start": "vite preview",
+    "start": "portless acadia-one vite preview",
     "lint": "ultracite fix",
     "lint:check": "ultracite check",
     "lint:file": "ultracite fix --",
@@ -21,8 +21,6 @@
     "@better-upload/client": "^3.0.14",
     "@convex-dev/agent": "^0.3.2",
     "@convex-dev/react-query": "^0.1.0",
-    "@headless-tree/core": "^1.6.3",
-    "@ncdai/react-wheel-picker": "^1.2.0",
     "@posthog/ai": "^7.8.0",
     "@tailwindcss/vite": "^4.1.18",
     "@tanstack/devtools-vite": "^0.5.1",
@@ -42,7 +40,6 @@
     "graphql-request": "^7.4.0",
     "lucide-react": "^0.575.0",
     "motion": "^12.34.2",
-    "neverthrow": "^8.2.0",
     "posthog-js": "^1.347.0",
     "posthog-node": "^5.24.1",
     "react": "^19.2.3",
@@ -66,8 +63,7 @@
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "ultracite": "^7",
-    "vite": "^7.3.1",
-    "web-vitals": "^5.1.0"
+    "vite": "^7.3.1"
   },
   "engines": {
     "bun": ">=1.3.0"
