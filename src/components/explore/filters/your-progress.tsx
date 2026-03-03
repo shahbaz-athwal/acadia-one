@@ -7,6 +7,8 @@ import { userDataQuery } from "@/queries/explore";
 type TreeLevel = "requirement" | "subrequirement" | "group" | "course";
 
 interface ProgramEvaluationData {
+  code: string;
+  title: string;
   requirements: RequirementData[];
 }
 
@@ -275,6 +277,12 @@ function YourProgress() {
       ),
     [userData?.programEvaluation]
   );
+  const programEvaluation = userData?.programEvaluation as
+    | ProgramEvaluationData
+    | undefined;
+  const degreeTitle = [programEvaluation?.title, programEvaluation?.code]
+    .filter((value): value is string => !!value)
+    .join(" • ");
 
   const handleToggle = (node: ProgressTreeNode) => {
     setExpansionState((previousState) => {
@@ -310,6 +318,9 @@ function YourProgress() {
 
   return (
     <div className="space-y-2 p-2">
+      {degreeTitle ? (
+        <p className="px-1 font-medium text-foreground text-xs">{degreeTitle}</p>
+      ) : null}
       <ProgressTreeBranch
         depth={0}
         expansionConfig={EXPANSION_CONFIG}

@@ -37,7 +37,7 @@ export function AcademicLevelFilter() {
       {ACADEMIC_LEVEL_OPTIONS.map((level) => (
         <ToggleGroupItem
           aria-label={`${level.label} level`}
-          className="border border-input bg-background px-2 text-[11px] font-normal shadow-xs/5 data-[pressed]:bg-input/64 data-[pressed]:text-accent-foreground"
+          className="border border-input bg-background px-2 text-[10px] font-normal shadow-xs/5 data-[pressed]:bg-input/64 data-[pressed]:text-accent-foreground"
           key={level.value}
           value={level.value}
         >
