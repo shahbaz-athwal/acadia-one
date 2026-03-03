@@ -1,68 +1,71 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ChevronDownIcon, ChevronRightIcon, InfoIcon } from "lucide-react";
+import {
+  type MouseEvent,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  Tooltip,
+  TooltipPopup,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { TruncatedTooltipText } from "@/components/ui/truncated-tooltip-text";
 import { useAuth } from "@/hooks/use-auth";
 import { userDataQuery } from "@/queries/explore";
+import type { Doc } from "../../../../convex/_generated/dataModel";
 
 type TreeLevel = "requirement" | "subrequirement" | "group" | "course";
 
-interface ProgramEvaluationData {
-  code: string;
-  title: string;
-  requirements: RequirementData[];
-}
-
-interface RequirementData {
-  id: string;
-  code: string;
-  subrequirements: SubrequirementData[];
-}
-
-interface SubrequirementData {
-  id: string;
-  code: string;
-  groups: GroupData[];
-}
-
-interface GroupData {
-  id: string;
-  courses: CourseData[];
-}
-
-interface CourseData {
-  id: string;
-  code: string;
-}
+type ProgramEvaluationData = Doc<"acadiaUserData">["programEvaluation"];
+type RequirementData = ProgramEvaluationData["requirements"][number];
+type SubrequirementData = RequirementData["subrequirements"][number];
+type GroupData = SubrequirementData["groups"][number];
+type CourseData = GroupData["courses"][number];
 
 interface ProgressTreeNode {
   id: string;
   level: TreeLevel;
   label: string;
+  description?: string;
+  directive?: string;
   children: ProgressTreeNode[];
 }
-
-type ExpansionConfig =
-  | {
-      collapsedLevelsByDefault: ReadonlySet<TreeLevel>;
-      persistence: "memory";
-    }
-  | {
-      collapsedLevelsByDefault: ReadonlySet<TreeLevel>;
-      persistence: "localStorage";
-      storageKey: string;
-    };
 
 interface ExpansionState {
   userExpanded: Set<string>;
   userCollapsed: Set<string>;
 }
 
-const EXPANSION_CONFIG: ExpansionConfig = {
-  // Keep this empty for now: all levels expanded by default.
-  collapsedLevelsByDefault: new Set<TreeLevel>(),
-  persistence: "localStorage",
-  storageKey: "dryft.progressTree.expansionState.v1",
+interface PersistedExpansionState {
+  userExpanded?: unknown;
+  userCollapsed?: unknown;
+}
+
+const NODE_ID_PREFIX: Record<TreeLevel, string> = {
+  requirement: "req",
+  subrequirement: "sub",
+  group: "grp",
+  course: "crs",
 };
+const INDENT_PER_LEVEL_PX = 14;
+const TREE_TOGGLE_IGNORE_SELECTOR = "[data-ignore-tree-toggle='true']";
+const EXPANSION_STORAGE_KEY = "dryft.progressTree.expansionState.v1";
+const COLLAPSED_LEVELS_BY_DEFAULT: ReadonlySet<TreeLevel> =
+  new Set<TreeLevel>();
+const LEVELS_WITH_DIRECTIVE: ReadonlySet<TreeLevel> = new Set<TreeLevel>([
+  "requirement",
+  "subrequirement",
+]);
+const LEVELS_WITH_TRUNCATED_TITLE: ReadonlySet<TreeLevel> = new Set<TreeLevel>([
+  "requirement",
+  "group",
+  "course",
+]);
 
 function createEmptyExpansionState(): ExpansionState {
   return {
@@ -71,63 +74,61 @@ function createEmptyExpansionState(): ExpansionState {
   };
 }
 
-function loadExpansionStateFromStorage(
-  config: ExpansionConfig
-): ExpansionState {
-  if (config.persistence !== "localStorage") {
-    return createEmptyExpansionState();
-  }
+function toOptionalText(value: string | null | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : undefined;
+}
 
+function joinNonEmpty(
+  values: Array<string | null | undefined>,
+  separator: string
+): string {
+  return values
+    .map((value) => toOptionalText(value))
+    .filter((value): value is string => value !== undefined)
+    .join(separator);
+}
+
+function buildNodeId(level: TreeLevel, segments: string[]): string {
+  return [NODE_ID_PREFIX[level], ...segments].join(":");
+}
+
+function toStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  return value.filter((entry): entry is string => typeof entry === "string");
+}
+
+function loadExpansionStateFromStorage(): ExpansionState {
   if (typeof window === "undefined") {
     return createEmptyExpansionState();
   }
 
   try {
-    const raw = window.localStorage.getItem(config.storageKey);
+    const raw = window.localStorage.getItem(EXPANSION_STORAGE_KEY);
     if (!raw) {
       return createEmptyExpansionState();
     }
 
-    const parsed = JSON.parse(raw) as {
-      userExpanded?: unknown;
-      userCollapsed?: unknown;
-    };
-
-    const expanded = Array.isArray(parsed.userExpanded)
-      ? parsed.userExpanded.filter(
-          (entry): entry is string => typeof entry === "string"
-        )
-      : [];
-    const collapsed = Array.isArray(parsed.userCollapsed)
-      ? parsed.userCollapsed.filter(
-          (entry): entry is string => typeof entry === "string"
-        )
-      : [];
-
+    const parsed = JSON.parse(raw) as PersistedExpansionState;
     return {
-      userExpanded: new Set(expanded),
-      userCollapsed: new Set(collapsed),
+      userExpanded: new Set(toStringArray(parsed.userExpanded)),
+      userCollapsed: new Set(toStringArray(parsed.userCollapsed)),
     };
   } catch {
     return createEmptyExpansionState();
   }
 }
 
-function saveExpansionStateToStorage(
-  config: ExpansionConfig,
-  state: ExpansionState
-) {
-  if (config.persistence !== "localStorage") {
-    return;
-  }
-
+function saveExpansionStateToStorage(state: ExpansionState) {
   if (typeof window === "undefined") {
     return;
   }
 
   try {
     window.localStorage.setItem(
-      config.storageKey,
+      EXPANSION_STORAGE_KEY,
       JSON.stringify({
         userExpanded: [...state.userExpanded],
         userCollapsed: [...state.userCollapsed],
@@ -138,6 +139,78 @@ function saveExpansionStateToStorage(
   }
 }
 
+function mapCourseNode(
+  requirementId: string,
+  subrequirementId: string,
+  groupId: string,
+  course: CourseData
+): ProgressTreeNode {
+  const label =
+    joinNonEmpty([course.code, course.title], " - ") || `Course ${course.id}`;
+  return {
+    id: buildNodeId("course", [
+      requirementId,
+      subrequirementId,
+      groupId,
+      course.id,
+    ]),
+    level: "course",
+    label,
+    children: [],
+  };
+}
+
+function mapGroupNode(
+  requirementId: string,
+  subrequirementId: string,
+  group: GroupData
+): ProgressTreeNode {
+  const label =
+    toOptionalText(group.displayText) ??
+    toOptionalText(group.directive) ??
+    `Group ${group.id}`;
+  return {
+    id: buildNodeId("group", [requirementId, subrequirementId, group.id]),
+    level: "group",
+    label,
+    children: group.courses.map((course) =>
+      mapCourseNode(requirementId, subrequirementId, group.id, course)
+    ),
+  };
+}
+
+function mapSubrequirementNode(
+  requirementId: string,
+  subrequirement: SubrequirementData
+): ProgressTreeNode {
+  const label =
+    toOptionalText(subrequirement.code) ??
+    toOptionalText(subrequirement.displayText) ??
+    `Subrequirement ${subrequirement.id}`;
+  return {
+    id: buildNodeId("subrequirement", [requirementId, subrequirement.id]),
+    level: "subrequirement",
+    label,
+    directive: toOptionalText(subrequirement.directive),
+    children: subrequirement.groups.map((group) =>
+      mapGroupNode(requirementId, subrequirement.id, group)
+    ),
+  };
+}
+
+function mapRequirementNode(requirement: RequirementData): ProgressTreeNode {
+  return {
+    id: buildNodeId("requirement", [requirement.id]),
+    level: "requirement",
+    label: requirement.description,
+    description: requirement.description,
+    directive: toOptionalText(requirement.directive),
+    children: requirement.subrequirements.map((subrequirement) =>
+      mapSubrequirementNode(requirement.id, subrequirement)
+    ),
+  };
+}
+
 function buildProgressTree(
   programEvaluation: ProgramEvaluationData | null
 ): ProgressTreeNode[] {
@@ -145,47 +218,10 @@ function buildProgressTree(
     return [];
   }
 
-  return programEvaluation.requirements.map((requirement): ProgressTreeNode => {
-    const requirementId = `req:${requirement.id}`;
-    return {
-      id: requirementId,
-      level: "requirement",
-      label: requirement.code,
-      children: requirement.subrequirements.map(
-        (subrequirement): ProgressTreeNode => {
-          const subId = `sub:${requirement.id}:${subrequirement.id}`;
-          return {
-            id: subId,
-            level: "subrequirement",
-            label: subrequirement.code,
-            children: subrequirement.groups.map((group): ProgressTreeNode => {
-              const groupId = `grp:${requirement.id}:${subrequirement.id}:${group.id}`;
-              return {
-                id: groupId,
-                level: "group",
-                label: group.id,
-                children: group.courses.map(
-                  (course): ProgressTreeNode => ({
-                    id: `crs:${requirement.id}:${subrequirement.id}:${group.id}:${course.id}`,
-                    level: "course",
-                    label: course.code,
-                    children: [],
-                  })
-                ),
-              };
-            }),
-          };
-        }
-      ),
-    };
-  });
+  return programEvaluation.requirements.map(mapRequirementNode);
 }
 
-function isExpanded(
-  node: ProgressTreeNode,
-  state: ExpansionState,
-  config: ExpansionConfig
-) {
+function isExpanded(node: ProgressTreeNode, state: ExpansionState): boolean {
   if (node.children.length === 0) {
     return false;
   }
@@ -195,14 +231,75 @@ function isExpanded(
   if (state.userExpanded.has(node.id)) {
     return true;
   }
-  return !config.collapsedLevelsByDefault.has(node.level);
+  return !COLLAPSED_LEVELS_BY_DEFAULT.has(node.level);
+}
+
+function isTreeToggleIgnored(event: MouseEvent<HTMLButtonElement>): boolean {
+  const target = event.target;
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  return target.closest(TREE_TOGGLE_IGNORE_SELECTOR) !== null;
+}
+
+function getExpansionIcon(hasChildren: boolean, expanded: boolean): ReactNode {
+  if (!hasChildren) {
+    return <span className="size-3.5 shrink-0" />;
+  }
+  if (expanded) {
+    return (
+      <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground" />
+    );
+  }
+  return (
+    <ChevronRightIcon className="size-3.5 shrink-0 text-muted-foreground" />
+  );
+}
+
+function renderLabel(node: ProgressTreeNode): ReactNode {
+  if (LEVELS_WITH_TRUNCATED_TITLE.has(node.level)) {
+    return (
+      <TruncatedTooltipText
+        containerClassName="min-w-0 flex-1"
+        text={node.label}
+      />
+    );
+  }
+  return <span className="truncate">{node.label}</span>;
+}
+
+function renderDirective(directive: string | undefined): ReactNode {
+  if (!directive) {
+    return null;
+  }
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <span
+            aria-label="Directive"
+            className="inline-flex size-4 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent/80"
+            data-ignore-tree-toggle="true"
+            role="img"
+          >
+            <InfoIcon className="size-3" />
+          </span>
+        }
+      />
+      <TooltipPopup
+        align="end"
+        className="max-w-72 whitespace-normal leading-snug"
+      >
+        {directive}
+      </TooltipPopup>
+    </Tooltip>
+  );
 }
 
 interface ProgressTreeBranchProps {
   nodes: ProgressTreeNode[];
   depth: number;
   expansionState: ExpansionState;
-  expansionConfig: ExpansionConfig;
   onToggle: (node: ProgressTreeNode) => void;
 }
 
@@ -210,43 +307,41 @@ function ProgressTreeBranch({
   nodes,
   depth,
   expansionState,
-  expansionConfig,
   onToggle,
 }: ProgressTreeBranchProps) {
   return (
     <ul className="space-y-1">
       {nodes.map((node) => {
         const hasChildren = node.children.length > 0;
-        const expanded = isExpanded(node, expansionState, expansionConfig);
-        let icon: React.ReactNode;
-        if (!hasChildren) {
-          icon = <span className="size-3.5 shrink-0" />;
-        } else if (expanded) {
-          icon = (
-            <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground" />
-          );
-        } else {
-          icon = (
-            <ChevronRightIcon className="size-3.5 shrink-0 text-muted-foreground" />
-          );
-        }
+        const expanded = isExpanded(node, expansionState);
+        const showDirective = LEVELS_WITH_DIRECTIVE.has(node.level);
 
         return (
           <li key={node.id}>
             <button
-              className="flex w-full items-center gap-1 rounded-sm py-1 text-left text-xs hover:bg-accent/60"
-              onClick={() => hasChildren && onToggle(node)}
-              style={{ paddingLeft: depth * 14 }}
+              aria-expanded={hasChildren ? expanded : undefined}
+              className="flex w-full items-center gap-1 rounded-sm py-1 text-left text-sm hover:bg-accent/60 sm:text-xs"
+              onClick={(event) => {
+                if (!hasChildren || isTreeToggleIgnored(event)) {
+                  return;
+                }
+                onToggle(node);
+              }}
+              style={{ paddingLeft: depth * INDENT_PER_LEVEL_PX }}
               type="button"
             >
-              {icon}
-              <span className="font-mono text-[11px]">{node.label}</span>
+              {getExpansionIcon(hasChildren, expanded)}
+              {renderLabel(node)}
+              {showDirective ? (
+                <span className="shrink-0 pr-1">
+                  {renderDirective(node.directive)}
+                </span>
+              ) : null}
             </button>
 
             {hasChildren && expanded ? (
               <ProgressTreeBranch
                 depth={depth + 1}
-                expansionConfig={expansionConfig}
                 expansionState={expansionState}
                 nodes={node.children}
                 onToggle={onToggle}
@@ -265,70 +360,68 @@ function YourProgress() {
     userDataQuery(sessionId, tokenHash)
   );
 
-  const [expansionState, setExpansionState] = useState<ExpansionState>(() =>
-    loadExpansionStateFromStorage(EXPANSION_CONFIG)
+  const [expansionState, setExpansionState] = useState<ExpansionState>(
+    loadExpansionStateFromStorage
   );
+  const programEvaluation = userData?.programEvaluation ?? null;
 
   const treeNodes = useMemo(
-    () =>
-      buildProgressTree(
-        (userData?.programEvaluation as ProgramEvaluationData | undefined) ??
-          null
-      ),
-    [userData?.programEvaluation]
+    () => buildProgressTree(programEvaluation),
+    [programEvaluation]
   );
-  const programEvaluation = userData?.programEvaluation as
-    | ProgramEvaluationData
-    | undefined;
-  const degreeTitle = [programEvaluation?.title, programEvaluation?.code]
-    .filter((value): value is string => !!value)
-    .join(" • ");
+  const degreeTitle = joinNonEmpty(
+    [programEvaluation?.title, programEvaluation?.code],
+    " • "
+  );
 
-  const handleToggle = (node: ProgressTreeNode) => {
+  const handleToggle = useCallback((node: ProgressTreeNode) => {
     setExpansionState((previousState) => {
-      const nextState: ExpansionState = {
-        userExpanded: new Set(previousState.userExpanded),
-        userCollapsed: new Set(previousState.userCollapsed),
-      };
+      const userExpanded = new Set(previousState.userExpanded);
+      const userCollapsed = new Set(previousState.userCollapsed);
 
-      if (isExpanded(node, previousState, EXPANSION_CONFIG)) {
-        nextState.userExpanded.delete(node.id);
-        nextState.userCollapsed.add(node.id);
+      if (isExpanded(node, previousState)) {
+        userExpanded.delete(node.id);
+        userCollapsed.add(node.id);
       } else {
-        nextState.userCollapsed.delete(node.id);
-        nextState.userExpanded.add(node.id);
+        userCollapsed.delete(node.id);
+        userExpanded.add(node.id);
       }
 
-      return nextState;
+      return {
+        userExpanded,
+        userCollapsed,
+      };
     });
-  };
+  }, []);
 
   useEffect(() => {
-    saveExpansionStateToStorage(EXPANSION_CONFIG, expansionState);
+    saveExpansionStateToStorage(expansionState);
   }, [expansionState]);
 
   if (treeNodes.length === 0) {
-    // Todo: empty state
     return (
-      <div className="p-3 text-muted-foreground text-xs">
+      <div className="p-3 text-muted-foreground text-sm sm:text-xs">
         No program evaluation data found.
       </div>
     );
   }
 
   return (
-    <div className="space-y-2 p-2">
-      {degreeTitle ? (
-        <p className="px-1 font-medium text-foreground text-xs">{degreeTitle}</p>
-      ) : null}
-      <ProgressTreeBranch
-        depth={0}
-        expansionConfig={EXPANSION_CONFIG}
-        expansionState={expansionState}
-        nodes={treeNodes}
-        onToggle={handleToggle}
-      />
-    </div>
+    <TooltipProvider delay={250}>
+      <div className="space-y-2 p-2">
+        {degreeTitle ? (
+          <p className="px-1 font-medium text-foreground text-sm sm:text-xs">
+            {degreeTitle}
+          </p>
+        ) : null}
+        <ProgressTreeBranch
+          depth={0}
+          expansionState={expansionState}
+          nodes={treeNodes}
+          onToggle={handleToggle}
+        />
+      </div>
+    </TooltipProvider>
   );
 }
 

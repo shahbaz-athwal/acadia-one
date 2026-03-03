@@ -1,7 +1,4 @@
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/ui/toggle-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
 import {
   GRAD_LEVEL_OPTIONS,
@@ -37,7 +34,7 @@ export function AcademicLevelFilter() {
       {ACADEMIC_LEVEL_OPTIONS.map((level) => (
         <ToggleGroupItem
           aria-label={`${level.label} level`}
-          className="border border-input bg-background px-2 text-[10px] font-normal shadow-xs/5 data-[pressed]:bg-input/64 data-[pressed]:text-accent-foreground"
+          className="border border-input bg-background px-2 font-normal text-sm shadow-xs/5 data-[pressed]:bg-input/64 data-[pressed]:text-accent-foreground sm:text-xs"
           key={level.value}
           value={level.value}
         >

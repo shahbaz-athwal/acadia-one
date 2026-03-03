@@ -24,13 +24,17 @@ export function ProgressTab() {
     content = (
       <Empty className="h-2/3 gap-4 p-4">
         <EmptyHeader>
-          <EmptyTitle className="text-base">You are not logged in</EmptyTitle>
-          <EmptyDescription>
+          <EmptyTitle className="font-medium font-sans text-sm sm:text-xs">
+            You are not logged in
+          </EmptyTitle>
+          <EmptyDescription className="text-xs">
             Sign in to view your progress information.
           </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
-          <Button onClick={() => setIsSignInOpen(true)}>Log in</Button>
+          <Button onClick={() => setIsSignInOpen(true)} size="sm">
+            Log in
+          </Button>
         </EmptyContent>
       </Empty>
     );
@@ -43,12 +47,14 @@ export function ProgressTab() {
           <TriangleAlertIcon className="size-6" />
         </EmptyMedia>
         <EmptyHeader>
-          <EmptyTitle className="text-sm">
+          <EmptyTitle className="font-medium font-sans text-sm sm:text-xs">
             Unable to load your progress
           </EmptyTitle>
         </EmptyHeader>
         <EmptyContent>
-          <Button onClick={() => setIsSignInOpen(true)}>Try again</Button>
+          <Button onClick={() => setIsSignInOpen(true)} size="sm">
+            Try again
+          </Button>
         </EmptyContent>
       </Empty>
     );
@@ -59,7 +65,7 @@ export function ProgressTab() {
           <Spinner className="size-4 opacity-50" />
         </EmptyMedia>
         <EmptyHeader>
-          <EmptyTitle className="text-sm">
+          <EmptyTitle className="font-medium font-sans text-sm sm:text-xs">
             Importing your degree progress
           </EmptyTitle>
           <EmptyDescription className="text-xs">
