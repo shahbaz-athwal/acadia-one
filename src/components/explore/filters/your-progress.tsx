@@ -183,6 +183,11 @@ function mapSubrequirementNode(
   requirementId: string,
   subrequirement: SubrequirementData
 ): ProgressTreeNode {
+  const groupNodes = subrequirement.groups.map((group) =>
+    mapGroupNode(requirementId, subrequirement.id, group)
+  );
+  const isFlattened = groupNodes.length === 1;
+
   const label =
     toOptionalText(subrequirement.code) ??
     toOptionalText(subrequirement.displayText) ??
@@ -191,10 +196,8 @@ function mapSubrequirementNode(
     id: buildNodeId("subrequirement", [requirementId, subrequirement.id]),
     level: "subrequirement",
     label,
-    directive: toOptionalText(subrequirement.directive),
-    children: subrequirement.groups.map((group) =>
-      mapGroupNode(requirementId, subrequirement.id, group)
-    ),
+    directive: isFlattened ? undefined : toOptionalText(subrequirement.directive),
+    children: isFlattened ? groupNodes[0].children : groupNodes,
   };
 }
 

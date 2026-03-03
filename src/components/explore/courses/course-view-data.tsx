@@ -228,6 +228,10 @@ export function CourseViewData() {
                 <TableBody>
                   {course.sections.map((s) => {
                     const isAdded = addedSectionIds.has(s.id);
+                    const isContinuousIntake = isCoinTerm(
+                      s.termCode,
+                      termNameByCode
+                    );
                     const professorDisplayName = stripProfessorSalutations(
                       s.professorName
                     );
@@ -324,7 +328,7 @@ export function CourseViewData() {
                         <TableCell className="font-medium">--</TableCell>
 
                         <TableCell>
-                          {isCoinTerm(s.termCode, termNameByCode) ? (
+                          {isContinuousIntake ? (
                             <span className="text-muted-foreground">-</span>
                           ) : (
                             <div className="space-y-0.5">
@@ -377,7 +381,9 @@ export function CourseViewData() {
                         </TableCell>
 
                         <TableCell className="text-right">
-                          {isAdded ? (
+                          {isContinuousIntake ? (
+                            <span className="text-muted-foreground">-</span>
+                          ) : isAdded ? (
                             actionButton
                           ) : (
                             <Tooltip>
