@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { getOneFrom } from "convex-helpers/server/relationships";
 import { literals } from "convex-helpers/validators";
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { vv } from "./schema";
 
 export const validateSession = query({
@@ -58,5 +58,46 @@ export const getUserData = query({
       return null;
     }
     return userData;
+  },
+});
+
+export const logoutSession = mutation({
+  args: {
+    sessionId: v.string(),
+    tokenHash: v.string(),
+  },
+  returns: v.object({ success: v.boolean() }),
+  handler: async (ctx, args) => {
+    const [users, sessions, userDataRows] = await Promise.all([
+      ctx.db
+        .query("acadiaUsers")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+        .collect(),
+      ctx.db
+        .query("acadiaSessions")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+        .collect(),
+      ctx.db
+        .query("acadiaUserData")
+        .withIndex("by_sessionId", (q) => q.eq("sessionId", args.sessionId))
+        .collect(),
+    ]);
+
+    const isAuthorized = users.some((user) => user.tokenHash === args.tokenHash);
+    if (!isAuthorized) {
+      return { success: false };
+    }
+
+    for (const userData of userDataRows) {
+      await ctx.db.delete(userData._id);
+    }
+    for (const session of sessions) {
+      await ctx.db.delete(session._id);
+    }
+    for (const user of users) {
+      await ctx.db.delete(user._id);
+    }
+
+    return { success: true };
   },
 });

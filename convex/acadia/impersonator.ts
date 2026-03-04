@@ -81,17 +81,15 @@ export class AcadiaImpersonator {
 
   async getCoursePlanningStatuses() {
     const response = await this.client.get(
-      `/student/Planning/DegreePlans/Current?studentId=${this.studentId}`,
-      {
-        headers: {
-          "X-Requested-With": "XMLHttpRequest",
-        },
-      }
+      `/student/Planning/DegreePlans/Current?studentId=${this.studentId}`
     );
 
-    return DegreePlanPlanningStatusesFilteredResponseSchema.parse(
-      response.data
-    );
+    const data =
+      typeof response.data === "string"
+        ? JSON.parse(response.data)
+        : response.data;
+
+    return DegreePlanPlanningStatusesFilteredResponseSchema.parse(data);
   }
 
   private async postSearchCriteria(

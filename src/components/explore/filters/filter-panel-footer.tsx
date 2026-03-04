@@ -1,12 +1,39 @@
-import { UserIcon } from "lucide-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+  LogInIcon,
+  LogOutIcon,
+  RefreshCwIcon,
+  UserIcon,
+} from "lucide-react";
+import { useState } from "react";
+import { SignInDialog } from "@/components/explore/filters/sign-in-dialog";
 import { ThemeToggle } from "@/components/explore/filters/theme-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Menu, MenuItem, MenuPopup, MenuTrigger } from "@/components/ui/menu";
+import { useAuth } from "@/hooks/use-auth";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
+import { getInitials } from "@/lib/utils";
+import { userDataQuery } from "@/queries/explore";
 import { SEARCH_DEFAULTS } from "@/routes/explore";
 
 export function FilterPanelFooter() {
   const { filters, setFilters } = useExploreFilters();
+  const {
+    isAuthenticated,
+    isLoggingOut,
+    isRefreshingData,
+    logout,
+    refreshUserData,
+    sessionId,
+    studentId,
+    tokenHash,
+  } = useAuth();
+  const { data: userData } = useSuspenseQuery(
+    userDataQuery(sessionId, tokenHash)
+  );
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
+
   const hasFilters =
     filters.termCodes.length > 0 ||
     filters.departmentPrefixes.length > 0 ||
@@ -16,37 +43,102 @@ export function FilterPanelFooter() {
     filters.timeStart !== SEARCH_DEFAULTS.ts ||
     filters.timeEnd !== SEARCH_DEFAULTS.te;
 
-  return (
-    <div className="flex flex-col gap-2">
-      {hasFilters && (
-        <Button
-          className="w-[90%] self-center"
-          onClick={() =>
-            setFilters({
-              termCodes: [],
-              departmentPrefixes: [],
-              professorExternalIds: [],
-              days: [],
-              academicLevels: [],
-              timeStart: SEARCH_DEFAULTS.ts,
-              timeEnd: SEARCH_DEFAULTS.te,
-            })
-          }
-          size="sm"
-          variant="secondary"
-        >
-          Clear filters
-        </Button>
-      )}
+  const profileName = [userData?.profile.firstName, userData?.profile.lastName]
+    .map((value) => value?.trim() ?? "")
+    .filter(Boolean)
+    .join(" ");
+  const avatarFallbackLabel = isAuthenticated
+    ? getInitials(profileName || studentId || "User")
+    : null;
 
-      <div className="flex items-center justify-between p-2">
-        <Avatar>
-          <AvatarFallback>
-            <UserIcon className="size-4" />
-          </AvatarFallback>
-        </Avatar>
-        <ThemeToggle />
+  async function handleRefreshData() {
+    await refreshUserData();
+  }
+
+  async function handleLogout() {
+    await logout();
+  }
+
+  return (
+    <>
+      <div className="flex flex-col gap-2">
+        {hasFilters && (
+          <Button
+            className="w-[90%] self-center"
+            onClick={() =>
+              setFilters({
+                termCodes: [],
+                departmentPrefixes: [],
+                professorExternalIds: [],
+                days: [],
+                academicLevels: [],
+                timeStart: SEARCH_DEFAULTS.ts,
+                timeEnd: SEARCH_DEFAULTS.te,
+              })
+            }
+            size="sm"
+            variant="secondary"
+          >
+            Clear filters
+          </Button>
+        )}
+
+        <div className="flex items-center justify-between p-2">
+          <Menu>
+            <MenuTrigger
+              render={
+                <Button
+                  aria-label="Open account menu"
+                  className="rounded-full p-0"
+                  size="icon-sm"
+                  variant="ghost"
+                />
+              }
+            >
+              <Avatar>
+                <AvatarFallback>
+                  {avatarFallbackLabel ? (
+                    avatarFallbackLabel
+                  ) : (
+                    <UserIcon className="size-4" />
+                  )}
+                </AvatarFallback>
+              </Avatar>
+            </MenuTrigger>
+            <MenuPopup align="start">
+              {isAuthenticated ? (
+                <>
+                  <MenuItem
+                    disabled={isRefreshingData || isLoggingOut}
+                    onClick={() => void handleRefreshData()}
+                  >
+                    <RefreshCwIcon
+                      className={
+                        isRefreshingData ? "size-4 animate-spin" : "size-4"
+                      }
+                    />
+                    {isRefreshingData ? "Refreshing..." : "Refresh data"}
+                  </MenuItem>
+                  <MenuItem
+                    disabled={isLoggingOut || isRefreshingData}
+                    onClick={() => void handleLogout()}
+                  >
+                    <LogOutIcon className="size-4" />
+                    {isLoggingOut ? "Logging out..." : "Logout"}
+                  </MenuItem>
+                </>
+              ) : (
+                <MenuItem onClick={() => setIsSignInOpen(true)}>
+                  <LogInIcon className="size-4" />
+                  Sign in
+                </MenuItem>
+              )}
+            </MenuPopup>
+          </Menu>
+          <ThemeToggle />
+        </div>
       </div>
-    </div>
+      <SignInDialog onOpenChange={setIsSignInOpen} open={isSignInOpen} />
+    </>
   );
 }

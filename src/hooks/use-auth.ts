@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useAction } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
 import { validateSessionQuery } from "@/queries/explore";
@@ -37,15 +37,20 @@ export function useAuth() {
   const [token, setToken] = useLocalStorage<string | null>(TOKEN_KEY, null);
   const [tokenHash, setTokenHash] = useLocalStorage<string>(TOKEN_HASH_KEY, "");
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshingData, setIsRefreshingData] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const authenticateUser = useAction(api.auth.authenticateUser);
+  const refreshUserDataAction = useAction(api.auth.refreshUserData);
+  const logoutSession = useMutation(api.sessions.logoutSession);
 
   const { data: validation } = useSuspenseQuery(
     validateSessionQuery(sessionId, tokenHash)
   );
 
   const isAuthenticated = validation.valid === true;
+  const studentId = validation.valid ? validation.studentId : null;
   const userDataStatus = validation.valid ? validation.userDataStatus : null;
 
   async function login(username: string, password: string) {
@@ -72,10 +77,44 @@ export function useAuth() {
     }
   }
 
-  function logout() {
+  async function refreshUserData() {
+    if (!token) {
+      return {
+        success: false as const,
+        error: "You must be logged in to refresh data.",
+      };
+    }
+
+    setIsRefreshingData(true);
+    try {
+      return await refreshUserDataAction({ sessionId, token });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      return { success: false as const, error: message };
+    } finally {
+      setIsRefreshingData(false);
+    }
+  }
+
+  async function logout() {
+    let deletedServerData = tokenHash.length === 0;
+    setIsLoggingOut(true);
+
+    if (tokenHash.length > 0) {
+      try {
+        const result = await logoutSession({ sessionId, tokenHash });
+        deletedServerData = result.success;
+      } catch {
+        deletedServerData = false;
+      }
+    }
+
     setToken(null);
     setTokenHash("");
     setError(null);
+    setIsLoggingOut(false);
+
+    return { success: deletedServerData };
   }
 
   return {
@@ -83,10 +122,14 @@ export function useAuth() {
     token,
     tokenHash,
     isAuthenticated,
+    studentId,
     userDataStatus,
     isLoading,
+    isRefreshingData,
+    isLoggingOut,
     error,
     login,
+    refreshUserData,
     logout,
   };
 }

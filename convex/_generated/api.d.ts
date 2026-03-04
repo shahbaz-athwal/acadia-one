@@ -11,6 +11,7 @@
 import type * as acadia_auth from "../acadia/auth.js";
 import type * as acadia_impersonator from "../acadia/impersonator.js";
 import type * as acadia_programs from "../acadia/programs.js";
+import type * as acadia_schemas_degreePlanPlanningStatuses from "../acadia/schemas/degreePlanPlanningStatuses.js";
 import type * as acadia_schemas_postSearchCriteria from "../acadia/schemas/postSearchCriteria.js";
 import type * as acadia_schemas_programEvaluation from "../acadia/schemas/programEvaluation.js";
 import type * as acadia_schemas_section from "../acadia/schemas/section.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   "acadia/auth": typeof acadia_auth;
   "acadia/impersonator": typeof acadia_impersonator;
   "acadia/programs": typeof acadia_programs;
+  "acadia/schemas/degreePlanPlanningStatuses": typeof acadia_schemas_degreePlanPlanningStatuses;
   "acadia/schemas/postSearchCriteria": typeof acadia_schemas_postSearchCriteria;
   "acadia/schemas/programEvaluation": typeof acadia_schemas_programEvaluation;
   "acadia/schemas/section": typeof acadia_schemas_section;

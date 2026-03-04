@@ -20,6 +20,22 @@ type AuthResult =
       status: number;
     };
 
+type RefreshResult =
+  | {
+      success: true;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
+function sha256HexFromTokenHex(tokenHex: string): string {
+  return crypto
+    .createHash("sha256")
+    .update(Buffer.from(tokenHex, "hex"))
+    .digest("hex");
+}
+
 export const authenticateUser = action(
   async (
     ctx: ActionCtx,
@@ -96,6 +112,58 @@ export const authenticateUser = action(
         error: "Internal server error",
         details: error instanceof Error ? error.message : "Unknown error",
         status: 500,
+      };
+    }
+  }
+);
+
+export const refreshUserData = action(
+  async (
+    ctx: ActionCtx,
+    {
+      sessionId,
+      token,
+    }: {
+      sessionId: string;
+      token: string;
+    }
+  ): Promise<RefreshResult> => {
+    try {
+      const [user, session] = await Promise.all([
+        ctx.runQuery(internal.internal.getAcadiaUser, { sessionId }),
+        ctx.runQuery(internal.internal.getAcadiaSession, { sessionId }),
+      ]);
+
+      if (!user || user.tokenHash !== sha256HexFromTokenHex(token)) {
+        return {
+          success: false,
+          error: "You must be logged in to refresh data.",
+        };
+      }
+
+      const now = Date.now();
+      if (!session || session.expiresAt <= now) {
+        return {
+          success: false,
+          error: "Your session has expired. Please sign in again.",
+        };
+      }
+
+      await ctx.scheduler.runAfter(
+        0,
+        internal.workflow.pullUserData.pullUserData,
+        {
+          sessionId,
+          token,
+        }
+      );
+
+      return { success: true };
+    } catch (error) {
+      console.error("Failed to refresh user data.", error);
+      return {
+        success: false,
+        error: "Could not refresh data. Please try again.",
       };
     }
   }
