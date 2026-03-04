@@ -16,10 +16,12 @@ export const pullUserData = internalAction(
 
     try {
       const impersonator = await getAcadiaImpersonator(ctx, sessionId, token);
-      const [programDetails, grades] = await Promise.all([
-        impersonator.getStudentProgramDetails(),
-        impersonator.getStudentGrades(),
-      ]);
+      const [programDetails, grades, coursePlanningStatuses] =
+        await Promise.all([
+          impersonator.getStudentProgramDetails(),
+          impersonator.getStudentGrades(),
+          impersonator.getCoursePlanningStatuses(),
+        ]);
 
       const primaryProgramCode = programDetails.programs[0]?.programCode;
       const programEvaluation =
@@ -30,6 +32,7 @@ export const pullUserData = internalAction(
         ...programDetails,
         grades,
         programEvaluation,
+        coursePlanningStatuses,
       });
 
       const allCombinations = programEvaluation.requirements.flatMap(

@@ -156,7 +156,14 @@ export const setAcadiaUserDataStatus = internalMutation({
 export const setAcadiaUserData = internalMutation({
   args: vv
     .doc("acadiaUserData")
-    .pick("sessionId", "profile", "programs", "grades", "programEvaluation"),
+    .pick(
+      "sessionId",
+      "profile",
+      "programs",
+      "grades",
+      "programEvaluation",
+      "coursePlanningStatuses"
+    ),
   handler: async (ctx, args) => {
     const existingUser = await ctx.db
       .query("acadiaUsers")

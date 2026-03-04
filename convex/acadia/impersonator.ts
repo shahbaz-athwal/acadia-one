@@ -11,6 +11,7 @@ import {
   createClient,
   isAcadiaSessionExpired,
 } from "./auth";
+import { DegreePlanPlanningStatusesFilteredResponseSchema } from "./schemas/degreePlanPlanningStatuses";
 import {
   PostSearchCriteriaFilteredResponseSchema,
   PostSearchCriteriaRequestSchema,
@@ -19,6 +20,11 @@ import { ProgramEvaluationFilteredResponseSchema } from "./schemas/programEvalua
 import { StudentGradesFilteredResponseSchema } from "./schemas/studentGrades";
 import { StudentProgramDetailsFilteredResponseSchema } from "./schemas/studentProgram";
 
+export type {
+  CoursePlanningStatus,
+  CoursePlanningStatusById,
+  DegreePlanPlanningStatusesTransformed,
+} from "./schemas/degreePlanPlanningStatuses";
 export type { ProgramEvaluationTransformed } from "./schemas/programEvaluation";
 export type { StudentGradesTransformed } from "./schemas/studentGrades";
 export type { StudentProgramDetailsTransformed } from "./schemas/studentProgram";
@@ -71,6 +77,21 @@ export class AcadiaImpersonator {
     );
 
     return ProgramEvaluationFilteredResponseSchema.parse(response.data).program;
+  }
+
+  async getCoursePlanningStatuses() {
+    const response = await this.client.get(
+      `/student/Planning/DegreePlans/Current?studentId=${this.studentId}`,
+      {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      }
+    );
+
+    return DegreePlanPlanningStatusesFilteredResponseSchema.parse(
+      response.data
+    );
   }
 
   private async postSearchCriteria(

@@ -121,6 +121,19 @@ const schema = defineSchema({
         })
       ),
     }),
+    coursePlanningStatuses: v.optional(
+      v.record(
+        v.string(),
+        literals(
+          "completed",
+          "inProgress",
+          "dropped",
+          "withdrawn",
+          "failed",
+          "unknown"
+        )
+      )
+    ),
     updatedAt: v.number(),
   }).index("by_sessionId", ["sessionId"]),
 
