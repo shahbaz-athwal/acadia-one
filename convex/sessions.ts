@@ -14,15 +14,18 @@ export const validateSession = query({
       valid: v.literal(true),
       studentId: v.string(),
       userDataStatus: literals("pending", "ready", "error"),
+      profileFirstName: v.optional(v.string()),
+      profileLastName: v.optional(v.string()),
     }),
     v.object({
       valid: v.literal(false),
     })
   ),
   handler: async (ctx, args) => {
-    const [user, session] = await Promise.all([
+    const [user, session, userData] = await Promise.all([
       getOneFrom(ctx.db, "acadiaUsers", "by_sessionId", args.sessionId),
       getOneFrom(ctx.db, "acadiaSessions", "by_sessionId", args.sessionId),
+      getOneFrom(ctx.db, "acadiaUserData", "by_sessionId", args.sessionId),
     ]);
 
     if (!user || user.tokenHash !== args.tokenHash) {
@@ -38,6 +41,8 @@ export const validateSession = query({
       valid: true as const,
       studentId: user.studentId,
       userDataStatus: user.userDataStatus,
+      profileFirstName: userData?.profile.firstName,
+      profileLastName: userData?.profile.lastName,
     };
   },
 });
@@ -83,7 +88,9 @@ export const logoutSession = mutation({
         .collect(),
     ]);
 
-    const isAuthorized = users.some((user) => user.tokenHash === args.tokenHash);
+    const isAuthorized = users.some(
+      (user) => user.tokenHash === args.tokenHash
+    );
     if (!isAuthorized) {
       return { success: false };
     }

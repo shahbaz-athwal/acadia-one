@@ -196,7 +196,9 @@ function mapSubrequirementNode(
     id: buildNodeId("subrequirement", [requirementId, subrequirement.id]),
     level: "subrequirement",
     label,
-    directive: isFlattened ? undefined : toOptionalText(subrequirement.directive),
+    directive: isFlattened
+      ? undefined
+      : toOptionalText(subrequirement.directive),
     children: isFlattened ? groupNodes[0].children : groupNodes,
   };
 }

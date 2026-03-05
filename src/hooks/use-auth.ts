@@ -1,4 +1,4 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { useAction, useMutation } from "convex/react";
 import { useState } from "react";
 import { useLocalStorage } from "usehooks-ts";
@@ -33,6 +33,7 @@ export function getStoredTokenHash(): string {
 }
 
 export function useAuth() {
+  const queryClient = useQueryClient();
   const sessionId = getOrCreateSessionId();
   const [token, setToken] = useLocalStorage<string | null>(TOKEN_KEY, null);
   const [tokenHash, setTokenHash] = useLocalStorage<string>(TOKEN_HASH_KEY, "");
@@ -52,6 +53,12 @@ export function useAuth() {
   const isAuthenticated = validation.valid === true;
   const studentId = validation.valid ? validation.studentId : null;
   const userDataStatus = validation.valid ? validation.userDataStatus : null;
+  const profileFirstName = validation.valid
+    ? (validation.profileFirstName ?? null)
+    : null;
+  const profileLastName = validation.valid
+    ? (validation.profileLastName ?? null)
+    : null;
 
   async function login(username: string, password: string) {
     setIsLoading(true);
@@ -61,6 +68,13 @@ export function useAuth() {
       const result = await authenticateUser({ sessionId, username, password });
 
       if (result.success) {
+        try {
+          await queryClient.ensureQueryData(
+            validateSessionQuery(sessionId, result.tokenHash)
+          );
+        } catch {
+          // Fall back to regular suspense fetch path if preloading fails.
+        }
         setToken(result.token);
         setTokenHash(result.tokenHash);
         return { success: true as const };
@@ -109,6 +123,12 @@ export function useAuth() {
       }
     }
 
+    try {
+      await queryClient.ensureQueryData(validateSessionQuery(sessionId, ""));
+    } catch {
+      // Fall back to regular suspense fetch path if preloading fails.
+    }
+
     setToken(null);
     setTokenHash("");
     setError(null);
@@ -124,6 +144,8 @@ export function useAuth() {
     isAuthenticated,
     studentId,
     userDataStatus,
+    profileFirstName,
+    profileLastName,
     isLoading,
     isRefreshingData,
     isLoggingOut,

@@ -1,10 +1,4 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import {
-  LogInIcon,
-  LogOutIcon,
-  RefreshCwIcon,
-  UserIcon,
-} from "lucide-react";
+import { LogInIcon, LogOutIcon, RefreshCwIcon, UserIcon } from "lucide-react";
 import { useState } from "react";
 import { SignInDialog } from "@/components/explore/filters/sign-in-dialog";
 import { ThemeToggle } from "@/components/explore/filters/theme-toggle";
@@ -14,7 +8,6 @@ import { Menu, MenuItem, MenuPopup, MenuTrigger } from "@/components/ui/menu";
 import { useAuth } from "@/hooks/use-auth";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
 import { getInitials } from "@/lib/utils";
-import { userDataQuery } from "@/queries/explore";
 import { SEARCH_DEFAULTS } from "@/routes/explore";
 
 export function FilterPanelFooter() {
@@ -25,13 +18,9 @@ export function FilterPanelFooter() {
     isRefreshingData,
     logout,
     refreshUserData,
-    sessionId,
-    studentId,
-    tokenHash,
+    profileFirstName,
+    profileLastName,
   } = useAuth();
-  const { data: userData } = useSuspenseQuery(
-    userDataQuery(sessionId, tokenHash)
-  );
   const [isSignInOpen, setIsSignInOpen] = useState(false);
 
   const hasFilters =
@@ -43,13 +32,12 @@ export function FilterPanelFooter() {
     filters.timeStart !== SEARCH_DEFAULTS.ts ||
     filters.timeEnd !== SEARCH_DEFAULTS.te;
 
-  const profileName = [userData?.profile.firstName, userData?.profile.lastName]
+  const profileName = [profileFirstName, profileLastName]
     .map((value) => value?.trim() ?? "")
     .filter(Boolean)
     .join(" ");
-  const avatarFallbackLabel = isAuthenticated
-    ? getInitials(profileName || studentId || "User")
-    : null;
+  const avatarFallbackLabel =
+    isAuthenticated && profileName.length > 0 ? getInitials(profileName) : null;
 
   async function handleRefreshData() {
     await refreshUserData();
@@ -110,7 +98,7 @@ export function FilterPanelFooter() {
                 <>
                   <MenuItem
                     disabled={isRefreshingData || isLoggingOut}
-                    onClick={() => void handleRefreshData()}
+                    onClick={handleRefreshData}
                   >
                     <RefreshCwIcon
                       className={
@@ -121,7 +109,7 @@ export function FilterPanelFooter() {
                   </MenuItem>
                   <MenuItem
                     disabled={isLoggingOut || isRefreshingData}
-                    onClick={() => void handleLogout()}
+                    onClick={handleLogout}
                   >
                     <LogOutIcon className="size-4" />
                     {isLoggingOut ? "Logging out..." : "Logout"}
