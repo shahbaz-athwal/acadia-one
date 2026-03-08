@@ -9,6 +9,13 @@ import { scraper as rmpScraper } from "../lib/rmp";
 const toOptional = <T>(value: T | null | undefined): T | undefined =>
   value ?? undefined;
 
+const normalizeCourseCode = (courseCode: string | null | undefined) => {
+  if (!courseCode) {
+    return undefined;
+  }
+  return courseCode.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+};
+
 interface PullRmpReviewsArgs {
   professorId: Id<"professors">;
   rmpId: string;
@@ -28,7 +35,7 @@ async function pullRmpReviewsInternal(
   const courseCodes = [
     ...new Set(
       ratings
-        .map((rating) => rating.courseCode)
+        .map((rating) => normalizeCourseCode(rating.courseCode))
         .filter((code): code is string => !!code)
     ),
   ];
@@ -54,10 +61,11 @@ async function pullRmpReviewsInternal(
   const courseByCode = new Map(courses.map((course) => [course.code, course]));
   const uniqueCourses = new Map<Id<"courses">, (typeof courses)[number]>();
   for (const rating of ratings) {
-    if (!rating.courseCode) {
+    const courseCode = normalizeCourseCode(rating.courseCode);
+    if (!courseCode) {
       continue;
     }
-    const course = courseByCode.get(rating.courseCode);
+    const course = courseByCode.get(courseCode);
     if (course) {
       uniqueCourses.set(course._id, course);
     }
@@ -75,10 +83,11 @@ async function pullRmpReviewsInternal(
   }
 
   const ratingsToCreate = ratings.flatMap((rating) => {
-    if (!rating.courseCode) {
+    const courseCode = normalizeCourseCode(rating.courseCode);
+    if (!courseCode) {
       return [];
     }
-    const course = courseByCode.get(rating.courseCode);
+    const course = courseByCode.get(courseCode);
     if (!course) {
       return [];
     }

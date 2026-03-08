@@ -1,13 +1,21 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMutation } from "convex/react";
 import {
+  BookOpenIcon,
   CheckIcon,
+  CircleAlertIcon,
+  CircleHelpIcon,
+  CircleOffIcon,
+  Clock3Icon,
+  FlaskConicalIcon,
   GaugeIcon,
+  type LucideIcon,
   PlusIcon,
   SearchXIcon,
   StarIcon,
+  XCircleIcon,
 } from "lucide-react";
-import { type ComponentProps, type ReactNode, useMemo, useRef } from "react";
+import { type ComponentProps, type ReactElement, useMemo, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -120,16 +128,41 @@ type BadgeVariant = ComponentProps<typeof Badge>["variant"];
 const COURSE_STATUS_META: Record<
   CoursePlanningStatus,
   {
+    icon: LucideIcon;
     label: string;
     variant: BadgeVariant;
   }
 > = {
-  completed: { label: "Completed", variant: "success" },
-  inProgress: { label: "In progress", variant: "info" },
-  dropped: { label: "Dropped", variant: "warning" },
-  withdrawn: { label: "Withdrawn", variant: "warning" },
-  failed: { label: "Failed", variant: "error" },
-  unknown: { label: "Unknown", variant: "outline" },
+  completed: {
+    icon: CheckIcon,
+    label: "Completed",
+    variant: "success",
+  },
+  inProgress: {
+    icon: Clock3Icon,
+    label: "In progress",
+    variant: "info",
+  },
+  dropped: {
+    icon: CircleOffIcon,
+    label: "Dropped",
+    variant: "warning",
+  },
+  withdrawn: {
+    icon: CircleAlertIcon,
+    label: "Withdrawn",
+    variant: "warning",
+  },
+  failed: {
+    icon: XCircleIcon,
+    label: "Failed",
+    variant: "error",
+  },
+  unknown: {
+    icon: CircleHelpIcon,
+    label: "Unknown",
+    variant: "outline",
+  },
 };
 
 function buildCourseStatusByCode(
@@ -301,7 +334,7 @@ export function CourseViewData() {
   const renderActionCell = (params: {
     isContinuousIntake: boolean;
     isAdded: boolean;
-    actionButton: ReactNode;
+    actionButton: ReactElement;
   }) => {
     const { isContinuousIntake, isAdded, actionButton } = params;
     if (isContinuousIntake) {
@@ -345,6 +378,7 @@ export function CourseViewData() {
           const courseStatusMeta = courseStatus
             ? COURSE_STATUS_META[courseStatus]
             : null;
+          const CourseStatusIcon = courseStatusMeta?.icon;
 
           return (
             <Frame className="overflow-hidden rounded-xl p-0" key={course.id}>
@@ -354,11 +388,12 @@ export function CourseViewData() {
                     <span className="truncate">
                       {formatCourseCode(course.code)} {course.title}
                     </span>
-                    {courseStatusMeta && !course.isLab ? (
+                    {courseStatusMeta && CourseStatusIcon ? (
                       <Badge
                         className="shrink-0"
                         variant={courseStatusMeta.variant}
                       >
+                        <CourseStatusIcon />
                         {courseStatusMeta.label}
                       </Badge>
                     ) : null}
@@ -366,6 +401,7 @@ export function CourseViewData() {
                       className="shrink-0"
                       variant={course.isLab ? "warning" : "success"}
                     >
+                      {course.isLab ? <FlaskConicalIcon /> : <BookOpenIcon />}
                       {course.isLab ? "Lab" : `${course.credits} cr`}
                     </Badge>
                   </div>

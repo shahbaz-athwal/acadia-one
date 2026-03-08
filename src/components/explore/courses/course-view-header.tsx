@@ -10,7 +10,7 @@ export function CourseViewHeader() {
   const [localQuery, setLocalQuery] = useState(searchQuery);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const debouncedSetSearch = useDebounceCallback(setSearchQuery, 300);
+  const debouncedSetSearch = useDebounceCallback(setSearchQuery, 500);
 
   useEffect(() => {
     setLocalQuery(searchQuery);
