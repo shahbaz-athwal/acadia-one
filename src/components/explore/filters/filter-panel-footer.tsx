@@ -29,6 +29,7 @@ export function FilterPanelFooter() {
     filters.professorExternalIds.length > 0 ||
     filters.days.length > 0 ||
     filters.academicLevels.length > 0 ||
+    filters.rsgKeys.length > 0 ||
     filters.timeStart !== SEARCH_DEFAULTS.ts ||
     filters.timeEnd !== SEARCH_DEFAULTS.te;
 
@@ -60,6 +61,7 @@ export function FilterPanelFooter() {
                 professorExternalIds: [],
                 days: [],
                 academicLevels: [],
+                rsgKeys: [],
                 timeStart: SEARCH_DEFAULTS.ts,
                 timeEnd: SEARCH_DEFAULTS.te,
               })

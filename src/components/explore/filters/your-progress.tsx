@@ -1,13 +1,13 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ChevronDownIcon, ChevronRightIcon, InfoIcon } from "lucide-react";
 import {
-  type MouseEvent,
   type ReactNode,
   useCallback,
   useEffect,
   useMemo,
   useState,
 } from "react";
+import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
   TooltipPopup,
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/tooltip";
 import { TruncatedTooltipText } from "@/components/ui/truncated-tooltip-text";
 import { useAuth } from "@/hooks/use-auth";
+import { useExploreFilters } from "@/hooks/use-explore-filters";
 import { userDataQuery } from "@/queries/explore";
 import type { Doc } from "../../../../convex/_generated/dataModel";
 
@@ -33,6 +34,7 @@ interface ProgressTreeNode {
   label: string;
   description?: string;
   directive?: string;
+  rsgKey?: string;
   children: ProgressTreeNode[];
 }
 
@@ -53,7 +55,6 @@ const NODE_ID_PREFIX: Record<TreeLevel, string> = {
   course: "crs",
 };
 const INDENT_PER_LEVEL_PX = 14;
-const TREE_TOGGLE_IGNORE_SELECTOR = "[data-ignore-tree-toggle='true']";
 const EXPANSION_STORAGE_KEY = "dryft.progressTree.expansionState.v1";
 const COLLAPSED_LEVELS_BY_DEFAULT: ReadonlySet<TreeLevel> =
   new Set<TreeLevel>();
@@ -161,6 +162,7 @@ function mapCourseNode(
 }
 
 function mapGroupNode(
+  requirementCode: string,
   requirementId: string,
   subrequirementId: string,
   group: GroupData
@@ -173,6 +175,7 @@ function mapGroupNode(
     id: buildNodeId("group", [requirementId, subrequirementId, group.id]),
     level: "group",
     label,
+    rsgKey: `${requirementCode}:${subrequirementId}:${group.id}`,
     children: group.courses.map((course) =>
       mapCourseNode(requirementId, subrequirementId, group.id, course)
     ),
@@ -180,11 +183,12 @@ function mapGroupNode(
 }
 
 function mapSubrequirementNode(
+  requirementCode: string,
   requirementId: string,
   subrequirement: SubrequirementData
 ): ProgressTreeNode {
   const groupNodes = subrequirement.groups.map((group) =>
-    mapGroupNode(requirementId, subrequirement.id, group)
+    mapGroupNode(requirementCode, requirementId, subrequirement.id, group)
   );
   const isFlattened = groupNodes.length === 1;
 
@@ -199,6 +203,7 @@ function mapSubrequirementNode(
     directive: isFlattened
       ? undefined
       : toOptionalText(subrequirement.directive),
+    rsgKey: isFlattened ? groupNodes[0]?.rsgKey : undefined,
     children: isFlattened ? groupNodes[0].children : groupNodes,
   };
 }
@@ -211,7 +216,7 @@ function mapRequirementNode(requirement: RequirementData): ProgressTreeNode {
     description: requirement.description,
     directive: toOptionalText(requirement.directive),
     children: requirement.subrequirements.map((subrequirement) =>
-      mapSubrequirementNode(requirement.id, subrequirement)
+      mapSubrequirementNode(requirement.code, requirement.id, subrequirement)
     ),
   };
 }
@@ -237,14 +242,6 @@ function isExpanded(node: ProgressTreeNode, state: ExpansionState): boolean {
     return true;
   }
   return !COLLAPSED_LEVELS_BY_DEFAULT.has(node.level);
-}
-
-function isTreeToggleIgnored(event: MouseEvent<HTMLButtonElement>): boolean {
-  const target = event.target;
-  if (!(target instanceof HTMLElement)) {
-    return false;
-  }
-  return target.closest(TREE_TOGGLE_IGNORE_SELECTOR) !== null;
 }
 
 function getExpansionIcon(hasChildren: boolean, expanded: boolean): ReactNode {
@@ -301,17 +298,47 @@ function renderDirective(directive: string | undefined): ReactNode {
   );
 }
 
+function renderSearchChip(
+  rsgKey: string | undefined,
+  activeRsgKey: string | undefined,
+  onSearchToggle: (rsgKey: string) => void
+): ReactNode {
+  if (!rsgKey) {
+    return null;
+  }
+
+  const isActive = activeRsgKey === rsgKey;
+
+  return (
+    <Badge
+      aria-pressed={isActive}
+      className="px-1.5"
+      data-ignore-tree-toggle="true"
+      onClick={() => onSearchToggle(rsgKey)}
+      render={<button type="button" />}
+      size="sm"
+      variant={isActive ? "info" : "outline"}
+    >
+      Search
+    </Badge>
+  );
+}
+
 interface ProgressTreeBranchProps {
   nodes: ProgressTreeNode[];
   depth: number;
   expansionState: ExpansionState;
+  activeRsgKey?: string;
+  onSearchToggle: (rsgKey: string) => void;
   onToggle: (node: ProgressTreeNode) => void;
 }
 
 function ProgressTreeBranch({
   nodes,
   depth,
+  activeRsgKey,
   expansionState,
+  onSearchToggle,
   onToggle,
 }: ProgressTreeBranchProps) {
   return (
@@ -323,32 +350,39 @@ function ProgressTreeBranch({
 
         return (
           <li key={node.id}>
-            <button
-              aria-expanded={hasChildren ? expanded : undefined}
-              className="flex w-full items-center gap-1 rounded-sm py-1 text-left text-sm hover:bg-accent/60 sm:text-xs"
-              onClick={(event) => {
-                if (!hasChildren || isTreeToggleIgnored(event)) {
-                  return;
-                }
-                onToggle(node);
-              }}
+            <div
+              className="flex items-center gap-1 rounded-sm py-1 hover:bg-accent/60"
               style={{ paddingLeft: depth * INDENT_PER_LEVEL_PX }}
-              type="button"
             >
-              {getExpansionIcon(hasChildren, expanded)}
-              {renderLabel(node)}
-              {showDirective ? (
-                <span className="shrink-0 pr-1">
-                  {renderDirective(node.directive)}
-                </span>
+              <button
+                aria-expanded={hasChildren ? expanded : undefined}
+                className="flex min-w-0 flex-1 items-center gap-1 text-left text-sm sm:text-xs"
+                onClick={() => {
+                  if (!hasChildren) {
+                    return;
+                  }
+                  onToggle(node);
+                }}
+                type="button"
+              >
+                {getExpansionIcon(hasChildren, expanded)}
+                {renderLabel(node)}
+              </button>
+              {node.rsgKey || showDirective ? (
+                <div className="flex shrink-0 items-center gap-1 pr-1">
+                  {renderSearchChip(node.rsgKey, activeRsgKey, onSearchToggle)}
+                  {showDirective ? renderDirective(node.directive) : null}
+                </div>
               ) : null}
-            </button>
+            </div>
 
             {hasChildren && expanded ? (
               <ProgressTreeBranch
+                activeRsgKey={activeRsgKey}
                 depth={depth + 1}
                 expansionState={expansionState}
                 nodes={node.children}
+                onSearchToggle={onSearchToggle}
                 onToggle={onToggle}
               />
             ) : null}
@@ -361,6 +395,7 @@ function ProgressTreeBranch({
 
 function YourProgress() {
   const { sessionId, tokenHash } = useAuth();
+  const { filters, setRsgKeys } = useExploreFilters();
   const { data: userData } = useSuspenseQuery(
     userDataQuery(sessionId, tokenHash)
   );
@@ -378,6 +413,7 @@ function YourProgress() {
     [programEvaluation?.title, programEvaluation?.code],
     " • "
   );
+  const activeRsgKey = filters.rsgKeys[0];
 
   const handleToggle = useCallback((node: ProgressTreeNode) => {
     setExpansionState((previousState) => {
@@ -398,6 +434,13 @@ function YourProgress() {
       };
     });
   }, []);
+
+  const handleSearchToggle = useCallback(
+    (rsgKey: string) => {
+      setRsgKeys(activeRsgKey === rsgKey ? [] : [rsgKey]);
+    },
+    [activeRsgKey, setRsgKeys]
+  );
 
   useEffect(() => {
     saveExpansionStateToStorage(expansionState);
@@ -420,9 +463,11 @@ function YourProgress() {
           </p>
         ) : null}
         <ProgressTreeBranch
+          activeRsgKey={activeRsgKey}
           depth={0}
           expansionState={expansionState}
           nodes={treeNodes}
+          onSearchToggle={handleSearchToggle}
           onToggle={handleToggle}
         />
       </div>
