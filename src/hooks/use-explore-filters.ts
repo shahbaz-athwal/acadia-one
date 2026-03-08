@@ -49,91 +49,80 @@ export function useExploreFilters() {
   const panelTab = search.ft;
   const searchQuery = search.q;
 
-  const setSearchQuery = (q: string) => {
+  const navigateWithSearch = (
+    updater: (prev: ReturnType<typeof withDefaults>) => ReturnType<typeof withDefaults>
+  ) => {
     navigate({
       to: "/explore",
-      search: (prev) => ({ ...withDefaults(prev), q, page: 1 }),
+      search: (prev) => updater(withDefaults(prev)),
     });
+  };
+
+  const setSearchQuery = (q: string) => {
+    navigateWithSearch((prev) => ({ ...prev, q, page: 1 }));
   };
 
   const setTermCodes = (termCodes: string[]) => {
-    navigate({
-      to: "/explore",
-      search: (prev) => ({ ...withDefaults(prev), term: termCodes }),
-    });
+    navigateWithSearch((prev) => ({ ...prev, term: termCodes, page: 1 }));
   };
 
   const setDepartmentPrefixes = (departmentPrefixes: string[]) => {
-    navigate({
-      to: "/explore",
-      search: (prev) => ({ ...withDefaults(prev), dept: departmentPrefixes }),
-    });
+    navigateWithSearch((prev) => ({
+      ...prev,
+      dept: departmentPrefixes,
+      page: 1,
+    }));
   };
 
   const setProfessorExternalIds = (professorExternalIds: string[]) => {
-    navigate({
-      to: "/explore",
-      search: (prev) => ({ ...withDefaults(prev), prof: professorExternalIds }),
-    });
+    navigateWithSearch((prev) => ({
+      ...prev,
+      prof: professorExternalIds,
+      page: 1,
+    }));
   };
 
   const setDays = (days: number[]) => {
-    navigate({
-      to: "/explore",
-      search: (prev) => ({ ...withDefaults(prev), day: days }),
-    });
+    navigateWithSearch((prev) => ({ ...prev, day: days, page: 1 }));
   };
 
   const setRsgKeys = (rsgKeys: string[]) => {
-    navigate({
-      to: "/explore",
-      search: (prev) => ({ ...withDefaults(prev), rsg: rsgKeys }),
-    });
+    navigateWithSearch((prev) => ({ ...prev, rsg: rsgKeys, page: 1 }));
   };
 
   const setAcademicLevels = (academicLevels: number[]) => {
-    navigate({
-      to: "/explore",
-      search: (prev) => ({ ...withDefaults(prev), lvl: academicLevels }),
-    });
+    navigateWithSearch((prev) => ({ ...prev, lvl: academicLevels, page: 1 }));
   };
 
   const setTimeRange = (timeRange: [number, number]) => {
     const [rawStart, rawEnd] = timeRange;
     const start = normalizeMinute(rawStart);
     const end = normalizeMinute(rawEnd);
-    navigate({
-      to: "/explore",
-      search: (prev) => ({
-        ...withDefaults(prev),
-        ts: Math.min(start, end),
-        te: Math.max(start, end),
-      }),
-    });
+    navigateWithSearch((prev) => ({
+      ...prev,
+      page: 1,
+      ts: Math.min(start, end),
+      te: Math.max(start, end),
+    }));
   };
 
   const setPanelTab = (tab: FilterPanelTab) => {
-    navigate({
-      to: "/explore",
-      search: (prev) => ({ ...withDefaults(prev), ft: tab }),
-    });
+    navigateWithSearch((prev) => ({ ...prev, ft: tab }));
   };
 
   const setFilters = (partial: Partial<typeof filters>) => {
-    navigate({
-      to: "/explore",
-      search: (prev) => ({
-        ...withDefaults(prev),
-        term: partial.termCodes ?? prev.term,
-        dept: partial.departmentPrefixes ?? prev.dept,
-        prof: partial.professorExternalIds ?? prev.prof,
-        day: partial.days ?? prev.day,
-        lvl: partial.academicLevels ?? prev.lvl,
-        ts: partial.timeStart ?? prev.ts,
-        te: partial.timeEnd ?? prev.te,
-        rsg: partial.rsgKeys ?? prev.rsg,
-      }),
-    });
+    navigateWithSearch((prev) => ({
+      ...prev,
+      page: 1,
+      term: partial.termCodes ?? prev.term,
+      dept: partial.departmentPrefixes ?? prev.dept,
+      prof: partial.professorExternalIds ?? prev.prof,
+      day: partial.days ?? prev.day,
+      lvl: partial.academicLevels ?? prev.lvl,
+      ts: partial.timeStart ?? prev.ts,
+      te: partial.timeEnd ?? prev.te,
+      rsg: partial.rsgKeys ?? prev.rsg,
+    }));
   };
 
   const clearFilters = () => {
