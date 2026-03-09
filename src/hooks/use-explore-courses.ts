@@ -9,6 +9,7 @@ export function useExploreCourses() {
     select: (state) => ({
       page: state.page,
       q: state.q,
+      cc: state.cc,
       term: state.term,
       dept: state.dept,
       prof: state.prof,
@@ -23,6 +24,7 @@ export function useExploreCourses() {
   const { data } = useSuspenseQuery(
     coursesQuery({
       page: search.page,
+      courseCode: search.cc || undefined,
       filters: buildConvexFilters(search),
       searchQuery: search.q,
     })

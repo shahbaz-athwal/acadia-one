@@ -17,6 +17,7 @@ import {
 import { TruncatedTooltipText } from "@/components/ui/truncated-tooltip-text";
 import { useAuth } from "@/hooks/use-auth";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
+import { cn } from "@/lib/utils";
 import { userDataQuery } from "@/queries/explore";
 import type { Doc } from "../../../../convex/_generated/dataModel";
 
@@ -35,6 +36,7 @@ interface ProgressTreeNode {
   description?: string;
   directive?: string;
   rsgKey?: string;
+  courseCode?: string;
   children: ProgressTreeNode[];
 }
 
@@ -157,6 +159,7 @@ function mapCourseNode(
     ]),
     level: "course",
     label,
+    courseCode: course.code,
     children: [],
   };
 }
@@ -328,7 +331,9 @@ interface ProgressTreeBranchProps {
   nodes: ProgressTreeNode[];
   depth: number;
   expansionState: ExpansionState;
+  activeCourseCode?: string;
   activeRsgKey?: string;
+  onCourseToggle: (courseCode: string) => void;
   onSearchToggle: (rsgKey: string) => void;
   onToggle: (node: ProgressTreeNode) => void;
 }
@@ -336,8 +341,10 @@ interface ProgressTreeBranchProps {
 function ProgressTreeBranch({
   nodes,
   depth,
+  activeCourseCode,
   activeRsgKey,
   expansionState,
+  onCourseToggle,
   onSearchToggle,
   onToggle,
 }: ProgressTreeBranchProps) {
@@ -346,18 +353,33 @@ function ProgressTreeBranch({
       {nodes.map((node) => {
         const hasChildren = node.children.length > 0;
         const expanded = isExpanded(node, expansionState);
+        const isCourseActive =
+          node.level === "course" && activeCourseCode === node.courseCode;
         const showDirective = LEVELS_WITH_DIRECTIVE.has(node.level);
 
         return (
           <li key={node.id}>
             <div
-              className="flex items-center gap-1 rounded-sm py-1 hover:bg-accent/60"
+              className={cn(
+                "flex items-center gap-1 rounded-sm py-1 hover:bg-accent/60",
+                isCourseActive && "bg-info/8 hover:bg-info/12"
+              )}
               style={{ paddingLeft: depth * INDENT_PER_LEVEL_PX }}
             >
               <button
                 aria-expanded={hasChildren ? expanded : undefined}
-                className="flex min-w-0 flex-1 items-center gap-1 text-left text-sm sm:text-xs"
+                aria-pressed={
+                  node.level === "course" ? isCourseActive : undefined
+                }
+                className={cn(
+                  "flex min-w-0 flex-1 items-center gap-1 text-left text-sm sm:text-xs",
+                  isCourseActive && "text-info-foreground"
+                )}
                 onClick={() => {
+                  if (!hasChildren && node.courseCode) {
+                    onCourseToggle(node.courseCode);
+                    return;
+                  }
                   if (!hasChildren) {
                     return;
                   }
@@ -378,10 +400,12 @@ function ProgressTreeBranch({
 
             {hasChildren && expanded ? (
               <ProgressTreeBranch
+                activeCourseCode={activeCourseCode}
                 activeRsgKey={activeRsgKey}
                 depth={depth + 1}
                 expansionState={expansionState}
                 nodes={node.children}
+                onCourseToggle={onCourseToggle}
                 onSearchToggle={onSearchToggle}
                 onToggle={onToggle}
               />
@@ -395,7 +419,8 @@ function ProgressTreeBranch({
 
 function YourProgress() {
   const { sessionId, tokenHash } = useAuth();
-  const { filters, setRsgKeys } = useExploreFilters();
+  const { filters, selectedCourseCode, setRsgKeys, setSelectedCourseCode } =
+    useExploreFilters();
   const { data: userData } = useSuspenseQuery(
     userDataQuery(sessionId, tokenHash)
   );
@@ -442,6 +467,15 @@ function YourProgress() {
     [activeRsgKey, setRsgKeys]
   );
 
+  const handleCourseToggle = useCallback(
+    (courseCode: string) => {
+      setSelectedCourseCode(
+        selectedCourseCode === courseCode ? "" : courseCode
+      );
+    },
+    [selectedCourseCode, setSelectedCourseCode]
+  );
+
   useEffect(() => {
     saveExpansionStateToStorage(expansionState);
   }, [expansionState]);
@@ -463,10 +497,12 @@ function YourProgress() {
           </p>
         ) : null}
         <ProgressTreeBranch
+          activeCourseCode={selectedCourseCode}
           activeRsgKey={activeRsgKey}
           depth={0}
           expansionState={expansionState}
           nodes={treeNodes}
+          onCourseToggle={handleCourseToggle}
           onSearchToggle={handleSearchToggle}
           onToggle={handleToggle}
         />

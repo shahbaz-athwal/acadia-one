@@ -29,6 +29,7 @@ export function useExploreFilters() {
       day: state.day,
       lvl: state.lvl,
       rsg: state.rsg,
+      cc: state.cc,
       ts: state.ts,
       te: state.te,
       ft: state.ft,
@@ -48,6 +49,7 @@ export function useExploreFilters() {
   };
   const panelTab = search.ft;
   const searchQuery = search.q;
+  const selectedCourseCode = search.cc;
 
   const navigateWithSearch = (
     updater: (
@@ -96,6 +98,18 @@ export function useExploreFilters() {
     navigateWithSearch((prev) => ({ ...prev, lvl: academicLevels, page: 1 }));
   };
 
+  const setSelectedCourseCode = (courseCode: string) => {
+    const normalizedCourseCode = courseCode
+      .trim()
+      .replace(/\s+/g, "")
+      .toUpperCase();
+    navigateWithSearch((prev) => ({
+      ...prev,
+      cc: normalizedCourseCode,
+      page: 1,
+    }));
+  };
+
   const setTimeRange = (timeRange: [number, number]) => {
     const [rawStart, rawEnd] = timeRange;
     const start = normalizeMinute(rawStart);
@@ -140,6 +154,7 @@ export function useExploreFilters() {
     filters,
     panelTab,
     searchQuery,
+    selectedCourseCode,
 
     setSearchQuery,
     setTermCodes,
@@ -147,6 +162,7 @@ export function useExploreFilters() {
     setProfessorExternalIds,
     setDays,
     setAcademicLevels,
+    setSelectedCourseCode,
     setTimeRange,
     setRsgKeys,
     setPanelTab,

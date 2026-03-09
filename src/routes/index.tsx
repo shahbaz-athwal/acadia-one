@@ -11,6 +11,7 @@ export const Route = createFileRoute("/")({
         day: [],
         lvl: [],
         rsg: [],
+        cc: "",
         ts: 7 * 60 + 30,
         te: 21 * 60 + 30,
         ft: "filters",

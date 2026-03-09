@@ -53,6 +53,7 @@ export const scheduleQuery = (sessionId: string) =>
 
 export const coursesQuery = (params: {
   page: number;
+  courseCode?: string;
   filters: ReturnType<typeof buildConvexFilters>;
   searchQuery: string;
 }) =>

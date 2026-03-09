@@ -51,6 +51,7 @@ const exploreSearchSchema = z.object({
   day: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
   lvl: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
   rsg: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
+  cc: z.string().catch(""),
   ts: z.coerce
     .number()
     .int()
@@ -78,6 +79,7 @@ export const SEARCH_DEFAULTS: ExploreSearchParams = {
   day: [],
   lvl: [],
   rsg: [],
+  cc: "",
   ts: TIME_RANGE_MINUTES,
   te: TIME_RANGE_MAX_MINUTES,
   ft: "filters",
@@ -104,6 +106,7 @@ export const Route = createFileRoute("/explore")({
     day: search.day,
     lvl: search.lvl,
     rsg: search.rsg,
+    cc: search.cc,
     ts: search.ts,
     te: search.te,
     ft: search.ft,
@@ -122,6 +125,7 @@ export const Route = createFileRoute("/explore")({
         coursesQuery({
           page: deps.page,
           filters,
+          courseCode: deps.cc || undefined,
           searchQuery: deps.q,
         })
       ),

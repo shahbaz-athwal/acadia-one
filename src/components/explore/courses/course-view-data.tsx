@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { useExploreCourses } from "@/hooks/use-explore-courses";
+import { useExploreFilters } from "@/hooks/use-explore-filters";
 import { useScheduleItems } from "@/hooks/use-schedule-items";
 import { useSchedulePreview } from "@/hooks/use-schedule-preview";
 import {
@@ -117,6 +118,7 @@ function formatAverageScore(value: number | null | undefined) {
 export function CourseViewData() {
   const { isAuthenticated, sessionId, tokenHash } = useAuth();
   const { courses } = useExploreCourses();
+  const { selectedCourseCode } = useExploreFilters();
   const {
     data: { terms },
   } = useSuspenseQuery(filterOptionsQuery());
@@ -280,7 +282,9 @@ export function CourseViewData() {
         <EmptyHeader>
           <EmptyTitle className="text-sm">No courses found</EmptyTitle>
           <EmptyDescription className="text-xs">
-            Try adjusting your filters.
+            {selectedCourseCode
+              ? "Try clearing the course filter or adjusting your other filters."
+              : "Try adjusting your filters."}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>

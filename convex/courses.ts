@@ -15,6 +15,7 @@ interface TimeRange {
 }
 
 interface ResolvedFilters {
+  courseCode: string;
   rsgCourseCodes: string[];
   searchQuery: string;
   departmentPrefixes: string[];
@@ -56,6 +57,7 @@ function normalizeTimeRange(
 async function resolveFilters(
   ctx: QueryCtx,
   args: {
+    courseCode?: string;
     filters?: {
       rsgKeys?: string[];
       termCodes?: string[];
@@ -99,6 +101,9 @@ async function resolveFilters(
   }
 
   return {
+    courseCode: args.courseCode?.trim()
+      ? normalizeCourseCode(args.courseCode)
+      : "",
     rsgCourseCodes: [...rsgCourseCodeSet],
     searchQuery: args.searchQuery?.trim() ?? "",
     departmentPrefixes: raw?.departmentPrefixes ?? [],
@@ -114,6 +119,7 @@ async function resolveFilters(
 
 function hasAnyActiveFilter(filters: ResolvedFilters): boolean {
   return (
+    filters.courseCode.length > 0 ||
     filters.rsgCourseCodes.length > 0 ||
     filters.searchQuery.length > 0 ||
     filters.departmentPrefixes.length > 0 ||
@@ -129,6 +135,10 @@ async function collectCourses(
   ctx: QueryCtx,
   filters: ResolvedFilters
 ): Promise<Doc<"courses">[]> {
+  if (filters.courseCode) {
+    return await collectByCourseCodes(ctx, [filters.courseCode]);
+  }
+
   // Strategy 1: RSG keys — resolve to course codes and short-circuit all other strategies
   if (filters.rsgCourseCodes.length > 0) {
     return await collectByCourseCodes(ctx, filters.rsgCourseCodes);
@@ -498,6 +508,7 @@ export const listForExplore = query({
   args: {
     page: v.number(),
     pageSize: v.number(),
+    courseCode: v.optional(v.string()),
     courseExternalIds: v.optional(v.array(v.string())),
     filters: v.optional(
       v.object({
