@@ -154,12 +154,9 @@ export function CourseRequisites({
 
   return (
     <div
-      className={cn(
-        "mt-1 flex min-w-0 gap-1.5 text-muted-foreground",
-        className
-      )}
+      className={cn("mt-1 min-w-0 gap-1.5 text-muted-foreground", className)}
     >
-      <span className="shrink-0 pt-0.5 font-medium">Requisites:</span>
+      <div className="font-medium">Requisites:</div>
       <div className="min-w-0 space-y-1">
         {requisites.map((requisite, requisiteIndex) => {
           const lookup = lookupByRequisiteIndex[requisiteIndex];

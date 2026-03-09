@@ -1,7 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMutation } from "convex/react";
 import {
-  BookOpenIcon,
   CheckIcon,
   FlaskConicalIcon,
   GaugeIcon,
@@ -304,7 +303,7 @@ export function CourseViewData() {
           return (
             <Frame className="overflow-hidden rounded-xl p-0" key={course.id}>
               <div className="px-3 py-2 text-xs">
-                <div className="flex items-center justify-between gap-2 font-medium">
+                <div className="flex items-center justify-between font-medium">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate">
                       {formatCourseCode(course.code)} {course.title}
@@ -318,13 +317,12 @@ export function CourseViewData() {
                         {courseStatusMeta.label}
                       </Badge>
                     ) : null}
-                    <Badge
-                      className="shrink-0"
-                      variant={course.isLab ? "warning" : "success"}
-                    >
-                      {course.isLab ? <FlaskConicalIcon /> : <BookOpenIcon />}
-                      {course.isLab ? "Lab" : `${course.credits} cr`}
-                    </Badge>
+                    {course.isLab ? (
+                      <Badge className="shrink-0" variant="warning">
+                        <FlaskConicalIcon />
+                        Lab
+                      </Badge>
+                    ) : null}
                   </div>
                   {!course.isLab && (
                     <div className="flex shrink-0 items-center gap-3 text-muted-foreground">
@@ -350,10 +348,12 @@ export function CourseViewData() {
                   requisites={course.requisites}
                   showStatuses={showRequisiteStatuses}
                 />
-                <div className="mt-0.5 text-muted-foreground">
-                  {course.sections.length} section
-                  {course.sections.length !== 1 && "s"}
-                </div>
+                {course.sections.length <= 0 && (
+                  <div className="mt-2 text-muted-foreground">
+                    {course.sections.length} section
+                    {course.sections.length !== 1 && "s"}
+                  </div>
+                )}
               </div>
               {course.sections.length > 0 && (
                 <Table className="text-xs">
