@@ -3,19 +3,19 @@ import { useMutation } from "convex/react";
 import {
   BookOpenIcon,
   CheckIcon,
-  CircleAlertIcon,
-  CircleHelpIcon,
-  CircleOffIcon,
-  Clock3Icon,
   FlaskConicalIcon,
   GaugeIcon,
-  type LucideIcon,
   PlusIcon,
   SearchXIcon,
   StarIcon,
-  XCircleIcon,
 } from "lucide-react";
-import { type ComponentProps, type ReactElement, useMemo, useRef } from "react";
+import { type ReactElement, useMemo, useRef } from "react";
+import { CourseRequisites } from "@/components/explore/courses/course-requisites";
+import {
+  buildCourseStatusByCode,
+  COURSE_STATUS_META,
+  normalizeCourseCode,
+} from "@/components/explore/courses/course-status";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,7 +57,6 @@ import {
 } from "@/lib/utils";
 import { filterOptionsQuery, userDataQuery } from "@/queries/explore";
 import { api } from "../../../../convex/_generated/api";
-import type { Doc } from "../../../../convex/_generated/dataModel";
 import { SCHEDULE_COLORS } from "../../../../convex/lib/constants";
 
 function LocationDisplay(props: {
@@ -116,87 +115,8 @@ function formatAverageScore(value: number | null | undefined) {
   return typeof value === "number" ? value.toFixed(1) : "--";
 }
 
-function normalizeCourseCode(courseCode: string): string {
-  return courseCode.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-}
-
-type CoursePlanningStatus = NonNullable<
-  Doc<"acadiaUserData">["coursePlanningStatuses"]
->[string];
-type BadgeVariant = ComponentProps<typeof Badge>["variant"];
-
-const COURSE_STATUS_META: Record<
-  CoursePlanningStatus,
-  {
-    icon: LucideIcon;
-    label: string;
-    variant: BadgeVariant;
-  }
-> = {
-  completed: {
-    icon: CheckIcon,
-    label: "Completed",
-    variant: "success",
-  },
-  inProgress: {
-    icon: Clock3Icon,
-    label: "In progress",
-    variant: "info",
-  },
-  dropped: {
-    icon: CircleOffIcon,
-    label: "Dropped",
-    variant: "warning",
-  },
-  withdrawn: {
-    icon: CircleAlertIcon,
-    label: "Withdrawn",
-    variant: "warning",
-  },
-  failed: {
-    icon: XCircleIcon,
-    label: "Failed",
-    variant: "error",
-  },
-  unknown: {
-    icon: CircleHelpIcon,
-    label: "Unknown",
-    variant: "outline",
-  },
-};
-
-function buildCourseStatusByCode(
-  userData: Doc<"acadiaUserData"> | null | undefined
-): Map<string, CoursePlanningStatus> {
-  const statusesByCode = new Map<string, CoursePlanningStatus>();
-  const statusByCourseId = userData?.coursePlanningStatuses;
-  const requirements = userData?.programEvaluation.requirements;
-
-  if (!(statusByCourseId && requirements)) {
-    return statusesByCode;
-  }
-
-  for (const requirement of requirements) {
-    for (const subrequirement of requirement.subrequirements) {
-      for (const group of subrequirement.groups) {
-        for (const course of group.courses) {
-          const status =
-            statusByCourseId[course.id] ??
-            statusByCourseId[normalizeCourseCode(course.code)];
-          if (!status) {
-            continue;
-          }
-          statusesByCode.set(normalizeCourseCode(course.code), status);
-        }
-      }
-    }
-  }
-
-  return statusesByCode;
-}
-
 export function CourseViewData() {
-  const { sessionId, tokenHash } = useAuth();
+  const { isAuthenticated, sessionId, tokenHash } = useAuth();
   const { courses } = useExploreCourses();
   const {
     data: { terms },
@@ -248,6 +168,7 @@ export function CourseViewData() {
     [userData]
   );
   const courseStatusById = userData?.coursePlanningStatuses;
+  const showRequisiteStatuses = isAuthenticated && !!userData;
   type Course = (typeof courses)[number];
   type Section = Course["sections"][number];
 
@@ -424,6 +345,11 @@ export function CourseViewData() {
                     </div>
                   )}
                 </div>
+                <CourseRequisites
+                  courseStatusByCode={courseStatusByCode}
+                  requisites={course.requisites}
+                  showStatuses={showRequisiteStatuses}
+                />
                 <div className="mt-0.5 text-muted-foreground">
                   {course.sections.length} section
                   {course.sections.length !== 1 && "s"}

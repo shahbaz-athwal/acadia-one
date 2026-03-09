@@ -50,7 +50,9 @@ export function useExploreFilters() {
   const searchQuery = search.q;
 
   const navigateWithSearch = (
-    updater: (prev: ReturnType<typeof withDefaults>) => ReturnType<typeof withDefaults>
+    updater: (
+      prev: ReturnType<typeof withDefaults>
+    ) => ReturnType<typeof withDefaults>
   ) => {
     navigate({
       to: "/explore",

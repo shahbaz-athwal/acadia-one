@@ -25,6 +25,16 @@ interface ResolvedFilters {
   timeRange: TimeRange | null;
 }
 
+function normalizeCourseCode(courseCode: string): string {
+  return courseCode.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+}
+
+function combineRequisiteText(base: string, extension?: string): string {
+  const baseText = base.trim();
+  const extensionText = extension?.trim() ?? "";
+  return extensionText ? `${baseText} ${extensionText}`.trim() : baseText;
+}
+
 function normalizeTimeRange(
   startRaw?: number,
   endRaw?: number
@@ -368,6 +378,26 @@ function paginate(
 }
 
 async function enrichWithSections(ctx: QueryCtx, courses: Doc<"courses">[]) {
+  const requisiteCodes = new Set<string>();
+  for (const course of courses) {
+    for (const requisite of course.requisites ?? []) {
+      for (const code of requisite.codes) {
+        requisiteCodes.add(normalizeCourseCode(code));
+      }
+    }
+  }
+
+  const requisiteCourseEntries = await asyncMap(
+    [...requisiteCodes],
+    async (code): Promise<[string, Doc<"courses"> | null]> => [
+      code,
+      await getOneFrom(ctx.db, "courses", "by_code", code),
+    ]
+  );
+  const requisiteCourseByCode = new Map<string, Doc<"courses"> | null>(
+    requisiteCourseEntries
+  );
+
   return await asyncMap(courses, async (course) => {
     const sections = await ctx.db
       .query("sections")
@@ -396,17 +426,39 @@ async function enrichWithSections(ctx: QueryCtx, courses: Doc<"courses">[]) {
 
     const requisites = (course.requisites ?? [])
       .map((requisite) => {
-        const extension = requisite.displayTextExtension.trim();
-        return extension
-          ? `${requisite.displayText} ${extension}`.trim()
-          : requisite.displayText;
+        const text = combineRequisiteText(
+          requisite.displayText,
+          requisite.displayTextExtension
+        );
+        const annotatedText = combineRequisiteText(
+          requisite.displayTextAnnotated,
+          requisite.displayTextExtensionAnnotated ??
+            requisite.displayTextExtension
+        );
+
+        return {
+          text,
+          annotatedText,
+          linkedCourses: requisite.codes.map((code) => {
+            const normalizedCode = normalizeCourseCode(code);
+            const linkedCourse = requisiteCourseByCode.get(normalizedCode);
+
+            return {
+              normalizedCode,
+              code: linkedCourse?.code ?? code,
+              title: linkedCourse?.title ?? null,
+              description: linkedCourse?.description ?? null,
+            };
+          }),
+        };
       })
-      .filter((value) => value.length > 0);
+      .filter((requisite) => requisite.text.length > 0);
 
     return {
       id: course.externalId,
       code: course.code,
       title: course.title,
+      description: course.description,
       credits: course.credits,
       isLab: course.isLab,
       avgQuality: course.avgQuality,
