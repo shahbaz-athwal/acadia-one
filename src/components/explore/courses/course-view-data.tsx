@@ -13,7 +13,6 @@ import { CourseRequisites } from "@/components/explore/courses/course-requisites
 import {
   buildCourseStatusByCode,
   COURSE_STATUS_META,
-  normalizeCourseCode,
 } from "@/components/explore/courses/course-status";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +57,7 @@ import {
 import { filterOptionsQuery, userDataQuery } from "@/queries/explore";
 import { api } from "../../../../convex/_generated/api";
 import { SCHEDULE_COLORS } from "../../../../convex/lib/constants";
+import { normalizeCourseCode } from "../../../../shared/normalizeCourseCode";
 
 function LocationDisplay(props: {
   isOnline: boolean;
@@ -168,7 +168,6 @@ export function CourseViewData() {
     () => buildCourseStatusByCode(userData),
     [userData]
   );
-  const courseStatusById = userData?.coursePlanningStatuses;
   const showRequisiteStatuses = isAuthenticated && !!userData;
   type Course = (typeof courses)[number];
   type Section = Course["sections"][number];
@@ -296,9 +295,9 @@ export function CourseViewData() {
     <TooltipProvider delay={100}>
       <div className="space-y-2 p-2">
         {courses.map((course) => {
-          const courseStatus =
-            courseStatusByCode.get(normalizeCourseCode(course.code)) ??
-            courseStatusById?.[course.id];
+          const courseStatus = courseStatusByCode.get(
+            normalizeCourseCode(course.code)
+          );
           const courseStatusMeta = courseStatus
             ? COURSE_STATUS_META[courseStatus]
             : null;

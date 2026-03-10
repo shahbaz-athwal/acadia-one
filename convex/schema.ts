@@ -129,8 +129,7 @@ const schema = defineSchema({
           "inProgress",
           "dropped",
           "withdrawn",
-          "failed",
-          "unknown"
+          "failed"
         )
       )
     ),

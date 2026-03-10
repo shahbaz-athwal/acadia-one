@@ -22,7 +22,7 @@ import { StudentProgramDetailsFilteredResponseSchema } from "./schemas/studentPr
 
 export type {
   CoursePlanningStatus,
-  CoursePlanningStatusById,
+  CoursePlanningStatusByCode,
   DegreePlanPlanningStatusesTransformed,
 } from "./schemas/degreePlanPlanningStatuses";
 export type { ProgramEvaluationTransformed } from "./schemas/programEvaluation";

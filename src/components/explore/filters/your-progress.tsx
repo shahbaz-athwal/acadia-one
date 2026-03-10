@@ -7,6 +7,11 @@ import {
   useMemo,
   useState,
 } from "react";
+import {
+  buildCourseStatusByCode,
+  COURSE_STATUS_META,
+  type CoursePlanningStatus,
+} from "@/components/explore/courses/course-status";
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -20,6 +25,7 @@ import { useExploreFilters } from "@/hooks/use-explore-filters";
 import { cn } from "@/lib/utils";
 import { userDataQuery } from "@/queries/explore";
 import type { Doc } from "../../../../convex/_generated/dataModel";
+import { normalizeCourseCode } from "../../../../shared/normalizeCourseCode";
 
 type TreeLevel = "requirement" | "subrequirement" | "group" | "course";
 
@@ -37,6 +43,7 @@ interface ProgressTreeNode {
   directive?: string;
   rsgKey?: string;
   courseCode?: string;
+  status?: CoursePlanningStatus | null;
   children: ProgressTreeNode[];
 }
 
@@ -146,10 +153,12 @@ function mapCourseNode(
   requirementId: string,
   subrequirementId: string,
   groupId: string,
-  course: CourseData
+  course: CourseData,
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
 ): ProgressTreeNode {
   const label =
     joinNonEmpty([course.code, course.title], " - ") || `Course ${course.id}`;
+  const courseCode = normalizeCourseCode(course.code);
   return {
     id: buildNodeId("course", [
       requirementId,
@@ -159,7 +168,8 @@ function mapCourseNode(
     ]),
     level: "course",
     label,
-    courseCode: course.code,
+    courseCode,
+    status: courseStatusByCode.get(courseCode) ?? null,
     children: [],
   };
 }
@@ -168,7 +178,8 @@ function mapGroupNode(
   requirementCode: string,
   requirementId: string,
   subrequirementId: string,
-  group: GroupData
+  group: GroupData,
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
 ): ProgressTreeNode {
   const label =
     toOptionalText(group.displayText) ??
@@ -180,7 +191,13 @@ function mapGroupNode(
     label,
     rsgKey: `${requirementCode}:${subrequirementId}:${group.id}`,
     children: group.courses.map((course) =>
-      mapCourseNode(requirementId, subrequirementId, group.id, course)
+      mapCourseNode(
+        requirementId,
+        subrequirementId,
+        group.id,
+        course,
+        courseStatusByCode
+      )
     ),
   };
 }
@@ -188,10 +205,17 @@ function mapGroupNode(
 function mapSubrequirementNode(
   requirementCode: string,
   requirementId: string,
-  subrequirement: SubrequirementData
+  subrequirement: SubrequirementData,
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
 ): ProgressTreeNode {
   const groupNodes = subrequirement.groups.map((group) =>
-    mapGroupNode(requirementCode, requirementId, subrequirement.id, group)
+    mapGroupNode(
+      requirementCode,
+      requirementId,
+      subrequirement.id,
+      group,
+      courseStatusByCode
+    )
   );
   const isFlattened = groupNodes.length === 1;
 
@@ -211,7 +235,10 @@ function mapSubrequirementNode(
   };
 }
 
-function mapRequirementNode(requirement: RequirementData): ProgressTreeNode {
+function mapRequirementNode(
+  requirement: RequirementData,
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
+): ProgressTreeNode {
   return {
     id: buildNodeId("requirement", [requirement.id]),
     level: "requirement",
@@ -219,19 +246,27 @@ function mapRequirementNode(requirement: RequirementData): ProgressTreeNode {
     description: requirement.description,
     directive: toOptionalText(requirement.directive),
     children: requirement.subrequirements.map((subrequirement) =>
-      mapSubrequirementNode(requirement.code, requirement.id, subrequirement)
+      mapSubrequirementNode(
+        requirement.code,
+        requirement.id,
+        subrequirement,
+        courseStatusByCode
+      )
     ),
   };
 }
 
 function buildProgressTree(
-  programEvaluation: ProgramEvaluationData | null
+  programEvaluation: ProgramEvaluationData | null,
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
 ): ProgressTreeNode[] {
   if (!programEvaluation) {
     return [];
   }
 
-  return programEvaluation.requirements.map(mapRequirementNode);
+  return programEvaluation.requirements.map((requirement) =>
+    mapRequirementNode(requirement, courseStatusByCode)
+  );
 }
 
 function isExpanded(node: ProgressTreeNode, state: ExpansionState): boolean {
@@ -247,8 +282,24 @@ function isExpanded(node: ProgressTreeNode, state: ExpansionState): boolean {
   return !COLLAPSED_LEVELS_BY_DEFAULT.has(node.level);
 }
 
-function getExpansionIcon(hasChildren: boolean, expanded: boolean): ReactNode {
+function getLeadingSlot(node: ProgressTreeNode, expanded: boolean): ReactNode {
+  const hasChildren = node.children.length > 0;
   if (!hasChildren) {
+    if (node.level === "course" && node.status) {
+      const statusMeta = COURSE_STATUS_META[node.status];
+      const StatusIcon = statusMeta.icon;
+
+      return (
+        <span
+          aria-label={statusMeta.label}
+          className="inline-flex size-3.5 shrink-0 items-center justify-center"
+          role="img"
+          title={statusMeta.label}
+        >
+          <StatusIcon aria-hidden="true" className="size-3.5 shrink-0" />
+        </span>
+      );
+    }
     return <span className="size-3.5 shrink-0" />;
   }
   if (expanded) {
@@ -261,16 +312,48 @@ function getExpansionIcon(hasChildren: boolean, expanded: boolean): ReactNode {
   );
 }
 
-function renderLabel(node: ProgressTreeNode): ReactNode {
+function renderLabel(node: ProgressTreeNode, className?: string): ReactNode {
   if (LEVELS_WITH_TRUNCATED_TITLE.has(node.level)) {
     return (
       <TruncatedTooltipText
+        className={className}
         containerClassName="min-w-0 flex-1"
         text={node.label}
       />
     );
   }
-  return <span className="truncate">{node.label}</span>;
+  return <span className={cn("truncate", className)}>{node.label}</span>;
+}
+
+function renderNodeContent(
+  node: ProgressTreeNode,
+  expanded: boolean
+): ReactNode {
+  const statusMeta =
+    node.level === "course" && node.status
+      ? COURSE_STATUS_META[node.status]
+      : null;
+
+  if (node.level === "course") {
+    return (
+      <span
+        className={cn(
+          "flex min-w-0 flex-1 items-center gap-1",
+          statusMeta?.textClassName
+        )}
+      >
+        {getLeadingSlot(node, expanded)}
+        {renderLabel(node, statusMeta?.textClassName)}
+      </span>
+    );
+  }
+
+  return (
+    <>
+      {getLeadingSlot(node, expanded)}
+      {renderLabel(node)}
+    </>
+  );
 }
 
 function renderDirective(directive: string | undefined): ReactNode {
@@ -371,10 +454,7 @@ function ProgressTreeBranch({
                 aria-pressed={
                   node.level === "course" ? isCourseActive : undefined
                 }
-                className={cn(
-                  "flex min-w-0 flex-1 items-center gap-1 text-left text-sm sm:text-xs",
-                  isCourseActive && "text-info-foreground"
-                )}
+                className="flex min-w-0 flex-1 items-center gap-1 text-left text-sm sm:text-xs"
                 onClick={() => {
                   if (!hasChildren && node.courseCode) {
                     onCourseToggle(node.courseCode);
@@ -387,8 +467,7 @@ function ProgressTreeBranch({
                 }}
                 type="button"
               >
-                {getExpansionIcon(hasChildren, expanded)}
-                {renderLabel(node)}
+                {renderNodeContent(node, expanded)}
               </button>
               {node.rsgKey || showDirective ? (
                 <div className="flex shrink-0 items-center gap-1 pr-1">
@@ -429,10 +508,20 @@ function YourProgress() {
     loadExpansionStateFromStorage
   );
   const programEvaluation = userData?.programEvaluation ?? null;
+  const courseStatusByCode = useMemo(
+    () =>
+      new Map(
+        Array.from(
+          buildCourseStatusByCode(userData),
+          ([courseCode, status]) => [normalizeCourseCode(courseCode), status]
+        )
+      ),
+    [userData]
+  );
 
   const treeNodes = useMemo(
-    () => buildProgressTree(programEvaluation),
-    [programEvaluation]
+    () => buildProgressTree(programEvaluation, courseStatusByCode),
+    [courseStatusByCode, programEvaluation]
   );
   const degreeTitle = joinNonEmpty(
     [programEvaluation?.title, programEvaluation?.code],
@@ -491,11 +580,11 @@ function YourProgress() {
   return (
     <TooltipProvider delay={250}>
       <div className="space-y-2 p-2">
-        {degreeTitle ? (
+        {degreeTitle && (
           <p className="px-1 font-medium text-foreground text-sm sm:text-xs">
             {degreeTitle}
           </p>
-        ) : null}
+        )}
         <ProgressTreeBranch
           activeCourseCode={selectedCourseCode}
           activeRsgKey={activeRsgKey}

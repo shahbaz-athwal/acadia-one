@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normalizeCourseCode } from "../../../shared/normalizeCourseCode";
 
 export const CoursePlanningStatus = {
   completed: "completed",
@@ -6,73 +7,96 @@ export const CoursePlanningStatus = {
   dropped: "dropped",
   withdrawn: "withdrawn",
   failed: "failed",
-  unknown: "unknown",
 } as const;
 
 export type CoursePlanningStatus =
   (typeof CoursePlanningStatus)[keyof typeof CoursePlanningStatus];
 
-export type CoursePlanningStatusById = Record<string, CoursePlanningStatus>;
+export type CoursePlanningStatusByCode = Record<string, CoursePlanningStatus>;
 
-const PlanningStatusSchema = z.object({
-  CourseId: z.string(),
-  Class: z.string(),
-  Text: z.string(),
+const AcademicHistorySchema = z.object({
+  GradeDisplay: z.string().nullable(),
+  IsCompletedCredit: z.boolean(),
+  IsWithdrawn: z.boolean(),
+  IsDropped: z.boolean(),
 });
 
-function toCoursePlanningStatus(
-  className: string,
-  text: string
-): CoursePlanningStatus {
-  const normalized = `${className} ${text}`.toLowerCase();
+const PlannedCourseSchema = z.object({
+  CourseName: z.string(),
+  IsCompleted: z.boolean(),
+  IsInProgress: z.boolean(),
+  IsWithdrawn: z.boolean(),
+  IsDropped: z.boolean(),
+  IsPlanned: z.boolean(),
+  IsWaitlisted: z.boolean(),
+  IsPreregistered: z.boolean(),
+  AcademicHistory: AcademicHistorySchema.nullable(),
+});
+
+function resolveCoursePlanningStatus(course: z.infer<typeof PlannedCourseSchema>) {
+  const gradeDisplay = course.AcademicHistory?.GradeDisplay?.trim().toUpperCase();
 
   if (
-    normalized.includes("in-progress") ||
-    normalized.includes("in progress")
+    gradeDisplay === "W" ||
+    course.IsWithdrawn ||
+    course.AcademicHistory?.IsWithdrawn
   ) {
-    return CoursePlanningStatus.inProgress;
-  }
-
-  if (normalized.includes("withdrawn") || normalized.includes("withdraw")) {
     return CoursePlanningStatus.withdrawn;
   }
 
-  if (normalized.includes("dropped") || normalized.includes("drop")) {
+  if (course.IsDropped || course.AcademicHistory?.IsDropped) {
     return CoursePlanningStatus.dropped;
   }
 
-  if (normalized.includes("failed") || normalized.includes("fail")) {
+  if (course.IsInProgress) {
+    return CoursePlanningStatus.inProgress;
+  }
+
+  if (gradeDisplay === "F" || gradeDisplay === "WF") {
     return CoursePlanningStatus.failed;
   }
 
-  if (
-    normalized.includes("completed") ||
-    normalized.includes("attempted") ||
-    normalized.includes("credit")
-  ) {
+  if (course.IsCompleted || course.AcademicHistory?.IsCompletedCredit) {
     return CoursePlanningStatus.completed;
   }
 
-  return CoursePlanningStatus.unknown;
+  return null;
 }
 
 export const DegreePlanPlanningStatusesFilteredResponseSchema = z
   .object({
     DegreePlan: z.object({
-      PlanningStatuses: z.array(PlanningStatusSchema),
+      Terms: z.array(
+        z.object({
+          Sequence: z.number(),
+          PlannedCourses: z.array(PlannedCourseSchema),
+        })
+      ),
     }),
   })
-  .transform((data): CoursePlanningStatusById => {
-    const statusesByCourseId: CoursePlanningStatusById = {};
+  .transform((data): CoursePlanningStatusByCode => {
+    const statusesByCourseCode: CoursePlanningStatusByCode = {};
+    const sortedTerms = [...data.DegreePlan.Terms].sort(
+      (a, b) => a.Sequence - b.Sequence
+    );
 
-    for (const item of data.DegreePlan.PlanningStatuses) {
-      statusesByCourseId[item.CourseId] = toCoursePlanningStatus(
-        item.Class,
-        item.Text
-      );
+    for (const term of sortedTerms) {
+      for (const course of term.PlannedCourses) {
+        const status = resolveCoursePlanningStatus(course);
+        if (!status) {
+          continue;
+        }
+
+        const courseCode = normalizeCourseCode(course.CourseName);
+        if (!courseCode) {
+          continue;
+        }
+
+        statusesByCourseCode[courseCode] = status;
+      }
     }
 
-    return statusesByCourseId;
+    return statusesByCourseCode;
   });
 
 export type DegreePlanPlanningStatusesTransformed = z.infer<

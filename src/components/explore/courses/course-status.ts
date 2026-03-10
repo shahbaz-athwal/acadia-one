@@ -1,7 +1,6 @@
 import {
   CheckIcon,
   CircleAlertIcon,
-  CircleHelpIcon,
   CircleOffIcon,
   Clock3Icon,
   type LucideIcon,
@@ -20,6 +19,7 @@ type BadgeVariant = ComponentProps<typeof Badge>["variant"];
 export interface CourseStatusMeta {
   icon: LucideIcon;
   label: string;
+  textClassName: string;
   variant: BadgeVariant;
 }
 
@@ -30,71 +30,44 @@ export const COURSE_STATUS_META: Record<
   completed: {
     icon: CheckIcon,
     label: "Completed",
+    textClassName: "text-success-foreground",
     variant: "success",
   },
   inProgress: {
     icon: Clock3Icon,
     label: "In progress",
+    textClassName: "text-info-foreground",
     variant: "info",
   },
   dropped: {
     icon: CircleOffIcon,
     label: "Dropped",
+    textClassName: "text-warning-foreground",
     variant: "warning",
   },
   withdrawn: {
     icon: CircleAlertIcon,
     label: "Withdrawn",
+    textClassName: "text-warning-foreground",
     variant: "warning",
   },
   failed: {
     icon: XCircleIcon,
     label: "Failed",
+    textClassName: "text-destructive-foreground",
     variant: "error",
-  },
-  unknown: {
-    icon: CircleHelpIcon,
-    label: "Unknown",
-    variant: "outline",
   },
 };
 
 export const NOT_COMPLETED_STATUS_META: CourseStatusMeta = {
   icon: CircleOffIcon,
   label: "Not completed",
+  textClassName: "text-muted-foreground",
   variant: "outline",
 };
-
-export function normalizeCourseCode(courseCode: string): string {
-  return courseCode.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-}
 
 export function buildCourseStatusByCode(
   userData: Doc<"acadiaUserData"> | null | undefined
 ): Map<string, CoursePlanningStatus> {
-  const statusesByCode = new Map<string, CoursePlanningStatus>();
-  const statusByCourseId = userData?.coursePlanningStatuses;
-  const requirements = userData?.programEvaluation.requirements;
-
-  if (!(statusByCourseId && requirements)) {
-    return statusesByCode;
-  }
-
-  for (const requirement of requirements) {
-    for (const subrequirement of requirement.subrequirements) {
-      for (const group of subrequirement.groups) {
-        for (const course of group.courses) {
-          const status =
-            statusByCourseId[course.id] ??
-            statusByCourseId[normalizeCourseCode(course.code)];
-          if (!status) {
-            continue;
-          }
-          statusesByCode.set(normalizeCourseCode(course.code), status);
-        }
-      }
-    }
-  }
-
-  return statusesByCode;
+  return new Map(Object.entries(userData?.coursePlanningStatuses ?? {}));
 }
