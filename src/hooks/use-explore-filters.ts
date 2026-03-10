@@ -12,12 +12,17 @@ import {
 
 const routeApi = getRouteApi("/explore");
 export type FilterPanelTab = "filters" | "progress";
+
 function normalizeMinute(value: number): number {
   const roundedToHalfHour = Math.round(value / 30) * 30;
   return Math.max(
     TIME_RANGE_MINUTES,
     Math.min(TIME_RANGE_MAX_MINUTES, roundedToHalfHour)
   );
+}
+
+function normalizeCourseCode(value: string): string {
+  return value.trim().replace(/\s+/g, "").toUpperCase();
 }
 
 export function useExploreFilters() {
@@ -91,7 +96,12 @@ export function useExploreFilters() {
   };
 
   const setRsgKeys = (rsgKeys: string[]) => {
-    navigateWithSearch((prev) => ({ ...prev, rsg: rsgKeys, page: 1 }));
+    navigateWithSearch((prev) => ({
+      ...prev,
+      rsg: rsgKeys.filter(Boolean).slice(0, 1),
+      cc: "",
+      page: 1,
+    }));
   };
 
   const setAcademicLevels = (academicLevels: number[]) => {
@@ -99,13 +109,11 @@ export function useExploreFilters() {
   };
 
   const setSelectedCourseCode = (courseCode: string) => {
-    const normalizedCourseCode = courseCode
-      .trim()
-      .replace(/\s+/g, "")
-      .toUpperCase();
+    const normalizedCourseCode = normalizeCourseCode(courseCode);
     navigateWithSearch((prev) => ({
       ...prev,
       cc: normalizedCourseCode,
+      rsg: [],
       page: 1,
     }));
   };

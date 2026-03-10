@@ -44,31 +44,62 @@ function parseNumberArray(value: unknown): number[] {
     .filter((num) => Number.isFinite(num));
 }
 
-const exploreSearchSchema = z.object({
-  term: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
-  dept: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
-  prof: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
-  day: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
-  lvl: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
-  rsg: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
-  cc: z.string().catch(""),
-  ts: z.coerce
-    .number()
-    .int()
-    .min(TIME_RANGE_MINUTES)
-    .max(TIME_RANGE_MAX_MINUTES)
-    .catch(TIME_RANGE_MINUTES),
-  te: z.coerce
-    .number()
-    .int()
-    .min(TIME_RANGE_MINUTES)
-    .max(TIME_RANGE_MAX_MINUTES)
-    .catch(TIME_RANGE_MAX_MINUTES),
-  ft: z.enum(["filters", "progress"]).catch("filters"),
-  st: z.string().catch(""),
-  q: z.string().catch(""),
-  page: z.coerce.number().int().positive().catch(1),
-});
+function normalizeCourseCode(value: string): string {
+  return value.trim().replace(/\s+/g, "").toUpperCase();
+}
+
+function normalizeProgressSelection(search: {
+  term: string[];
+  dept: string[];
+  prof: string[];
+  day: number[];
+  lvl: number[];
+  rsg: string[];
+  cc: string;
+  ts: number;
+  te: number;
+  ft: "filters" | "progress";
+  st: string;
+  q: string;
+  page: number;
+}) {
+  const cc = normalizeCourseCode(search.cc);
+  const rsg = search.rsg.filter(Boolean).slice(0, 1);
+
+  if (cc) {
+    return { ...search, cc, rsg: [] };
+  }
+
+  return { ...search, cc: "", rsg };
+}
+
+const exploreSearchSchema = z
+  .object({
+    term: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
+    dept: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
+    prof: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
+    day: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
+    lvl: z.preprocess(parseNumberArray, z.array(z.number().int())).catch([]),
+    rsg: z.preprocess(parseStringArray, z.array(z.string())).catch([]),
+    cc: z.string().catch(""),
+    ts: z.coerce
+      .number()
+      .int()
+      .min(TIME_RANGE_MINUTES)
+      .max(TIME_RANGE_MAX_MINUTES)
+      .catch(TIME_RANGE_MINUTES),
+    te: z.coerce
+      .number()
+      .int()
+      .min(TIME_RANGE_MINUTES)
+      .max(TIME_RANGE_MAX_MINUTES)
+      .catch(TIME_RANGE_MAX_MINUTES),
+    ft: z.enum(["filters", "progress"]).catch("filters"),
+    st: z.string().catch(""),
+    q: z.string().catch(""),
+    page: z.coerce.number().int().positive().catch(1),
+  })
+  .transform(normalizeProgressSelection);
 
 export type ExploreSearchParams = z.infer<typeof exploreSearchSchema>;
 
