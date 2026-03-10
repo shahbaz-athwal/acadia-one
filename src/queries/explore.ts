@@ -67,3 +67,9 @@ export const validateSessionQuery = (sessionId: string, tokenHash: string) =>
 
 export const userDataQuery = (sessionId: string, tokenHash: string) =>
   convexQuery(api.sessions.getUserData, { sessionId, tokenHash });
+
+export const progressSearchCoursesQuery = (
+  sessionId: string,
+  tokenHash: string
+) =>
+  convexQuery(api.sessions.getProgressSearchCourses, { sessionId, tokenHash });

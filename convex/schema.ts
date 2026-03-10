@@ -124,13 +124,7 @@ const schema = defineSchema({
     coursePlanningStatuses: v.optional(
       v.record(
         v.string(),
-        literals(
-          "completed",
-          "inProgress",
-          "dropped",
-          "withdrawn",
-          "failed"
-        )
+        literals("completed", "inProgress", "dropped", "withdrawn", "failed")
       )
     ),
     updatedAt: v.number(),

@@ -20,6 +20,7 @@ import {
   buildConvexFilters,
   coursesQuery,
   filterOptionsQuery,
+  progressSearchCoursesQuery,
   scheduleQuery,
   userDataQuery,
   validateSessionQuery,
@@ -164,6 +165,9 @@ export const Route = createFileRoute("/explore")({
         validateSessionQuery(sessionId, tokenHash)
       ),
       context.queryClient.ensureQueryData(userDataQuery(sessionId, tokenHash)),
+      context.queryClient.ensureQueryData(
+        progressSearchCoursesQuery(sessionId, tokenHash)
+      ),
     ]);
   },
   component: RouteComponent,

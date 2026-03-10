@@ -33,8 +33,11 @@ const PlannedCourseSchema = z.object({
   AcademicHistory: AcademicHistorySchema.nullable(),
 });
 
-function resolveCoursePlanningStatus(course: z.infer<typeof PlannedCourseSchema>) {
-  const gradeDisplay = course.AcademicHistory?.GradeDisplay?.trim().toUpperCase();
+function resolveCoursePlanningStatus(
+  course: z.infer<typeof PlannedCourseSchema>
+) {
+  const gradeDisplay =
+    course.AcademicHistory?.GradeDisplay?.trim().toUpperCase();
 
   if (
     gradeDisplay === "W" ||

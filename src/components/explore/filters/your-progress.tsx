@@ -22,8 +22,8 @@ import {
 import { TruncatedTooltipText } from "@/components/ui/truncated-tooltip-text";
 import { useAuth } from "@/hooks/use-auth";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
-import { cn } from "@/lib/utils";
-import { userDataQuery } from "@/queries/explore";
+import { cn, formatCourseCode } from "@/lib/utils";
+import { progressSearchCoursesQuery, userDataQuery } from "@/queries/explore";
 import type { Doc } from "../../../../convex/_generated/dataModel";
 import { normalizeCourseCode } from "../../../../shared/normalizeCourseCode";
 
@@ -34,6 +34,11 @@ type RequirementData = ProgramEvaluationData["requirements"][number];
 type SubrequirementData = RequirementData["subrequirements"][number];
 type GroupData = SubrequirementData["groups"][number];
 type CourseData = GroupData["courses"][number];
+
+interface SearchGroupCourseData {
+  code: string;
+  title?: string;
+}
 
 interface ProgressTreeNode {
   id: string;
@@ -174,31 +179,74 @@ function mapCourseNode(
   };
 }
 
+function mapSearchCourseNode(
+  requirementId: string,
+  subrequirementId: string,
+  groupId: string,
+  course: SearchGroupCourseData,
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
+): ProgressTreeNode {
+  const courseCode = normalizeCourseCode(course.code);
+  const label =
+    joinNonEmpty([formatCourseCode(courseCode), course.title], " - ") ||
+    `Course ${courseCode}`;
+  return {
+    id: buildNodeId("course", [
+      requirementId,
+      subrequirementId,
+      groupId,
+      `search:${courseCode}`,
+    ]),
+    level: "course",
+    label,
+    courseCode,
+    status: courseStatusByCode.get(courseCode) ?? null,
+    children: [],
+  };
+}
+
 function mapGroupNode(
   requirementCode: string,
   requirementId: string,
   subrequirementId: string,
   group: GroupData,
-  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>,
+  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>
 ): ProgressTreeNode {
   const label =
     toOptionalText(group.displayText) ??
     toOptionalText(group.directive) ??
     `Group ${group.id}`;
+  const rsgKey = `${requirementCode}:${subrequirementId}:${group.id}`;
+  const searchGroupCourses = (searchGroupCoursesByKey.get(rsgKey) ?? []).filter(
+    (course) => courseStatusByCode.has(normalizeCourseCode(course.code))
+  );
+
   return {
     id: buildNodeId("group", [requirementId, subrequirementId, group.id]),
     level: "group",
     label,
-    rsgKey: `${requirementCode}:${subrequirementId}:${group.id}`,
-    children: group.courses.map((course) =>
-      mapCourseNode(
-        requirementId,
-        subrequirementId,
-        group.id,
-        course,
-        courseStatusByCode
-      )
-    ),
+    rsgKey,
+    children:
+      group.courses.length > 0
+        ? group.courses.map((course) =>
+            mapCourseNode(
+              requirementId,
+              subrequirementId,
+              group.id,
+              course,
+              courseStatusByCode
+            )
+          )
+        : searchGroupCourses.map((course) =>
+            mapSearchCourseNode(
+              requirementId,
+              subrequirementId,
+              group.id,
+              course,
+              courseStatusByCode
+            )
+          ),
   };
 }
 
@@ -206,7 +254,8 @@ function mapSubrequirementNode(
   requirementCode: string,
   requirementId: string,
   subrequirement: SubrequirementData,
-  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>,
+  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>
 ): ProgressTreeNode {
   const groupNodes = subrequirement.groups.map((group) =>
     mapGroupNode(
@@ -214,7 +263,8 @@ function mapSubrequirementNode(
       requirementId,
       subrequirement.id,
       group,
-      courseStatusByCode
+      courseStatusByCode,
+      searchGroupCoursesByKey
     )
   );
   const isFlattened = groupNodes.length === 1;
@@ -237,7 +287,8 @@ function mapSubrequirementNode(
 
 function mapRequirementNode(
   requirement: RequirementData,
-  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>,
+  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>
 ): ProgressTreeNode {
   return {
     id: buildNodeId("requirement", [requirement.id]),
@@ -250,7 +301,8 @@ function mapRequirementNode(
         requirement.code,
         requirement.id,
         subrequirement,
-        courseStatusByCode
+        courseStatusByCode,
+        searchGroupCoursesByKey
       )
     ),
   };
@@ -258,14 +310,15 @@ function mapRequirementNode(
 
 function buildProgressTree(
   programEvaluation: ProgramEvaluationData | null,
-  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>,
+  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>
 ): ProgressTreeNode[] {
   if (!programEvaluation) {
     return [];
   }
 
   return programEvaluation.requirements.map((requirement) =>
-    mapRequirementNode(requirement, courseStatusByCode)
+    mapRequirementNode(requirement, courseStatusByCode, searchGroupCoursesByKey)
   );
 }
 
@@ -503,6 +556,9 @@ function YourProgress() {
   const { data: userData } = useSuspenseQuery(
     userDataQuery(sessionId, tokenHash)
   );
+  const { data: progressSearchCourses } = useSuspenseQuery(
+    progressSearchCoursesQuery(sessionId, tokenHash)
+  );
 
   const [expansionState, setExpansionState] = useState<ExpansionState>(
     loadExpansionStateFromStorage
@@ -518,10 +574,22 @@ function YourProgress() {
       ),
     [userData]
   );
+  const searchGroupCoursesByKey = useMemo(
+    () =>
+      new Map(
+        progressSearchCourses.map(({ key, courses }) => [key, courses] as const)
+      ),
+    [progressSearchCourses]
+  );
 
   const treeNodes = useMemo(
-    () => buildProgressTree(programEvaluation, courseStatusByCode),
-    [courseStatusByCode, programEvaluation]
+    () =>
+      buildProgressTree(
+        programEvaluation,
+        courseStatusByCode,
+        searchGroupCoursesByKey
+      ),
+    [courseStatusByCode, programEvaluation, searchGroupCoursesByKey]
   );
   const degreeTitle = joinNonEmpty(
     [programEvaluation?.title, programEvaluation?.code],
