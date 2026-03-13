@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { parseCanonicalCourseCode } from "../../../shared/courseCode";
+import { parseCanonicalCourseCode } from "../../lib/courseCode";
 
 export const CoursePlanningStatus = {
   completed: "completed",

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { parseCanonicalCourseCode } from "../../../shared/courseCode";
+import { parseCanonicalCourseCode } from "../../lib/courseCode";
 
 const StudentGradeSchema = z.object({
   FormattedCourseNameDisplay: z.array(z.string()),

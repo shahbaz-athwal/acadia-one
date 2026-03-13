@@ -6,10 +6,7 @@ const SINGLE_COURSE_CODE_REGEX = new RegExp(
   "i"
 );
 
-export function buildCanonicalCourseCode(
-  subject: string,
-  number: string
-): string {
+function buildCanonicalCourseCode(subject: string, number: string): string {
   return `${subject.trim().toUpperCase()}-${number.trim().toUpperCase()}`;
 }
 
@@ -33,11 +30,4 @@ export function parseCanonicalCourseCode(
   }
 
   return buildCanonicalCourseCode(subject, number);
-}
-
-export function createCourseCodeRegex(flags = "gi"): RegExp {
-  return new RegExp(
-    `\\b(${SUBJECT_PATTERN})(?:\\s*(?:-\\s*|\\s+)(${SEPARATED_NUMBER_PATTERN})|(${COMPACT_NUMBER_PATTERN}))\\b`,
-    flags
-  );
 }

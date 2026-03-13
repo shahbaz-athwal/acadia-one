@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { buildCanonicalCourseCode } from "../../../shared/courseCode";
+
+function canonicalCourseCode(subject: string, number: string): string {
+  return `${subject.trim().toUpperCase()}-${number.trim().toUpperCase()}`;
+}
 
 const ProgramEvaluationCourseSchema = z.object({
   Id: z.string(),
@@ -66,7 +69,7 @@ export const ProgramEvaluationFilteredResponseSchema = z
             directive: group.Directive,
             courses: group.Courses.map((course) => ({
               id: course.Id,
-              code: buildCanonicalCourseCode(course.SubjectCode, course.Number),
+              code: canonicalCourseCode(course.SubjectCode, course.Number),
               number: course.Number,
               title: course.Title,
               courseName: course.CourseName,

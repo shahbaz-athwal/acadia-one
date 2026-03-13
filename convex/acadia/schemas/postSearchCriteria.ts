@@ -1,8 +1,17 @@
 import { z } from "zod";
-import {
-  buildCanonicalCourseCode,
-  createCourseCodeRegex,
-} from "../../../shared/courseCode";
+
+const SUBJECT_PATTERN = "[A-Za-z]{2,6}";
+const SEPARATED_NUMBER_PATTERN = "[A-Za-z0-9]{2,6}";
+const COMPACT_NUMBER_PATTERN = "[0-9]{3,4}[A-Za-z]?";
+const COURSE_CODE_REGEX_SOURCE = `\\b(${SUBJECT_PATTERN})(?:\\s*(?:-\\s*|\\s+)(${SEPARATED_NUMBER_PATTERN})|(${COMPACT_NUMBER_PATTERN}))\\b`;
+
+function createCourseCodeRegex(flags = "gi"): RegExp {
+  return new RegExp(COURSE_CODE_REGEX_SOURCE, flags);
+}
+
+function canonicalCourseCode(subject: string, number: string): string {
+  return `${subject.trim().toUpperCase()}-${number.trim().toUpperCase()}`;
+}
 
 /**
  * Matches common course-code formats inside free-form requisite text.
@@ -46,7 +55,7 @@ function extractCourseCodesAndAnnotate(text: string) {
     if (subject == null || number == null || !/\d/.test(number)) {
       continue;
     }
-    codes.push(buildCanonicalCourseCode(subject, number));
+    codes.push(canonicalCourseCode(subject, number));
   }
 
   const regexForAnnotate = createCourseCodeRegex();
@@ -63,7 +72,7 @@ function extractCourseCodesAndAnnotate(text: string) {
       if (subject == null || number == null || !/\d/.test(number)) {
         return fullMatch;
       }
-      const canonicalCode = buildCanonicalCourseCode(subject, number);
+      const canonicalCode = canonicalCourseCode(subject, number);
       return `[[course:${canonicalCode}|${canonicalCode}]]`;
     }
   );
@@ -127,7 +136,7 @@ export const PostSearchCriteriaFilteredResponseSchema = z
     courses: data.CourseFullModels.map((course) => ({
       matchingSectionIds: course.MatchingSectionIds,
       id: course.Id,
-      code: buildCanonicalCourseCode(course.SubjectCode, course.Number),
+      code: canonicalCourseCode(course.SubjectCode, course.Number),
       subjectCode: course.SubjectCode,
       number: course.Number,
       credits: course.MinimumCredits,

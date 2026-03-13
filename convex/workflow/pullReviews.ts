@@ -1,10 +1,10 @@
 "use node";
 import { v } from "convex/values";
-import { parseCanonicalCourseCode } from "../../shared/courseCode";
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { ActionCtx } from "../_generated/server";
 import { internalAction } from "../_generated/server";
+import { parseCanonicalCourseCode } from "../lib/courseCode";
 import { scraper as rmpScraper } from "../lib/rmp";
 
 const toOptional = <T>(value: T | null | undefined): T | undefined =>
