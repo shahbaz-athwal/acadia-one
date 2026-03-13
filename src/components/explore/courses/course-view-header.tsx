@@ -7,7 +7,6 @@ import { CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
-import { formatCourseCode } from "@/lib/utils";
 import { userDataQuery } from "@/queries/explore";
 import type { Doc } from "../../../../convex/_generated/dataModel";
 
@@ -142,9 +141,7 @@ export function CourseViewHeader() {
             size="sm"
             variant="info"
           >
-            <span className="truncate">
-              {formatCourseCode(selectedCourseCode)}
-            </span>
+            <span className="truncate">{selectedCourseCode}</span>
             <XIcon className="size-3" />
           </Badge>
         ) : null}

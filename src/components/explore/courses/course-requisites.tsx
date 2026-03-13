@@ -11,12 +11,11 @@ import {
   PreviewCardPopup,
   PreviewCardTrigger,
 } from "@/components/ui/preview-card";
-import { cn, formatCourseCode } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const COURSE_TOKEN_REGEX = /\[\[course:([^|\]]+)\|([^\]]+)\]\]/g;
 
 interface LinkedRequisiteCourse {
-  normalizedCode: string;
   code: string;
   title: string | null;
 }
@@ -108,7 +107,7 @@ function RequisiteCoursePreview(props: {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="font-semibold text-sm leading-tight">
-              {formatCourseCode(props.course.code)}
+              {props.course.code}
             </div>
             {props.course.title ? (
               <div className="mt-1 text-muted-foreground text-xs leading-snug">
@@ -139,10 +138,7 @@ export function CourseRequisites({
       requisites.map(
         (requisite) =>
           new Map(
-            requisite.linkedCourses.map((course) => [
-              course.normalizedCode,
-              course,
-            ])
+            requisite.linkedCourses.map((course) => [course.code, course])
           )
       ),
     [requisites]
@@ -175,7 +171,6 @@ export function CourseRequisites({
                 }
 
                 const linkedCourse = lookup.get(segment.code) ?? {
-                  normalizedCode: segment.code,
                   code: segment.code,
                   title: null,
                 };

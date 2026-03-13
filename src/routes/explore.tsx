@@ -45,10 +45,6 @@ function parseNumberArray(value: unknown): number[] {
     .filter((num) => Number.isFinite(num));
 }
 
-function normalizeCourseCode(value: string): string {
-  return value.trim().replace(/\s+/g, "").toUpperCase();
-}
-
 function normalizeProgressSelection(search: {
   term: string[];
   dept: string[];
@@ -64,7 +60,7 @@ function normalizeProgressSelection(search: {
   q: string;
   page: number;
 }) {
-  const cc = normalizeCourseCode(search.cc);
+  const cc = search.cc.trim().toUpperCase();
   const rsg = search.rsg.filter(Boolean).slice(0, 1);
 
   if (cc) {

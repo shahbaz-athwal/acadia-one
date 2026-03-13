@@ -33,8 +33,6 @@ const KNOWN_BUILDING_ABBREVIATIONS = new Map<string, string>([
   ["kc irving centre", "KCIC"],
 ]);
 
-const COURSE_CODE_ALPHA_NUMERIC_REGEX = /^([A-Za-z]+)-?(\d+[A-Za-z0-9]*)$/;
-
 function normalizeTermName(termName: string): string {
   if (TERM_CONTINUOUS_REGEX.test(termName)) {
     const academicYear = termName.match(TERM_ACADEMIC_YEAR_REGEX)?.[1];
@@ -146,13 +144,4 @@ export function getBuildingAbbreviation(buildingName: string): string {
   const words = normalized.match(WORD_REGEX) ?? [];
   const fallback = words.map((word) => word.charAt(0).toUpperCase()).join("");
   return fallback || "-";
-}
-
-export function formatCourseCode(code: string): string {
-  const normalizedCode = code.trim().replace(WHITESPACE_REGEX, "");
-  const splitCode = normalizedCode.match(COURSE_CODE_ALPHA_NUMERIC_REGEX);
-  if (!splitCode) {
-    return code;
-  }
-  return `${splitCode[1]}-${splitCode[2]}`;
 }

@@ -7,7 +7,7 @@ import { CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
 import { useScheduleItems } from "@/hooks/use-schedule-items";
 import { useScheduleView } from "@/hooks/use-schedule-view";
-import { formatCourseCode, formatTermLabelWithoutYear } from "@/lib/utils";
+import { formatTermLabelWithoutYear } from "@/lib/utils";
 
 const ACADEMIC_SEARCH_URL =
   "https://collss.acadiau.ca/student/Student/Courses/Search";
@@ -21,7 +21,7 @@ function buildExportUrl(items: ReturnType<typeof useScheduleItems>["items"]) {
     ...new Set(
       items
         .map((item) => {
-          const courseCode = formatCourseCode(item.course.code);
+          const courseCode = item.course.code.trim();
           const sectionCode = item.section.sectionCode.trim();
           if (!(courseCode && sectionCode)) {
             return null;

@@ -6,12 +6,7 @@ import {
 } from "@/components/ui/preview-card";
 import type { ScheduleItem } from "@/hooks/use-schedule-items";
 import { getBlockPosition } from "@/lib/schedule-time";
-import {
-  cn,
-  formatCourseCode,
-  formatDays,
-  stripProfessorSalutations,
-} from "@/lib/utils";
+import { cn, formatDays, stripProfessorSalutations } from "@/lib/utils";
 
 interface ScheduleBlockProps {
   item: ScheduleItem;
@@ -73,7 +68,7 @@ export function ScheduleBlock({
                 className="truncate font-semibold leading-tight"
                 style={{ color: item.color }}
               >
-                {formatCourseCode(item.course.code)}
+                {item.course.code}
               </span>
               <span className="truncate text-[11px] leading-tight opacity-80">
                 {item.section.sectionCode}
@@ -86,7 +81,7 @@ export function ScheduleBlock({
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="truncate font-semibold text-sm leading-tight">
-              {formatCourseCode(item.course.code)}
+              {item.course.code}
             </div>
             <div className="truncate text-muted-foreground text-xs leading-tight">
               {item.course.title}

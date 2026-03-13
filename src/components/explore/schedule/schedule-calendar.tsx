@@ -16,7 +16,7 @@ import {
   TIME_GUTTER_WIDTH,
   WEEKDAYS,
 } from "@/lib/schedule-time";
-import { cn, formatCourseCode } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { api } from "../../../../convex/_generated/api";
 import { ScheduleBlock } from "./schedule-block";
 
@@ -290,7 +290,7 @@ function PreviewBlock({
           className="truncate font-semibold leading-tight"
           style={{ color: preview.color }}
         >
-          {formatCourseCode(preview.course.code)}
+          {preview.course.code}
         </span>
         <span className="truncate text-[11px] leading-tight opacity-80">
           {preview.section.sectionCode}

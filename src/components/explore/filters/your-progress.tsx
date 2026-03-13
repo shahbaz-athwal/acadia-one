@@ -22,10 +22,9 @@ import {
 import { TruncatedTooltipText } from "@/components/ui/truncated-tooltip-text";
 import { useAuth } from "@/hooks/use-auth";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
-import { cn, formatCourseCode } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { progressSearchCoursesQuery, userDataQuery } from "@/queries/explore";
 import type { Doc } from "../../../../convex/_generated/dataModel";
-import { normalizeCourseCode } from "../../../../shared/normalizeCourseCode";
 
 type TreeLevel = "requirement" | "subrequirement" | "group" | "course";
 
@@ -163,7 +162,7 @@ function mapCourseNode(
 ): ProgressTreeNode {
   const label =
     joinNonEmpty([course.code, course.title], " - ") || `Course ${course.id}`;
-  const courseCode = normalizeCourseCode(course.code);
+  const courseCode = course.code;
   return {
     id: buildNodeId("course", [
       requirementId,
@@ -186,10 +185,9 @@ function mapSearchCourseNode(
   course: SearchGroupCourseData,
   courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
 ): ProgressTreeNode {
-  const courseCode = normalizeCourseCode(course.code);
+  const courseCode = course.code;
   const label =
-    joinNonEmpty([formatCourseCode(courseCode), course.title], " - ") ||
-    `Course ${courseCode}`;
+    joinNonEmpty([courseCode, course.title], " - ") || `Course ${courseCode}`;
   return {
     id: buildNodeId("course", [
       requirementId,
@@ -219,7 +217,7 @@ function mapGroupNode(
     `Group ${group.id}`;
   const rsgKey = `${requirementCode}:${subrequirementId}:${group.id}`;
   const searchGroupCourses = (searchGroupCoursesByKey.get(rsgKey) ?? []).filter(
-    (course) => courseStatusByCode.has(normalizeCourseCode(course.code))
+    (course) => courseStatusByCode.has(course.code)
   );
 
   return {
@@ -565,13 +563,7 @@ function YourProgress() {
   );
   const programEvaluation = userData?.programEvaluation ?? null;
   const courseStatusByCode = useMemo(
-    () =>
-      new Map(
-        Array.from(
-          buildCourseStatusByCode(userData),
-          ([courseCode, status]) => [normalizeCourseCode(courseCode), status]
-        )
-      ),
+    () => buildCourseStatusByCode(userData),
     [userData]
   );
   const searchGroupCoursesByKey = useMemo(

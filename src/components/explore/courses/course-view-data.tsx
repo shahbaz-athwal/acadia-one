@@ -46,7 +46,6 @@ import { useScheduleItems } from "@/hooks/use-schedule-items";
 import { useSchedulePreview } from "@/hooks/use-schedule-preview";
 import {
   cn,
-  formatCourseCode,
   formatDays,
   formatTermLabel,
   getBuildingAbbreviation,
@@ -57,7 +56,6 @@ import {
 import { filterOptionsQuery, userDataQuery } from "@/queries/explore";
 import { api } from "../../../../convex/_generated/api";
 import { SCHEDULE_COLORS } from "../../../../convex/lib/constants";
-import { normalizeCourseCode } from "../../../../shared/normalizeCourseCode";
 
 function LocationDisplay(props: {
   isOnline: boolean;
@@ -295,9 +293,7 @@ export function CourseViewData() {
     <TooltipProvider delay={100}>
       <div className="space-y-2 p-2">
         {courses.map((course) => {
-          const courseStatus = courseStatusByCode.get(
-            normalizeCourseCode(course.code)
-          );
+          const courseStatus = courseStatusByCode.get(course.code);
           const courseStatusMeta = courseStatus
             ? COURSE_STATUS_META[courseStatus]
             : null;
@@ -309,7 +305,7 @@ export function CourseViewData() {
                 <div className="flex items-center justify-between font-medium">
                   <div className="flex min-w-0 items-center gap-2">
                     <span className="truncate">
-                      {formatCourseCode(course.code)} {course.title}
+                      {course.code} {course.title}
                     </span>
                     {courseStatusMeta && CourseStatusIcon ? (
                       <Badge

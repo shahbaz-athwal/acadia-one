@@ -21,10 +21,6 @@ function normalizeMinute(value: number): number {
   );
 }
 
-function normalizeCourseCode(value: string): string {
-  return value.trim().replace(/\s+/g, "").toUpperCase();
-}
-
 export function useExploreFilters() {
   const search = routeApi.useSearch({
     select: (state) => ({
@@ -109,10 +105,9 @@ export function useExploreFilters() {
   };
 
   const setSelectedCourseCode = (courseCode: string) => {
-    const normalizedCourseCode = normalizeCourseCode(courseCode);
     navigateWithSearch((prev) => ({
       ...prev,
-      cc: normalizedCourseCode,
+      cc: courseCode.trim().toUpperCase(),
       rsg: [],
       page: 1,
     }));
