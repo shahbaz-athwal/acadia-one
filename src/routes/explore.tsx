@@ -3,6 +3,7 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { useDefaultLayout } from "react-resizable-panels";
 import { z } from "zod";
 import { CourseView } from "@/components/explore/courses/course-view";
+import { ExploreDetailSheetHost } from "@/components/explore/details/explore-detail-sheet-host";
 import { FilterPanel } from "@/components/explore/filters/filter-panel";
 import { ScheduleView } from "@/components/explore/schedule/schedule-view";
 import {
@@ -12,14 +13,17 @@ import {
 } from "@/components/ui/resizable";
 import { getOrCreateSessionId, getStoredTokenHash } from "@/hooks/use-auth";
 import { SchedulePreviewProvider } from "@/hooks/use-schedule-preview";
+import { parseDetailTarget } from "@/lib/explore-detail-sheet";
 import {
   TIME_RANGE_MAX_MINUTES,
   TIME_RANGE_MINUTES,
 } from "@/lib/explore-filter-constants";
 import {
   buildConvexFilters,
+  courseSheetQuery,
   coursesQuery,
   filterOptionsQuery,
+  professorSheetQuery,
   progressSearchCoursesQuery,
   scheduleQuery,
   userDataQuery,
@@ -59,6 +63,7 @@ function normalizeProgressSelection(search: {
   st: string;
   q: string;
   page: number;
+  d: string;
 }) {
   const cc = search.cc.trim().toUpperCase();
   const rsg = search.rsg.filter(Boolean).slice(0, 1);
@@ -95,6 +100,7 @@ const exploreSearchSchema = z
     st: z.string().catch(""),
     q: z.string().catch(""),
     page: z.coerce.number().int().positive().catch(1),
+    d: z.string().catch(""),
   })
   .transform(normalizeProgressSelection);
 
@@ -114,6 +120,7 @@ export const SEARCH_DEFAULTS: ExploreSearchParams = {
   st: "",
   q: "",
   page: 1,
+  d: "",
 };
 
 export function withSearchDefaults(
@@ -140,13 +147,15 @@ export const Route = createFileRoute("/explore")({
     ft: search.ft,
     q: search.q,
     page: search.page,
+    d: search.d,
   }),
   loader: async ({ context, deps }) => {
     const sessionId = getOrCreateSessionId();
     const tokenHash = getStoredTokenHash() ?? "";
     const filters = buildConvexFilters(deps);
+    const detailTarget = parseDetailTarget(deps.d);
 
-    await Promise.all([
+    const preloaders: Promise<unknown>[] = [
       context.queryClient.ensureQueryData(filterOptionsQuery()),
       context.queryClient.ensureQueryData(scheduleQuery(sessionId)),
       context.queryClient.ensureQueryData(
@@ -164,7 +173,25 @@ export const Route = createFileRoute("/explore")({
       context.queryClient.ensureQueryData(
         progressSearchCoursesQuery(sessionId, tokenHash)
       ),
-    ]);
+    ];
+
+    if (detailTarget?.kind === "course") {
+      preloaders.push(
+        context.queryClient.ensureQueryData(
+          courseSheetQuery(detailTarget.courseCode)
+        )
+      );
+    }
+
+    if (detailTarget?.kind === "professor") {
+      preloaders.push(
+        context.queryClient.ensureQueryData(
+          professorSheetQuery(detailTarget.professorExternalId)
+        )
+      );
+    }
+
+    await Promise.all(preloaders);
   },
   component: RouteComponent,
 });
@@ -185,26 +212,29 @@ function RouteComponent() {
   });
   return (
     <SchedulePreviewProvider>
-      <main className="h-dvh overflow-hidden overscroll-none overscroll-y-none">
-        <ResizablePanelGroup
-          className="m-0 h-full min-h-0 p-0"
-          defaultLayout={defaultLayout}
-          onLayoutChanged={onLayoutChanged}
-          orientation="horizontal"
-        >
-          <ResizablePanel {...PANEL_CONFIG.filters}>
-            <FilterPanel />
-          </ResizablePanel>
-          <ResizableHandle className={pillClasses} />
-          <ResizablePanel {...PANEL_CONFIG.courses}>
-            <CourseView />
-          </ResizablePanel>
-          <ResizableHandle className={pillClasses} />
-          <ResizablePanel {...PANEL_CONFIG.schedule}>
-            <ScheduleView />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </main>
+      <div className="contents">
+        <main className="h-dvh overflow-hidden overscroll-none overscroll-y-none">
+          <ResizablePanelGroup
+            className="m-0 h-full min-h-0 p-0"
+            defaultLayout={defaultLayout}
+            onLayoutChanged={onLayoutChanged}
+            orientation="horizontal"
+          >
+            <ResizablePanel {...PANEL_CONFIG.filters}>
+              <FilterPanel />
+            </ResizablePanel>
+            <ResizableHandle className={pillClasses} />
+            <ResizablePanel {...PANEL_CONFIG.courses}>
+              <CourseView />
+            </ResizablePanel>
+            <ResizableHandle className={pillClasses} />
+            <ResizablePanel {...PANEL_CONFIG.schedule}>
+              <ScheduleView />
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </main>
+        <ExploreDetailSheetHost />
+      </div>
     </SchedulePreviewProvider>
   );
 }

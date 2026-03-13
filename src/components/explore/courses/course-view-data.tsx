@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { useExploreCourses } from "@/hooks/use-explore-courses";
+import { useExploreDetailSheet } from "@/hooks/use-explore-detail-sheet";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
 import { useScheduleItems } from "@/hooks/use-schedule-items";
 import { useSchedulePreview } from "@/hooks/use-schedule-preview";
@@ -100,6 +101,7 @@ interface PendingSection {
     buildingName: string;
     roomNumber: string;
     isOnline: boolean;
+    professorExternalId: string | undefined;
     professorName: string;
   };
   course: {
@@ -116,6 +118,8 @@ function formatAverageScore(value: number | null | undefined) {
 export function CourseViewData() {
   const { isAuthenticated, sessionId, tokenHash } = useAuth();
   const { courses } = useExploreCourses();
+  const { openCourse, openProfessor, prefetchCourse, prefetchProfessor } =
+    useExploreDetailSheet();
   const { selectedCourseCode } = useExploreFilters();
   const {
     data: { terms },
@@ -185,6 +189,7 @@ export function CourseViewData() {
       buildingName: section.buildingName,
       roomNumber: section.roomNumber,
       isOnline: section.isOnline,
+      professorExternalId: section.professorExternalId,
       professorName: professorDisplayName,
     },
     course: {
@@ -304,9 +309,15 @@ export function CourseViewData() {
               <div className="px-3 py-2 text-xs">
                 <div className="flex items-center justify-between font-medium">
                   <div className="flex min-w-0 items-center gap-2">
-                    <span className="truncate">
+                    <button
+                      className="truncate text-left transition-colors hover:text-foreground hover:underline"
+                      onClick={() => openCourse(course.code)}
+                      onFocus={() => prefetchCourse(course.code)}
+                      onMouseEnter={() => prefetchCourse(course.code)}
+                      type="button"
+                    >
                       {course.code} {course.title}
-                    </span>
+                    </button>
                     {courseStatusMeta && CourseStatusIcon ? (
                       <Badge
                         className="shrink-0"
@@ -373,6 +384,7 @@ export function CourseViewData() {
                         s.termCode,
                         termNameByCode
                       );
+                      const professorExternalId = s.professorExternalId;
                       const professorDisplayName = stripProfessorSalutations(
                         s.professorName
                       );
@@ -458,33 +470,77 @@ export function CourseViewData() {
                           </TableCell>
 
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Avatar className="size-7">
-                                <AvatarImage
-                                  alt={professorDisplayName}
-                                  src={s.professorImageUrl}
-                                />
-                                <AvatarFallback>
-                                  {getInitials(professorDisplayName)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="min-w-0">
-                                <div className="truncate">
-                                  {professorDisplayName}
-                                </div>
-                                {typeof s.professorAvgQuality === "number" && (
-                                  <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
-                                    <StarIcon
-                                      className="size-3"
-                                      fill="currentColor"
-                                    />
-                                    <span>
-                                      {s.professorAvgQuality.toFixed(1)}
-                                    </span>
+                            {professorExternalId ? (
+                              <button
+                                className="flex items-center gap-2 text-left transition-colors hover:text-foreground"
+                                onClick={() =>
+                                  openProfessor(professorExternalId)
+                                }
+                                onFocus={() =>
+                                  prefetchProfessor(professorExternalId)
+                                }
+                                onMouseEnter={() =>
+                                  prefetchProfessor(professorExternalId)
+                                }
+                                type="button"
+                              >
+                                <Avatar className="size-7">
+                                  <AvatarImage
+                                    alt={professorDisplayName}
+                                    src={s.professorImageUrl}
+                                  />
+                                  <AvatarFallback>
+                                    {getInitials(professorDisplayName)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0">
+                                  <div className="truncate hover:underline">
+                                    {professorDisplayName}
                                   </div>
-                                )}
+                                  {typeof s.professorAvgQuality ===
+                                    "number" && (
+                                    <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
+                                      <StarIcon
+                                        className="size-3"
+                                        fill="currentColor"
+                                      />
+                                      <span>
+                                        {s.professorAvgQuality.toFixed(1)}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </button>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <Avatar className="size-7">
+                                  <AvatarImage
+                                    alt={professorDisplayName}
+                                    src={s.professorImageUrl}
+                                  />
+                                  <AvatarFallback>
+                                    {getInitials(professorDisplayName)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0">
+                                  <div className="truncate">
+                                    {professorDisplayName}
+                                  </div>
+                                  {typeof s.professorAvgQuality ===
+                                    "number" && (
+                                    <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
+                                      <StarIcon
+                                        className="size-3"
+                                        fill="currentColor"
+                                      />
+                                      <span>
+                                        {s.professorAvgQuality.toFixed(1)}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </TableCell>
 
                           <TableCell className="text-right">

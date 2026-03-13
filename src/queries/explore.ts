@@ -62,6 +62,12 @@ export const coursesQuery = (params: {
     pageSize: PAGE_SIZE,
   });
 
+export const courseSheetQuery = (code: string) =>
+  convexQuery(api.courses.getSheetByCode, { code });
+
+export const professorSheetQuery = (externalId: string) =>
+  convexQuery(api.professors.getSheetByExternalId, { externalId });
+
 export const validateSessionQuery = (sessionId: string, tokenHash: string) =>
   convexQuery(api.sessions.validateSession, { sessionId, tokenHash });
 

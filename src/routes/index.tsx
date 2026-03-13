@@ -18,6 +18,7 @@ export const Route = createFileRoute("/")({
         st: "",
         q: "",
         page: 1,
+        d: "",
       },
     });
   },

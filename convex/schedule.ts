@@ -120,6 +120,7 @@ export const get = query({
             buildingName: section.buildingName,
             roomNumber: section.roomNumber,
             isOnline: section.isOnline,
+            professorExternalId: professor?.externalId,
             professorName:
               professor?.name ??
               (section.instructorTBD ? "TBD" : "Unknown Instructor"),

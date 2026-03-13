@@ -1,6 +1,7 @@
 import { useMutation } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useExploreDetailSheet } from "@/hooks/use-explore-detail-sheet";
 import {
   type ScheduleItem,
   useScheduleItems,
@@ -43,6 +44,8 @@ function groupByDay(items: ScheduleItem[]): Map<number, ScheduleItem[]> {
 
 export function ScheduleCalendar() {
   const { items, termCode, sessionId } = useScheduleItems();
+  const { openCourse, openProfessor, prefetchCourse, prefetchProfessor } =
+    useExploreDetailSheet();
   const { previewSection } = useSchedulePreview();
   const timeSlots = useMemo(() => getTimeSlots(), []);
   const gridLineSlots = useMemo(() => timeSlots.slice(0, -1), [timeSlots]);
@@ -238,6 +241,10 @@ export function ScheduleCalendar() {
                       dimmed={isPreviewingCurrentTerm}
                       item={item}
                       key={item.scheduleItemId}
+                      onOpenCourse={openCourse}
+                      onOpenProfessor={openProfessor}
+                      onPrefetchCourse={prefetchCourse}
+                      onPrefetchProfessor={prefetchProfessor}
                       onRemove={handleRemoveSection}
                       slotHeight={slotHeight}
                     />

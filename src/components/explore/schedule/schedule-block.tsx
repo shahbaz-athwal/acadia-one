@@ -13,6 +13,10 @@ interface ScheduleBlockProps {
   dimmed?: boolean;
   className?: string;
   slotHeight?: number;
+  onOpenCourse?: (courseCode: string) => void;
+  onOpenProfessor?: (professorExternalId: string) => void;
+  onPrefetchCourse?: (courseCode: string) => void;
+  onPrefetchProfessor?: (professorExternalId: string) => void;
   onRemove?: (
     scheduleItemId: ScheduleItem["scheduleItemId"]
   ) => void | Promise<void>;
@@ -34,6 +38,10 @@ export function ScheduleBlock({
   dimmed,
   className,
   slotHeight,
+  onOpenCourse,
+  onOpenProfessor,
+  onPrefetchCourse,
+  onPrefetchProfessor,
   onRemove,
 }: ScheduleBlockProps) {
   const { top, height } = getBlockPosition(
@@ -42,6 +50,9 @@ export function ScheduleBlock({
     slotHeight
   );
   const timeLabel = `${item.section.classStartTime} - ${item.section.classEndTime}`;
+  const professorName =
+    stripProfessorSalutations(item.section.professorName) || "TBA";
+  const professorExternalId = item.section.professorExternalId;
 
   return (
     <PreviewCard>
@@ -79,14 +90,20 @@ export function ScheduleBlock({
       />
       <PreviewCardPopup className="w-80 flex-col gap-3 text-wrap p-3 text-left">
         <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <div className="truncate font-semibold text-sm leading-tight">
+          <button
+            className="min-w-0 text-left"
+            onClick={() => onOpenCourse?.(item.course.code)}
+            onFocus={() => onPrefetchCourse?.(item.course.code)}
+            onMouseEnter={() => onPrefetchCourse?.(item.course.code)}
+            type="button"
+          >
+            <div className="truncate font-semibold text-sm leading-tight hover:underline">
               {item.course.code}
             </div>
             <div className="truncate text-muted-foreground text-xs leading-tight">
               {item.course.title}
             </div>
-          </div>
+          </button>
           <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 font-medium text-[11px] text-secondary-foreground">
             {item.section.sectionCode}
           </span>
@@ -102,7 +119,19 @@ export function ScheduleBlock({
           </dd>
           <dt className="font-medium">Professor</dt>
           <dd className="text-muted-foreground leading-snug">
-            {stripProfessorSalutations(item.section.professorName) || "TBA"}
+            {professorExternalId ? (
+              <button
+                className="transition-colors hover:text-foreground hover:underline"
+                onClick={() => onOpenProfessor?.(professorExternalId)}
+                onFocus={() => onPrefetchProfessor?.(professorExternalId)}
+                onMouseEnter={() => onPrefetchProfessor?.(professorExternalId)}
+                type="button"
+              >
+                {professorName}
+              </button>
+            ) : (
+              professorName
+            )}
           </dd>
         </dl>
         <Button

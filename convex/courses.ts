@@ -593,6 +593,7 @@ async function enrichWithSections(
             professorName:
               professor?.name ??
               (section.instructorTBD ? "TBD" : "Unknown Instructor"),
+            professorExternalId: professor?.externalId,
             professorImageUrl: professor?.imageUrl,
             professorAvgQuality: professor?.avgQuality ?? null,
             classStartTime: section.classStartTime,
@@ -662,6 +663,48 @@ export const listForExplore = query({
     return {
       page,
       totalCount,
+    };
+  },
+});
+
+export const getSheetByCode = query({
+  args: {
+    code: v.string(),
+  },
+  returns: v.union(
+    v.object({
+      code: v.string(),
+      title: v.string(),
+      description: v.string(),
+      credits: v.number(),
+      isLab: v.boolean(),
+      ratingCount: v.number(),
+      avgDifficulty: v.union(v.number(), v.null()),
+      avgQuality: v.union(v.number(), v.null()),
+    }),
+    v.null()
+  ),
+  handler: async (ctx, args) => {
+    const course = await getOneFrom(
+      ctx.db,
+      "courses",
+      "by_code",
+      args.code.trim().toUpperCase()
+    );
+
+    if (!course) {
+      return null;
+    }
+
+    return {
+      code: course.code,
+      title: course.title,
+      description: course.description,
+      credits: course.credits,
+      isLab: course.isLab,
+      ratingCount: course.ratingCount,
+      avgDifficulty: course.avgDifficulty,
+      avgQuality: course.avgQuality,
     };
   },
 });
