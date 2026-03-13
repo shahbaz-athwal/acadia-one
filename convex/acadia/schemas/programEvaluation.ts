@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { buildCanonicalCourseCode } from "../../../shared/courseCode";
 
 const ProgramEvaluationCourseSchema = z.object({
   Id: z.string(),
@@ -65,7 +66,7 @@ export const ProgramEvaluationFilteredResponseSchema = z
             directive: group.Directive,
             courses: group.Courses.map((course) => ({
               id: course.Id,
-              code: course.SubjectCode + course.Number,
+              code: buildCanonicalCourseCode(course.SubjectCode, course.Number),
               number: course.Number,
               title: course.Title,
               courseName: course.CourseName,

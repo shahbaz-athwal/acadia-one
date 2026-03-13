@@ -1,5 +1,6 @@
 "use node";
 import { v } from "convex/values";
+import { parseCanonicalCourseCode } from "../../shared/courseCode";
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import type { ActionCtx } from "../_generated/server";
@@ -9,12 +10,8 @@ import { scraper as rmpScraper } from "../lib/rmp";
 const toOptional = <T>(value: T | null | undefined): T | undefined =>
   value ?? undefined;
 
-const normalizeCourseCode = (courseCode: string | null | undefined) => {
-  if (!courseCode) {
-    return undefined;
-  }
-  return courseCode.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-};
+export const normalizeRmpCourseCode = (courseCode: string | null | undefined) =>
+  parseCanonicalCourseCode(courseCode) ?? undefined;
 
 interface PullRmpReviewsArgs {
   professorId: Id<"professors">;
@@ -35,7 +32,7 @@ async function pullRmpReviewsInternal(
   const courseCodes = [
     ...new Set(
       ratings
-        .map((rating) => normalizeCourseCode(rating.courseCode))
+        .map((rating) => normalizeRmpCourseCode(rating.courseCode))
         .filter((code): code is string => !!code)
     ),
   ];
@@ -61,7 +58,7 @@ async function pullRmpReviewsInternal(
   const courseByCode = new Map(courses.map((course) => [course.code, course]));
   const uniqueCourses = new Map<Id<"courses">, (typeof courses)[number]>();
   for (const rating of ratings) {
-    const courseCode = normalizeCourseCode(rating.courseCode);
+    const courseCode = normalizeRmpCourseCode(rating.courseCode);
     if (!courseCode) {
       continue;
     }
@@ -83,7 +80,7 @@ async function pullRmpReviewsInternal(
   }
 
   const ratingsToCreate = ratings.flatMap((rating) => {
-    const courseCode = normalizeCourseCode(rating.courseCode);
+    const courseCode = normalizeRmpCourseCode(rating.courseCode);
     if (!courseCode) {
       return [];
     }

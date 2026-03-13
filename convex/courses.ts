@@ -34,10 +34,6 @@ interface CourseWithSections {
   sections: SectionDoc[];
 }
 
-function normalizeCourseCode(courseCode: string): string {
-  return courseCode.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-}
-
 function combineRequisiteText(base: string, extension?: string): string {
   const baseText = base.trim();
   const extensionText = extension?.trim() ?? "";
@@ -109,9 +105,7 @@ async function resolveFilters(
   }
 
   return {
-    courseCode: args.courseCode?.trim()
-      ? normalizeCourseCode(args.courseCode)
-      : "",
+    courseCode: args.courseCode?.trim().toUpperCase() ?? "",
     rsgCourseCodes: [...rsgCourseCodeSet],
     searchQuery: args.searchQuery?.trim() ?? "",
     departmentPrefixes: raw?.departmentPrefixes ?? [],
@@ -510,7 +504,7 @@ async function enrichWithSections(
   for (const { course } of courses) {
     for (const requisite of course.requisites ?? []) {
       for (const code of requisite.codes) {
-        requisiteCodes.add(normalizeCourseCode(code));
+        requisiteCodes.add(code);
       }
     }
   }
@@ -563,11 +557,9 @@ async function enrichWithSections(
           text,
           annotatedText,
           linkedCourses: requisite.codes.map((code) => {
-            const normalizedCode = normalizeCourseCode(code);
-            const linkedCourse = requisiteCourseByCode.get(normalizedCode);
+            const linkedCourse = requisiteCourseByCode.get(code);
 
             return {
-              normalizedCode,
               code: linkedCourse?.code ?? code,
               title: linkedCourse?.title ?? null,
               description: linkedCourse?.description ?? null,

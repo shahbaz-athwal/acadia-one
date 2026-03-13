@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseCanonicalCourseCode } from "../../../shared/courseCode";
 
 const StudentGradeSchema = z.object({
   FormattedCourseNameDisplay: z.array(z.string()),
@@ -34,7 +35,9 @@ export const StudentGradesFilteredResponseSchema = z
       endDate: term.EndDate,
       gpa: term.CompletedGpa,
       courses: term.StudentGrades.map((grade) => ({
-        courseCode: grade.CourseNameSort.split("-").slice(0, 2).join(""),
+        courseCode:
+          parseCanonicalCourseCode(grade.CourseNameSort) ??
+          grade.CourseNameSort,
         title: grade.Title,
         credits: grade.CreditsCeus,
         startDate: grade.StartDate,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { normalizeCourseCode } from "../../../shared/normalizeCourseCode";
+import { parseCanonicalCourseCode } from "../../../shared/courseCode";
 
 export const CoursePlanningStatus = {
   completed: "completed",
@@ -90,7 +90,7 @@ export const DegreePlanPlanningStatusesFilteredResponseSchema = z
           continue;
         }
 
-        const courseCode = normalizeCourseCode(course.CourseName);
+        const courseCode = parseCanonicalCourseCode(course.CourseName);
         if (!courseCode) {
           continue;
         }

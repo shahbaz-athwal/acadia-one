@@ -5,10 +5,6 @@ import { literals } from "convex-helpers/validators";
 import { mutation, query } from "./_generated/server";
 import { vv } from "./schema";
 
-function normalizeCourseCode(courseCode: string): string {
-  return courseCode.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-}
-
 export const validateSession = query({
   args: {
     sessionId: v.string(),
@@ -102,9 +98,7 @@ export const getProgressSearchCourses = query({
     }
 
     const courseStatusCodeSet = new Set(
-      Object.keys(userData.coursePlanningStatuses ?? {}).map(
-        normalizeCourseCode
-      )
+      Object.keys(userData.coursePlanningStatuses ?? {})
     );
     if (courseStatusCodeSet.size === 0) {
       return [];
@@ -143,17 +137,16 @@ export const getProgressSearchCourses = query({
       const codesForKey: string[] = [];
       const seenCodesForKey = new Set<string>();
       for (const courseCode of entry.courseCodes) {
-        const normalizedCourseCode = normalizeCourseCode(courseCode);
         if (
-          !courseStatusCodeSet.has(normalizedCourseCode) ||
-          seenCodesForKey.has(normalizedCourseCode)
+          !courseStatusCodeSet.has(courseCode) ||
+          seenCodesForKey.has(courseCode)
         ) {
           continue;
         }
 
-        seenCodesForKey.add(normalizedCourseCode);
-        matchedCourseCodes.add(normalizedCourseCode);
-        codesForKey.push(normalizedCourseCode);
+        seenCodesForKey.add(courseCode);
+        matchedCourseCodes.add(courseCode);
+        codesForKey.push(courseCode);
       }
 
       if (codesForKey.length > 0) {

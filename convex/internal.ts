@@ -5,8 +5,31 @@ import type { Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery } from "./_generated/server";
 import { vv } from "./schema";
 
-const IS_LAB_COURSE_CODE_RE = /\d+L$/;
+const IS_LAB_COURSE_CODE_RE = /\d+L$/i;
 const ACADEMIC_LEVEL_RE = /(\d{3,4})[A-Z]?$/;
+
+function buildCourseSearchText(course: {
+  code: string;
+  title: string;
+  description?: string;
+}) {
+  return [course.code, course.title, course.description ?? ""]
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .join(" ");
+}
+
+function isLabCourseCode(courseCode: string) {
+  return IS_LAB_COURSE_CODE_RE.test(courseCode.trim().toUpperCase());
+}
+
+function getAcademicLevel(courseCode: string) {
+  const normalizedCode = courseCode.trim().toUpperCase();
+  const match = normalizedCode.match(ACADEMIC_LEVEL_RE);
+  const levelDigit = match?.[1]?.[0];
+  const parsed = levelDigit ? Number.parseInt(levelDigit, 10) : Number.NaN;
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
 
 export const getAcadiaSession = internalQuery({
   args: { sessionId: v.string() },
@@ -299,24 +322,6 @@ export const existsProfessors = internalMutation({
   },
 });
 
-function buildSearchText(course: { code: string; title: string }) {
-  const splitCode =
-    course.code.match(/([A-Z]+|\d+)/g)?.join("-") ?? course.code;
-  return `${course.code} ${course.title} ${splitCode}`;
-}
-
-function isLabCourseCode(courseCode: string) {
-  return IS_LAB_COURSE_CODE_RE.test(courseCode.trim().toUpperCase());
-}
-
-function getAcademicLevel(courseCode: string) {
-  const normalizedCode = courseCode.trim().toUpperCase();
-  const match = normalizedCode.match(ACADEMIC_LEVEL_RE);
-  const levelDigit = match?.[1]?.[0];
-  const parsed = levelDigit ? Number.parseInt(levelDigit, 10) : Number.NaN;
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
 export const upsertCourses = internalMutation({
   args: {
     courses: v.array(
@@ -352,7 +357,7 @@ export const upsertCourses = internalMutation({
           q.eq("externalId", course.externalId)
         )
         .first();
-      const searchText = buildSearchText(course);
+      const searchText = buildCourseSearchText(course);
       const isLab = isLabCourseCode(course.code);
       const academicLevel = getAcademicLevel(course.code);
       if (existing) {
@@ -419,7 +424,7 @@ export const backfillSearchText = internalMutation({
     let updated = 0;
     for (const course of courses) {
       await ctx.db.patch(course._id, {
-        searchText: buildSearchText(course),
+        searchText: buildCourseSearchText(course),
       });
       updated += 1;
     }

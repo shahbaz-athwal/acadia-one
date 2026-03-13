@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  buildCanonicalCourseCode,
+  createCourseCodeRegex,
+} from "../../../shared/courseCode";
 
 /**
  * Matches common course-code formats inside free-form requisite text.
@@ -9,18 +13,6 @@ import { z } from "zod";
  * - "ABC 1233"
  * - "ABC1233"
  */
-function createCourseCodeRegex() {
-  return /\b([A-Z]{2,6})\s*(?:-\s*|\s+)?([0-9]{3,4}[A-Z]?)\b/gi;
-}
-
-function normalizeCourseCode(subject: string, number: string) {
-  return `${subject}${number}`.toUpperCase();
-}
-
-function canonicalDisplayCourseCode(subject: string, number: string) {
-  return `${subject.toUpperCase()}-${number.toUpperCase()}`;
-}
-
 function dedupePreserveOrder(values: string[]) {
   const seen = new Set<string>();
   const out: string[] = [];
@@ -34,15 +26,15 @@ function dedupePreserveOrder(values: string[]) {
 }
 
 /**
- * Returns all normalized codes found in `text` and an annotated variant.
+ * Returns all canonical codes found in `text` and an annotated variant.
  *
  * Annotation token format:
- *   [[course:<NORMALIZED>|<DISPLAY>]]
+ *   [[course:<CANONICAL>|<DISPLAY>]]
  *
  * Example:
  *   "Prereq: ABC-1233, QRST-1322"
  * becomes
- *   "Prereq: [[course:ABC1233|ABC-1233]], [[course:QRST1322|QRST-1322]]"
+ *   "Prereq: [[course:ABC-1233|ABC-1233]], [[course:QRST-1322|QRST-1322]]"
  */
 function extractCourseCodesAndAnnotate(text: string) {
   const codes: string[] = [];
@@ -50,24 +42,29 @@ function extractCourseCodesAndAnnotate(text: string) {
 
   for (const match of text.matchAll(regexForExtract)) {
     const subject = match[1];
-    const number = match[2];
-    if (subject == null || number == null) {
+    const number = match[2] ?? match[3];
+    if (subject == null || number == null || !/\d/.test(number)) {
       continue;
     }
-    codes.push(normalizeCourseCode(subject, number));
+    codes.push(buildCanonicalCourseCode(subject, number));
   }
 
   const regexForAnnotate = createCourseCodeRegex();
   const annotated = text.replace(
     regexForAnnotate,
-    (fullMatch, subject: string, number: string) => {
+    (
+      fullMatch,
+      subject: string,
+      separatedNumber: string | undefined,
+      compactNumber: string | undefined
+    ) => {
       // If regex matched, subject/number are present; keep fallback for safety.
-      if (subject == null || number == null) {
+      const number = separatedNumber ?? compactNumber;
+      if (subject == null || number == null || !/\d/.test(number)) {
         return fullMatch;
       }
-      const normalized = normalizeCourseCode(subject, number);
-      const display = canonicalDisplayCourseCode(subject, number);
-      return `[[course:${normalized}|${display}]]`;
+      const canonicalCode = buildCanonicalCourseCode(subject, number);
+      return `[[course:${canonicalCode}|${canonicalCode}]]`;
     }
   );
 
@@ -130,7 +127,7 @@ export const PostSearchCriteriaFilteredResponseSchema = z
     courses: data.CourseFullModels.map((course) => ({
       matchingSectionIds: course.MatchingSectionIds,
       id: course.Id,
-      code: course.SubjectCode + course.Number,
+      code: buildCanonicalCourseCode(course.SubjectCode, course.Number),
       subjectCode: course.SubjectCode,
       number: course.Number,
       credits: course.MinimumCredits,
