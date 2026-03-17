@@ -25,6 +25,24 @@ export const getSheetByExternalId = query({
       ratingCount: v.number(),
       avgDifficulty: v.union(v.number(), v.null()),
       avgQuality: v.union(v.number(), v.null()),
+      ratings: v.array(
+        v.object({
+          courseCode: v.string(),
+          courseTitle: v.string(),
+          quality: v.number(),
+          difficulty: v.number(),
+          isForCredit: v.optional(v.boolean()),
+          comment: v.optional(v.string()),
+          textBookRequired: v.optional(v.boolean()),
+          attendanceRequired: v.boolean(),
+          gradeReceived: v.optional(v.string()),
+          wouldTakeAgain: v.optional(v.boolean()),
+          thumbsUpTotal: v.number(),
+          thumbsDownTotal: v.number(),
+          tags: v.array(v.string()),
+          postedAt: v.number(),
+        })
+      ),
     }),
     v.null()
   ),
@@ -46,6 +64,24 @@ export const getSheetByExternalId = query({
       "by_prefix",
       professor.departmentPrefix
     );
+    const ratings = await ctx.db
+      .query("ratings")
+      .withIndex("by_professorId", (q) => q.eq("professorId", professor._id))
+      .collect();
+    const approvedRatings = ratings
+      .filter((rating) => rating.status === "APPROVED")
+      .sort((a, b) => b.postedAt - a.postedAt);
+    const courseIds = [
+      ...new Set(approvedRatings.map((rating) => rating.courseId)),
+    ];
+    const courses = await Promise.all(
+      courseIds.map((courseId) => ctx.db.get(courseId))
+    );
+    const courseById = new Map(
+      courses
+        .filter((course): course is NonNullable<typeof course> => !!course)
+        .map((course) => [course._id, course])
+    );
 
     return {
       externalId: professor.externalId,
@@ -65,6 +101,26 @@ export const getSheetByExternalId = query({
       ratingCount: professor.ratingCount,
       avgDifficulty: professor.avgDifficulty,
       avgQuality: professor.avgQuality,
+      ratings: approvedRatings.map((rating) => {
+        const course = courseById.get(rating.courseId);
+
+        return {
+          courseCode: course?.code ?? "",
+          courseTitle: course?.title ?? "",
+          quality: rating.quality,
+          difficulty: rating.difficulty,
+          isForCredit: rating.isForCredit,
+          comment: rating.comment,
+          textBookRequired: rating.textBookRequired,
+          attendanceRequired: rating.attendanceRequired,
+          gradeReceived: rating.gradeReceived,
+          wouldTakeAgain: rating.wouldTakeAgain,
+          thumbsUpTotal: rating.thumbsUpTotal,
+          thumbsDownTotal: rating.thumbsDownTotal,
+          tags: rating.tags,
+          postedAt: rating.postedAt,
+        };
+      }),
     };
   },
 });
