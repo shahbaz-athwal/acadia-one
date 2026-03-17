@@ -3,6 +3,178 @@
   "model": "gpt-5-mini",
   "departments": [
     {
+      "prefix": "APSC",
+      "department": "Applied Science",
+      "input_url": "https://engineering.acadiau.ca/faculty-and-staff.html",
+      "status": "success",
+      "visited_urls": ["https://engineering.acadiau.ca/faculty-and-staff.html"],
+      "warnings": [],
+      "professors": [
+        {
+          "prefix": "APSC",
+          "department": "Applied Science",
+          "source_url": "https://engineering.acadiau.ca/faculty-and-staff.html",
+          "name": "Scott Bishop",
+          "title": "Director of the Ivan Curry School of Engineering | Associate Professor",
+          "email": "scott.bishop@acadiau.ca",
+          "phone": "902-585-1192",
+          "profile_url": "",
+          "profile_image_url": "https://engineering.acadiau.ca/assets/images/e/Scott%20Bishop%202026-ee8d8ae3.png",
+          "research_areas": [],
+          "office": "Carnegie 217 (through 216)",
+          "description": "Director of the Ivan Curry School of Engineering and Associate Professor."
+        },
+        {
+          "prefix": "APSC",
+          "department": "Applied Science",
+          "source_url": "https://engineering.acadiau.ca/faculty-and-staff.html",
+          "name": "Paul Arnold",
+          "title": "Associate Professor",
+          "email": "paul.arnold@acadiau.ca",
+          "phone": "902-449-6910",
+          "profile_url": "",
+          "profile_image_url": "https://engineering.acadiau.ca/assets/images/3/Paul%20Arnold%202012-31c91129.jpg",
+          "research_areas": [
+            "environmental engineering",
+            "municipal waste management",
+            "recycling systems",
+            "composting systems"
+          ],
+          "office": "Carnegie 216",
+          "description": "Chemical engineer and BASc/CAS advisor focused on environmental engineering problems involving municipal waste management, recycling, and composting systems."
+        },
+        {
+          "prefix": "APSC",
+          "department": "Applied Science",
+          "source_url": "https://engineering.acadiau.ca/faculty-and-staff.html",
+          "name": "Andrew Mitchell",
+          "title": "Associate Professor",
+          "email": "andrew.mitchell@acadiau.ca",
+          "phone": "902-585-1596",
+          "profile_url": "",
+          "profile_image_url": "https://engineering.acadiau.ca/assets/images/8/Andrew_mitchell2-e0f886e7.jpg",
+          "research_areas": [
+            "experimental solid mechanics",
+            "sound and vibration",
+            "optics",
+            "engineering curriculum improvement",
+            "graduate attribute monitoring"
+          ],
+          "office": "Carnegie 218",
+          "description": "Mechanical engineer with interests in experimental solid mechanics, sound and vibration, optics, curriculum improvement, and graduate attribute monitoring."
+        },
+        {
+          "prefix": "APSC",
+          "department": "Applied Science",
+          "source_url": "https://engineering.acadiau.ca/faculty-and-staff.html",
+          "name": "Gary Bustin",
+          "title": "Lecturer",
+          "email": "gary.bustin@acadiau.ca",
+          "phone": "",
+          "profile_url": "",
+          "profile_image_url": "https://engineering.acadiau.ca/assets/images/9/GB_Photo-51f1f7f7.jpg",
+          "research_areas": [
+            "CAD/CAM technologies",
+            "numerical control",
+            "computer-aided drafting",
+            "finite element applications",
+            "instrumentation of civil structures"
+          ],
+          "office": "Carnegie Room 305",
+          "description": "Lecturer with experience in CAD/CAM support and training, finite element applications, systems design, and civil-structure instrumentation."
+        },
+        {
+          "prefix": "APSC",
+          "department": "Applied Science",
+          "source_url": "https://engineering.acadiau.ca/faculty-and-staff.html",
+          "name": "Angelo Posteraro",
+          "title": "Instructor",
+          "email": "angelo.posteraro@acadiau.ca",
+          "phone": "",
+          "profile_url": "",
+          "profile_image_url": "https://engineering.acadiau.ca/assets/images/9/Angelo%20Posteraro%202026-6c59c3bb.jpeg",
+          "research_areas": [
+            "computer-aided design",
+            "computer-aided machining",
+            "3D printing",
+            "CNC machining",
+            "laser cutting",
+            "plasma cutting",
+            "embedded microcontrollers",
+            "mechatronics",
+            "instrumentation",
+            "prototyping"
+          ],
+          "office": "Carnegie 327",
+          "description": "Instructor trained in electrical and chemical engineering with interests spanning CAD/CAM, digital fabrication, microcontrollers, mechatronics, instrumentation, and prototyping."
+        },
+        {
+          "prefix": "APSC",
+          "department": "Applied Science",
+          "source_url": "https://engineering.acadiau.ca/faculty-and-staff.html",
+          "name": "Jennie Rand",
+          "title": "Professor | A.D. Foulis Chair in Engineering",
+          "email": "jennie.rand@acadiau.ca",
+          "phone": "902-585-1519",
+          "profile_url": "http://engineeringlab.acadiau.ca/home.html",
+          "profile_image_url": "https://engineering.acadiau.ca/assets/images/a/Jennie%202019-cd9e78bf.jpg",
+          "research_areas": [
+            "water quality",
+            "drinking water",
+            "wastewater",
+            "environmental surveillance",
+            "agricultural water"
+          ],
+          "office": "Carnegie 303",
+          "description": "Civil engineer whose research covers drinking water, wastewater, environmental surveillance, and agricultural water; also holds the A.D. Foulis Chair in Engineering."
+        },
+        {
+          "prefix": "APSC",
+          "department": "Applied Science",
+          "source_url": "https://engineering.acadiau.ca/faculty-and-staff.html",
+          "name": "Martin Tango",
+          "title": "Full Professor",
+          "email": "martin.tango@acadiau.ca",
+          "phone": "902-585-1149",
+          "profile_url": "http://www.acadiau.ca/~mtango/index.html",
+          "profile_image_url": "https://engineering.acadiau.ca/assets/images/d/MartinPortrait1-769d5af5.jpg",
+          "research_areas": [
+            "biological engineering",
+            "ground water",
+            "biomass",
+            "bioenergy",
+            "aquaponics",
+            "eco-toxicity of antifouling compounds",
+            "nanoparticle toxicity"
+          ],
+          "office": "Carnegie 304",
+          "description": "Mechanical and environmental engineer researching biological engineering, groundwater, biomass, bioenergy, aquaponics, antifouling compounds, and nanoparticle toxicity."
+        },
+        {
+          "prefix": "APSC",
+          "department": "Applied Science",
+          "source_url": "https://engineering.acadiau.ca/faculty-and-staff.html",
+          "name": "Esteve Hassan",
+          "title": "Associate Professor | NSERC Industrial Research Chair",
+          "email": "esteve.hassan@acadiau.ca",
+          "phone": "902-585-1449",
+          "profile_url": "",
+          "profile_image_url": "https://engineering.acadiau.ca/assets/images/d/Esteve1-f6844cb7.jpg",
+          "research_areas": [
+            "Internet of Things systems",
+            "industrial AI",
+            "machine learning",
+            "predictive maintenance",
+            "machine vision",
+            "video data analytics",
+            "FPGA-based digital prototyping"
+          ],
+          "office": "Carnegie 411",
+          "description": "Computer engineer focused on IoT systems, industrial AI and machine learning for predictive maintenance, machine vision, video analytics, and FPGA-based digital prototyping."
+        }
+      ]
+    },
+    {
       "prefix": "BIOL",
       "department": "Biology",
       "input_url": "https://biology.acadiau.ca/faculty-staff.html",
