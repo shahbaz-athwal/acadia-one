@@ -7,9 +7,7 @@
       "department": "Biology",
       "input_url": "https://biology.acadiau.ca/faculty-staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://biology.acadiau.ca/faculty-staff.html"
-      ],
+      "visited_urls": ["https://biology.acadiau.ca/faculty-staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -167,9 +165,7 @@
           "phone": "902-585-1424",
           "profile_url": "",
           "profile_image_url": "https://biology.acadiau.ca/files/sites/biology/pics/MattHazel.png",
-          "research_areas": [
-            "human physiology and anatomy education"
-          ],
+          "research_areas": ["human physiology and anatomy education"],
           "office": "Room 331",
           "description": "Lectures and runs labs for Human Physiology & Anatomy courses covering anatomy and physiology of body systems."
         },
@@ -894,9 +890,7 @@
       "department": "Chemistry",
       "input_url": "https://chemistry.acadiau.ca/faculty-staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://chemistry.acadiau.ca/faculty-staff.html"
-      ],
+      "visited_urls": ["https://chemistry.acadiau.ca/faculty-staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -966,9 +960,7 @@
           "phone": "902-585-1468",
           "profile_url": "https://chemistry.acadiau.ca/teri-gullon.html",
           "profile_image_url": "https://chemistry.acadiau.ca/files/sites/chemistry/resources/images/Faculty/Thumbnails/tgullon-sm.jpg",
-          "research_areas": [
-            "Organic & Biochemistry"
-          ],
+          "research_areas": ["Organic & Biochemistry"],
           "office": "314 Elliott Hall",
           "description": "Teri GullonOrganic & Biochemistry Instructorteri.gullon@acadiau.caOffice: 314 Elliott Hall Amitabh JhaOrganic & Medicinal Chemistryamitabh.jha@acadiau.caOffice: 120 Elliott Hall"
         },
@@ -1038,9 +1030,7 @@
           "phone": "902-585-1359",
           "profile_url": "https://chemistry.acadiau.ca/ashley-parsons.html",
           "profile_image_url": "https://chemistry.acadiau.ca/files/sites/chemistry/resources/images/Faculty/Thumbnails/aparson-sm.jpg",
-          "research_areas": [
-            "First Year Lab Instruction"
-          ],
+          "research_areas": ["First Year Lab Instruction"],
           "office": "215 Elliott Hall",
           "description": "John MurimbohAnalytical Chemistryjohn.murimboh@acadiau.caOffice: LL33 K.C. Irving Centre Ashley ParsonsFirst Year Lab Instructorashley.parsons@acadiau.caOffice: 215 Elliott Hall"
         },
@@ -1092,9 +1082,7 @@
           "phone": "",
           "profile_url": "https://chemistry.acadiau.ca/cathy-murimboh.html",
           "profile_image_url": "https://chemistry.acadiau.ca/files/sites/chemistry/resources/images/Faculty/Thumbnails/cmurimboh-sm.jpg",
-          "research_areas": [
-            "First Year Chemistry"
-          ],
+          "research_areas": ["First Year Chemistry"],
           "office": "213 Huggins Science Hall",
           "description": "Cathy MurimbohFirst Year Chemistry Lecturercmurimbo@acadiau.caOffice: 213 Huggins Science Hall"
         }
@@ -1105,9 +1093,7 @@
       "department": "Classics",
       "input_url": "https://history.acadiau.ca/Faculty/Staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://history.acadiau.ca/Faculty/Staff.html"
-      ],
+      "visited_urls": ["https://history.acadiau.ca/Faculty/Staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -1272,9 +1258,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "https://history.acadiau.ca/Faculty/files/sites/history/Faculty/Donna.png",
-          "research_areas": [
-            "Comparative Religion Studies"
-          ],
+          "research_areas": ["Comparative Religion Studies"],
           "office": "",
           "description": ""
         },
@@ -1361,9 +1345,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "https://history.acadiau.ca/Faculty/files/sites/history/Faculty/Davidson.png",
-          "research_areas": [
-            "Medieval History"
-          ],
+          "research_areas": ["Medieval History"],
           "office": "",
           "description": ""
         },
@@ -1514,9 +1496,7 @@
       "department": "Community Development",
       "input_url": "https://commdev.acadiau.ca/faculty-staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://commdev.acadiau.ca/faculty-staff.html"
-      ],
+      "visited_urls": ["https://commdev.acadiau.ca/faculty-staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -2007,9 +1987,7 @@
           "phone": "902-542-3373",
           "profile_url": "https://cs.acadiau.ca/loliver.html",
           "profile_image_url": "https://cs.acadiau.ca/tl_files/sites/cs/resources/images/faculty/loliver.jpg",
-          "research_areas": [
-            "Digital Image Analysis"
-          ],
+          "research_areas": ["Digital Image Analysis"],
           "office": "None",
           "description": "Professor Emeritus. Degrees: BSc (Acadia University); MSc (Acadia University); PhD (McGill University)."
         },
@@ -2081,9 +2059,7 @@
       "department": "Cooperative Education",
       "input_url": "https://co-op.acadiau.ca/Contact.html",
       "status": "failed",
-      "visited_urls": [
-        "https://co-op.acadiau.ca/Contact.html"
-      ],
+      "visited_urls": ["https://co-op.acadiau.ca/Contact.html"],
       "warnings": [],
       "professors": []
     },
@@ -2092,9 +2068,7 @@
       "department": "Economics",
       "input_url": "https://economics.acadiau.ca/our-people.html",
       "status": "success",
-      "visited_urls": [
-        "https://economics.acadiau.ca/our-people.html"
-      ],
+      "visited_urls": ["https://economics.acadiau.ca/our-people.html"],
       "warnings": [],
       "professors": [
         {
@@ -2118,9 +2092,7 @@
       "department": "Education",
       "input_url": "https://education.acadiau.ca/faculty-staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://education.acadiau.ca/faculty-staff.html"
-      ],
+      "visited_urls": ["https://education.acadiau.ca/faculty-staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -2256,9 +2228,7 @@
       "department": "English",
       "input_url": "https://english.acadiau.ca/faculty-staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://english.acadiau.ca/faculty-staff.html"
-      ],
+      "visited_urls": ["https://english.acadiau.ca/faculty-staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -2392,9 +2362,7 @@
           "phone": "902) 585-1598",
           "profile_url": "https://english.acadiau.ca/prof-claire-jewell.html",
           "profile_image_url": "https://english.acadiau.ca/assets/images/4/Claire%20Jewell%20photo%202-0eafe58f.jpg",
-          "research_areas": [
-            "English as a Second Language"
-          ],
+          "research_areas": ["English as a Second Language"],
           "office": "Beveridge Arts Centre 338",
           "description": "Instructor in the Department of English at Acadia University (BA, BEd, Acadia)."
         },
@@ -2773,9 +2741,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "",
-          "research_areas": [
-            "Victorian Studies"
-          ],
+          "research_areas": ["Victorian Studies"],
           "office": "",
           "description": ""
         },
@@ -2807,9 +2773,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "",
-          "research_areas": [
-            "Medieval and Arthurian Literature"
-          ],
+          "research_areas": ["Medieval and Arthurian Literature"],
           "office": "",
           "description": ""
         },
@@ -2870,9 +2834,7 @@
       "department": "Environmental Science",
       "input_url": "https://ees.acadiau.ca/faculty-staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://ees.acadiau.ca/faculty-staff.html"
-      ],
+      "visited_urls": ["https://ees.acadiau.ca/faculty-staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -2908,9 +2870,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "",
-          "research_areas": [
-            "Biogeochemistry"
-          ],
+          "research_areas": ["Biogeochemistry"],
           "office": "",
           "description": ""
         },
@@ -2985,10 +2945,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "",
-          "research_areas": [
-            "Geochemistry",
-            "Economic Geology"
-          ],
+          "research_areas": ["Geochemistry", "Economic Geology"],
           "office": "",
           "description": ""
         },
@@ -3042,9 +2999,7 @@
       "department": "Environ. and Sustain. Studies",
       "input_url": "https://environment.acadiau.ca/faculty_staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://environment.acadiau.ca/faculty_staff.html"
-      ],
+      "visited_urls": ["https://environment.acadiau.ca/faculty_staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -3120,9 +3075,7 @@
       "department": "Kinesiology",
       "input_url": "https://kinesiology.acadiau.ca/faculty-staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://kinesiology.acadiau.ca/faculty-staff.html"
-      ],
+      "visited_urls": ["https://kinesiology.acadiau.ca/faculty-staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -3135,9 +3088,7 @@
           "phone": "902-585-1566",
           "profile_url": "https://kinesiology.acadiau.ca/faculty-staff/emily-bremer.html",
           "profile_image_url": "https://kinesiology.acadiau.ca/files/sites/kinesiology_2017/Faculty%20%26%20Staff/2022/E%20Bremer.jpg",
-          "research_areas": [
-            "Adapted Physical Activity"
-          ],
+          "research_areas": ["Adapted Physical Activity"],
           "office": "AAC 482",
           "description": "Emily BremerCanada Research Chair, Assistant ProfessorAdapted Physical Activityemily.bremer@acadiau.ca"
         },
@@ -3174,9 +3125,7 @@
           "phone": "902-585-1561",
           "profile_url": "https://kinesiology.acadiau.ca/faculty-staff/ann-dodge.html",
           "profile_image_url": "https://kinesiology.acadiau.ca/files/sites/kinesiology_2017/Faculty%20%26%20Staff/2022/A%20Dodge.jpg",
-          "research_areas": [
-            "Social Science"
-          ],
+          "research_areas": ["Social Science"],
           "office": "AAC 383",
           "description": "Ann DodgeLecturerSocial Scienceann.dodge@acadiau.ca"
         },
@@ -3190,9 +3139,7 @@
           "phone": "902-585-1560",
           "profile_url": "https://kinesiology.acadiau.ca/faculty-staff/jonathon-fowles.html",
           "profile_image_url": "https://kinesiology.acadiau.ca/files/sites/kinesiology_2017/Faculty%20%26%20Staff/2022/J%20Fowles.jpg",
-          "research_areas": [
-            "Exercise Physiology"
-          ],
+          "research_areas": ["Exercise Physiology"],
           "office": "AAC 487.3",
           "description": "Jonathon FowlesCentre of Lifestyles Studies DirectorProfessorExercise Physiologyjonathon.fowles@acadiau.ca"
         },
@@ -3206,9 +3153,7 @@
           "phone": "902-585-1885",
           "profile_url": "https://kinesiology.acadiau.ca/faculty-staff/jason-holt.html",
           "profile_image_url": "https://kinesiology.acadiau.ca/files/sites/kinesiology_2017/Faculty%20%26%20Staff/2022/J%20HOlt.jpg",
-          "research_areas": [
-            "Philosophy"
-          ],
+          "research_areas": ["Philosophy"],
           "office": "AAC 385F",
           "description": "Jason HoltProfessorPhilosophyjason.holt@acadiau.ca"
         },
@@ -3242,10 +3187,7 @@
           "phone": "902-585-1309",
           "profile_url": "https://kinesiology.acadiau.ca/faculty-staff/colin-king.html",
           "profile_image_url": "https://kinesiology.acadiau.ca/files/sites/kinesiology_2017/Faculty%20%26%20Staff/2022/C%20King.jpg",
-          "research_areas": [
-            "Athletic Therapy",
-            "Kinesiology"
-          ],
+          "research_areas": ["Athletic Therapy", "Kinesiology"],
           "office": "AAC 487.2",
           "description": "Colin KingAthletic Therapy Director ProfessorAthletic Therapycolin.king@acadiau.ca"
         },
@@ -3259,9 +3201,7 @@
           "phone": "902-585-1564",
           "profile_url": "https://kinesiology.acadiau.ca/faculty-staff/darren-kruisselbrink.html",
           "profile_image_url": "https://kinesiology.acadiau.ca/files/sites/kinesiology_2017/Faculty%20%26%20Staff/2022/D%20Kruisselbrink.jpg",
-          "research_areas": [
-            "Motor Behaviour"
-          ],
+          "research_areas": ["Motor Behaviour"],
           "office": "AAC 340",
           "description": "Darren KruisselbrinkSchool of Kinesiology Director ProfessorMotor Behaviourdarren.kruisselbrink@acadiau.ca"
         },
@@ -3297,9 +3237,7 @@
           "phone": "902-585-1559",
           "profile_url": "https://kinesiology.acadiau.ca/faculty-staff/rene-murphy.html",
           "profile_image_url": "https://kinesiology.acadiau.ca/files/sites/kinesiology_2017/Faculty%20%26%20Staff/2022/R%20Murphy.jpg",
-          "research_areas": [
-            "Exercise Physiology"
-          ],
+          "research_areas": ["Exercise Physiology"],
           "office": "AAC 484",
           "description": "Professor in the School of Kinesiology. Page sections include Teaching, Scholarly Expertise, Community Service, Publications, and Presentations."
         },
@@ -3313,9 +3251,7 @@
           "phone": "902-585-1435",
           "profile_url": "https://kinesiology.acadiau.ca/faculty-staff/carley-o-neill.html",
           "profile_image_url": "https://kinesiology.acadiau.ca/files/sites/kinesiology_2017/Faculty%20%26%20Staff/2022/C%20ONeill.jpg",
-          "research_areas": [
-            "Exercise Physiology"
-          ],
+          "research_areas": ["Exercise Physiology"],
           "office": "AAC 480",
           "description": "Assistant Professor; Acadia Cardiac Maintenance Director."
         },
@@ -3329,9 +3265,7 @@
           "phone": "902-585-1692",
           "profile_url": "https://kinesiology.acadiau.ca/faculty-staff/roxanne-seaman.html",
           "profile_image_url": "https://kinesiology.acadiau.ca/files/sites/kinesiology_2017/Faculty%20%26%20Staff/2022/R%20Seaman.jpg",
-          "research_areas": [
-            "Adapted Physical Activity"
-          ],
+          "research_areas": ["Adapted Physical Activity"],
           "office": "AAC 487.4",
           "description": "Roxanne SeamanS.M.I.L.E. DirectorProfessorAdapted Physical Activityroxanne.seaman@acadiau.ca"
         },
@@ -3382,9 +3316,7 @@
       "department": "Languages and Literatures",
       "input_url": "https://languages.acadiau.ca/faculty-and-staff.html",
       "status": "failed",
-      "visited_urls": [
-        "https://languages.acadiau.ca/faculty-and-staff.html"
-      ],
+      "visited_urls": ["https://languages.acadiau.ca/faculty-and-staff.html"],
       "warnings": [],
       "professors": []
     },
@@ -3393,9 +3325,7 @@
       "department": "Law and Society",
       "input_url": "https://laws.acadiau.ca/faculty.html",
       "status": "success",
-      "visited_urls": [
-        "https://laws.acadiau.ca/faculty.html"
-      ],
+      "visited_urls": ["https://laws.acadiau.ca/faculty.html"],
       "warnings": [],
       "professors": [
         {
@@ -3478,9 +3408,7 @@
       "department": "Mathematics and Statistics",
       "input_url": "https://math.acadiau.ca/faculty.html",
       "status": "success",
-      "visited_urls": [
-        "https://math.acadiau.ca/faculty.html"
-      ],
+      "visited_urls": ["https://math.acadiau.ca/faculty.html"],
       "warnings": [],
       "professors": [
         {
@@ -3850,9 +3778,7 @@
           "phone": "902-585-1241",
           "profile_url": "https://music.acadiau.ca/faculty/paul_lauzon.html",
           "profile_image_url": "https://music.acadiau.ca/faculty/assets/images/f/Paul%20Lauzon-1cb275ad.jpg",
-          "research_areas": [
-            "Music Therapy"
-          ],
+          "research_areas": ["Music Therapy"],
           "office": "Denton Hall, Room 237",
           "description": "Associate Professor, Music Therapy at Acadia University School of Music."
         },
@@ -3976,9 +3902,7 @@
       "department": "Nursing",
       "input_url": "https://nursing.acadiau.ca/faculty-staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://nursing.acadiau.ca/faculty-staff.html"
-      ],
+      "visited_urls": ["https://nursing.acadiau.ca/faculty-staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -4245,9 +4169,7 @@
       "department": "Philosophy",
       "input_url": "https://philosophy.acadiau.ca/facstaff.html",
       "status": "success",
-      "visited_urls": [
-        "https://philosophy.acadiau.ca/facstaff.html"
-      ],
+      "visited_urls": ["https://philosophy.acadiau.ca/facstaff.html"],
       "warnings": [],
       "professors": [
         {
@@ -4353,9 +4275,7 @@
       "department": "Physics",
       "input_url": "https://physics.acadiau.ca/people.html",
       "status": "success",
-      "visited_urls": [
-        "https://physics.acadiau.ca/people.html"
-      ],
+      "visited_urls": ["https://physics.acadiau.ca/people.html"],
       "warnings": [],
       "professors": [
         {
@@ -4449,9 +4369,7 @@
       "department": "Political Science",
       "input_url": "https://polisci.acadiau.ca/faculty-and-staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://polisci.acadiau.ca/faculty-and-staff.html"
-      ],
+      "visited_urls": ["https://polisci.acadiau.ca/faculty-and-staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -4645,9 +4563,7 @@
       "department": "Psychology",
       "input_url": "https://psychology.acadiau.ca/Faculty_and_Staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://psychology.acadiau.ca/Faculty_and_Staff.html"
-      ],
+      "visited_urls": ["https://psychology.acadiau.ca/Faculty_and_Staff.html"],
       "warnings": [],
       "professors": [
         {
@@ -5185,9 +5101,7 @@
       "department": "Sociology",
       "input_url": "https://sociology.acadiau.ca/People.html",
       "status": "success",
-      "visited_urls": [
-        "https://sociology.acadiau.ca/People.html"
-      ],
+      "visited_urls": ["https://sociology.acadiau.ca/People.html"],
       "warnings": [],
       "professors": [
         {
@@ -5395,9 +5309,7 @@
       "department": "Social and Political Thought",
       "input_url": "https://spt.acadiau.ca/spt-faculty.html",
       "status": "success",
-      "visited_urls": [
-        "https://spt.acadiau.ca/spt-faculty.html"
-      ],
+      "visited_urls": ["https://spt.acadiau.ca/spt-faculty.html"],
       "warnings": [],
       "professors": [
         {
@@ -5743,9 +5655,7 @@
       "department": "Theatre",
       "input_url": "https://theatre.acadiau.ca/faculty-staff.html",
       "status": "success",
-      "visited_urls": [
-        "https://theatre.acadiau.ca/faculty-staff.html"
-      ],
+      "visited_urls": ["https://theatre.acadiau.ca/faculty-staff.html"],
       "warnings": [],
       "professors": [
         {

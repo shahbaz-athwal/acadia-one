@@ -194,6 +194,12 @@ const TeacherRatingsResponseSchema = z.object({
   }),
 });
 
+export type TeacherRating = z.infer<typeof RatingNodeSchema>;
+export type TeacherRatingsPage<TRating = TeacherRating> = {
+  ratings: TRating[];
+  paging: z.infer<typeof PageInfoSchema>;
+};
+
 const SchoolDepartmentsResponseSchema = z.object({
   search: z.object({
     teachers: z.object({
@@ -242,6 +248,24 @@ const SchoolSearchResponseSchema = z.object({
 });
 
 export type TeacherNode = z.infer<typeof TeacherNodeSchema>;
+
+export async function collectPaginatedRatings<TRating>(
+  fetchPage: (cursor?: string) => Promise<TeacherRatingsPage<TRating>>
+) {
+  const ratings: TRating[] = [];
+  let cursor: string | undefined;
+
+  while (true) {
+    const page = await fetchPage(cursor);
+    ratings.push(...page.ratings);
+
+    if (!(page.paging.hasNextPage && page.paging.endCursor)) {
+      return ratings;
+    }
+
+    cursor = page.paging.endCursor;
+  }
+}
 
 export class RateMyProfScraper {
   private static instance: RateMyProfScraper | null = null;
@@ -342,6 +366,12 @@ export class RateMyProfScraper {
       ratings: parsed.node.ratings.edges.map((edge) => edge.node),
       paging: parsed.node.ratings.pageInfo,
     };
+  }
+
+  async getAllTeacherRatings({ teacherId }: { teacherId: string }) {
+    return collectPaginatedRatings((cursor) =>
+      this.getTeacherRatings({ teacherId, cursor })
+    );
   }
 }
 

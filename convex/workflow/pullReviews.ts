@@ -23,7 +23,7 @@ async function pullRmpReviewsInternal(
   args: PullRmpReviewsArgs
 ) {
   const { professorId, rmpId } = args;
-  const { ratings } = await rmpScraper.getTeacherRatings({ teacherId: rmpId });
+  const ratings = await rmpScraper.getAllTeacherRatings({ teacherId: rmpId });
 
   if (ratings.length === 0) {
     return 0;

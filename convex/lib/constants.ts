@@ -26,3 +26,20 @@ Return a JSON object with a "matches" array containing objects with:
 - professorId: the id from local professor
 - rmpId: the id from RMP professor (or null if no match)
 `;
+
+export const AI_FACULTY_ENRICHMENT_PROMPT = `
+You are tasked with matching faculty directory professor records to existing professors in our local database.
+Instructions:
+- Match each faculty directory professor to exactly one local professor when there is clear evidence they are the same person
+- Prefer professors in the same department prefix
+- Cross-department matches are allowed only when the name and supporting context clearly indicate the same person
+- Use name, email, title, office, website, and source URL as supporting signals
+- If you are uncertain, return matchedExternalId as null
+- Return an answer for every faculty directory professor provided
+
+Return an array of objects with:
+- jsonName: the exact faculty directory professor name
+- matchedExternalId: the local professor externalId, or null
+- confidence: one of "high", "low", or "none"
+- reason: a brief explanation for the decision
+`;

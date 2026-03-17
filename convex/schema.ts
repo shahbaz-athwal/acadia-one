@@ -160,6 +160,10 @@ const schema = defineSchema({
     linkedinUrl: v.optional(v.string()),
     websiteUrl: v.optional(v.string()),
     imageUrl: v.optional(v.string()),
+    description: v.optional(v.string()),
+    researchAreas: v.optional(v.array(v.string())),
+    sourceUrl: v.optional(v.string()),
+    lastFacultyEnrichedAt: v.optional(v.number()),
     lastPullFromRmp: v.optional(v.number()),
     ratingCount: v.number(),
     avgDifficulty: v.union(v.number(), v.null()),
@@ -292,6 +296,8 @@ const schema = defineSchema({
     courseId: v.id("courses"),
     postedAt: v.number(),
   })
+    .index("by_rmpId", ["rmpId"])
+    .index("by_rmpLegacyId", ["rmpLegacyId"])
     .index("by_professorId", ["professorId"])
     .index("by_courseId", ["courseId"])
     .index("by_status", ["status"]),

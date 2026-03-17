@@ -3,6 +3,7 @@ import { asyncMap } from "convex-helpers";
 import { literals } from "convex-helpers/validators";
 import type { Id } from "./_generated/dataModel";
 import { internalMutation, internalQuery } from "./_generated/server";
+import { getExistingRatingLookup } from "./lib/ratingIdentity";
 import { vv } from "./schema";
 
 const IS_LAB_COURSE_CODE_RE = /\d+L$/i;
@@ -519,6 +520,63 @@ export const updateProfessorLastPullFromRmp = internalMutation({
   },
 });
 
+export const updateProfessorFacultyEnrichment = internalMutation({
+  args: {
+    updates: v.array(
+      v.object({
+        externalId: v.string(),
+        designation: v.optional(v.string()),
+        officeLocation: v.optional(v.string()),
+        email: v.optional(v.string()),
+        phone: v.optional(v.string()),
+        websiteUrl: v.optional(v.string()),
+        imageUrl: v.optional(v.string()),
+        description: v.optional(v.string()),
+        researchAreas: v.optional(v.array(v.string())),
+        sourceUrl: v.optional(v.string()),
+        lastFacultyEnrichedAt: v.number(),
+      })
+    ),
+  },
+  returns: v.number(),
+  handler: async (ctx, args) => {
+    let updated = 0;
+
+    for (const update of args.updates) {
+      const professor = await ctx.db
+        .query("professors")
+        .withIndex("by_externalId", (q) => q.eq("externalId", update.externalId))
+        .first();
+      if (!professor) {
+        continue;
+      }
+
+      const patch = {
+        designation: update.designation,
+        officeLocation: update.officeLocation,
+        email: update.email,
+        phone: update.phone,
+        websiteUrl: update.websiteUrl,
+        imageUrl: update.imageUrl,
+        description: update.description,
+        researchAreas: update.researchAreas,
+        sourceUrl: update.sourceUrl,
+        lastFacultyEnrichedAt: update.lastFacultyEnrichedAt,
+      };
+
+      await ctx.db.patch(
+        professor._id,
+        Object.fromEntries(
+          Object.entries(patch).filter(([, value]) => value !== undefined)
+        )
+      );
+      updated += 1;
+    }
+
+    return updated;
+  },
+});
+
 export const insertRatings = internalMutation({
   args: {
     ratings: v.array(vv.doc("ratings").omit("_id", "_creationTime")),
@@ -527,17 +585,29 @@ export const insertRatings = internalMutation({
   handler: async (ctx, args) => {
     let inserted = 0;
     for (const rating of args.ratings) {
-      if (rating.rmpId) {
+      const existingLookup = getExistingRatingLookup(rating);
+      if (existingLookup?.indexName === "by_rmpId") {
         const existing = await ctx.db
           .query("ratings")
-          .withIndex("by_professorId", (q) =>
-            q.eq("professorId", rating.professorId)
+          .withIndex("by_rmpId", (q) => q.eq("rmpId", existingLookup.value))
+          .first();
+        if (existing) {
+          continue;
+        }
+      }
+
+      if (existingLookup?.indexName === "by_rmpLegacyId") {
+        const existing = await ctx.db
+          .query("ratings")
+          .withIndex("by_rmpLegacyId", (q) =>
+            q.eq("rmpLegacyId", existingLookup.value)
           )
           .first();
         if (existing) {
           continue;
         }
       }
+
       await ctx.db.insert("ratings", rating);
       inserted += 1;
     }
