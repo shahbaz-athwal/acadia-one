@@ -58,6 +58,8 @@ import { filterOptionsQuery, userDataQuery } from "@/queries/explore";
 import { api } from "../../../../convex/_generated/api";
 import { SCHEDULE_COLORS } from "../../../../convex/lib/constants";
 
+const SHOW_SEAT_COLUMNS = false;
+
 function LocationDisplay(props: {
   isOnline: boolean;
   buildingName: string;
@@ -77,10 +79,7 @@ function LocationDisplay(props: {
   return (
     <Tooltip>
       <TooltipTrigger
-        className={cn(
-          "underline decoration-dotted underline-offset-2",
-          abbreviated === "-" && "no-underline"
-        )}
+        className={cn(abbreviated === "-" && "no-underline")}
         disabled={abbreviated === "-"}
       >
         {abbreviated || "-"}
@@ -370,7 +369,7 @@ export function CourseViewData() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Section</TableHead>
-                      <TableHead>Seats</TableHead>
+                      {SHOW_SEAT_COLUMNS ? <TableHead>Seats</TableHead> : null}
                       <TableHead>Times</TableHead>
                       <TableHead>Locations</TableHead>
                       <TableHead>Instructors</TableHead>
@@ -444,7 +443,9 @@ export function CourseViewData() {
                             </div>
                           </TableCell>
 
-                          <TableCell className="font-medium">--</TableCell>
+                          {SHOW_SEAT_COLUMNS ? (
+                            <TableCell className="font-medium">--</TableCell>
+                          ) : null}
 
                           <TableCell>
                             {isContinuousIntake ? (
@@ -471,46 +472,53 @@ export function CourseViewData() {
 
                           <TableCell>
                             {professorExternalId ? (
-                              <button
-                                className="flex items-center gap-2 text-left transition-colors hover:text-foreground"
-                                onClick={() =>
-                                  openProfessor(professorExternalId)
-                                }
-                                onFocus={() =>
-                                  prefetchProfessor(professorExternalId)
-                                }
-                                onMouseEnter={() =>
-                                  prefetchProfessor(professorExternalId)
-                                }
-                                type="button"
-                              >
-                                <Avatar className="size-7">
-                                  <AvatarImage
-                                    alt={professorDisplayName}
-                                    src={s.professorImageUrl}
-                                  />
-                                  <AvatarFallback>
-                                    {getInitials(professorDisplayName)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="min-w-0">
-                                  <div className="truncate hover:underline">
-                                    {professorDisplayName}
-                                  </div>
-                                  {typeof s.professorAvgQuality ===
-                                    "number" && (
-                                    <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
-                                      <StarIcon
-                                        className="size-3"
-                                        fill="currentColor"
-                                      />
-                                      <span>
-                                        {s.professorAvgQuality.toFixed(1)}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </button>
+                              <Tooltip>
+                                <TooltipTrigger
+                                  render={
+                                    <button
+                                      className="flex cursor-pointer items-center gap-2 text-left transition-colors hover:text-foreground"
+                                      onClick={() =>
+                                        openProfessor(professorExternalId)
+                                      }
+                                      onFocus={() =>
+                                        prefetchProfessor(professorExternalId)
+                                      }
+                                      onMouseEnter={() =>
+                                        prefetchProfessor(professorExternalId)
+                                      }
+                                      type="button"
+                                    >
+                                      <Avatar className="size-7">
+                                        <AvatarImage
+                                          alt={professorDisplayName}
+                                          src={s.professorImageUrl}
+                                        />
+                                        <AvatarFallback>
+                                          {getInitials(professorDisplayName)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="min-w-0">
+                                        <div className="truncate">
+                                          {professorDisplayName}
+                                        </div>
+                                        {typeof s.professorAvgQuality ===
+                                          "number" && (
+                                          <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
+                                            <StarIcon
+                                              className="size-3"
+                                              fill="currentColor"
+                                            />
+                                            <span>
+                                              {s.professorAvgQuality.toFixed(1)}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </button>
+                                  }
+                                />
+                                <TooltipPopup>View full profile</TooltipPopup>
+                              </Tooltip>
                             ) : (
                               <div className="flex items-center gap-2">
                                 <Avatar className="size-7">
