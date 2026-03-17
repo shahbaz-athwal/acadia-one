@@ -1,25 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
 import {
-  BookOpenTextIcon,
   Building2Icon,
   ExternalLinkIcon,
-  GaugeIcon,
-  GlobeIcon,
   GraduationCapIcon,
-  LinkedinIcon,
   MailIcon,
   MapPinIcon,
   PhoneIcon,
-  StarIcon,
-  UserRoundIcon,
 } from "lucide-react";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Sheet,
   SheetDescription,
@@ -48,6 +39,7 @@ interface ProfessorSheetData {
   externalId: string;
   name: string;
   departmentPrefix: string;
+  departmentName: string;
   designation?: string;
   officeLocation?: string;
   email?: string;
@@ -174,184 +166,99 @@ function ProfessorDetailSheetBody({
   isLoading: boolean;
 }) {
   const title = data?.name ?? externalId;
-  const subtitle = isLoading
-    ? "Loading professor details."
-    : data
-      ? "Profile, contact details, and rating summary."
-      : "Professor details could not be found.";
+  let body: React.ReactNode;
+
+  if (isLoading) {
+    body = (
+      <SheetStateMessage
+        description="Professor details are loading."
+        title="Loading"
+      />
+    );
+  } else if (data) {
+    body = <ProfessorProfileContent data={data} />;
+  } else {
+    body = (
+      <SheetStateMessage
+        description="We couldn't find a professor for this URL."
+        title="Professor not found"
+      />
+    );
+  }
 
   return (
     <>
-      <SheetHeader>
-        <SheetTitle>{title}</SheetTitle>
-        <SheetDescription>{subtitle}</SheetDescription>
+      <SheetHeader className="pr-16">
+        <div className="flex items-start justify-between gap-3">
+          <SheetTitle>{title}</SheetTitle>
+          {data?.sourceUrl ? (
+            <a
+              className={buttonVariants({
+                size: "xs",
+                variant: "outline",
+              })}
+              href={data.sourceUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Source
+              <ExternalLinkIcon />
+            </a>
+          ) : null}
+        </div>
       </SheetHeader>
-      <SheetPanel className="space-y-5">
-        {isLoading ? (
-          <SheetStateMessage
-            description="Professor details are loading."
-            title="Loading"
-          />
-        ) : data ? (
-          <ProfessorProfileContent data={data} />
-        ) : (
-          <SheetStateMessage
-            description="We couldn't find a professor for this URL."
-            title="Professor not found"
-          />
-        )}
-      </SheetPanel>
+      <SheetPanel className="space-y-3">{body}</SheetPanel>
     </>
   );
 }
 
 function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
-  const detailItems = [
-    {
-      icon: Building2Icon,
-      label: "Department",
-      value: data.departmentPrefix,
-    },
-    {
-      icon: GraduationCapIcon,
-      label: "Designation",
-      value: data.designation,
-    },
-    {
-      icon: MapPinIcon,
-      label: "Office",
-      value: data.officeLocation,
-    },
-    {
-      icon: MailIcon,
-      label: "Email",
-      value: data.email,
-      href: data.email ? `mailto:${data.email}` : undefined,
-    },
-    {
-      icon: PhoneIcon,
-      label: "Phone",
-      value: data.phone,
-      href: data.phone ? `tel:${data.phone}` : undefined,
-    },
-    {
-      icon: GlobeIcon,
-      label: "Website",
-      value: data.websiteUrl,
-      href: data.websiteUrl,
-    },
-    {
-      icon: LinkedinIcon,
-      label: "LinkedIn",
-      value: data.linkedinUrl,
-      href: data.linkedinUrl,
-    },
-    {
-      icon: ExternalLinkIcon,
-      label: "Source",
-      value: data.sourceUrl,
-      href: data.sourceUrl,
-    },
-  ].filter((item) => !!item.value);
-
   return (
     <>
-      <section className="rounded-2xl border bg-muted/25 p-4">
-        <div className="flex items-start gap-4">
-          <Avatar className="size-20 rounded-2xl border bg-background text-lg">
+      <section className="space-y-2">
+        <div className="flex items-start gap-3">
+          <Avatar className="size-28 shrink-0 rounded-xl bg-muted/40 text-base">
             {data.imageUrl ? (
               <AvatarImage alt={data.name} src={data.imageUrl} />
             ) : null}
-            <AvatarFallback className="rounded-2xl">
+            <AvatarFallback className="rounded-xl">
               {getInitials(data.name)}
             </AvatarFallback>
           </Avatar>
-          <div className="min-w-0 flex-1 space-y-3">
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline">
-                  <Building2Icon />
-                  {data.departmentPrefix}
-                </Badge>
-                {data.designation ? (
-                  <Badge variant="secondary">
-                    <UserRoundIcon />
-                    {data.designation}
-                  </Badge>
-                ) : null}
-              </div>
-              {data.description ? (
-                <p className="text-muted-foreground text-sm leading-6">
-                  {data.description}
-                </p>
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  No faculty bio available yet.
-                </p>
-              )}
+          <div className="min-w-0 flex-1 space-y-1 pt-0.5">
+            <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+              <Building2Icon className="size-4 shrink-0" />
+              <span className="truncate leading-tight">{`Department of ${data.departmentName}`}</span>
             </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+              <GraduationCapIcon className="size-4 shrink-0" />
+              <span className="truncate leading-tight">
+                {data.designation ?? "-"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+              <MapPinIcon className="size-4 shrink-0" />
+              <span className="truncate leading-tight">
+                {data.officeLocation ?? "-"}
+              </span>
+            </div>
+            <ProfessorInfoItem
+              href={data.email ? `mailto:${data.email}` : undefined}
+              icon={MailIcon}
+              value={data.email ?? "-"}
+            />
+            <ProfessorInfoItem
+              href={data.phone ? `tel:${data.phone}` : undefined}
+              icon={PhoneIcon}
+              value={data.phone ?? "-"}
+            />
           </div>
         </div>
       </section>
-
-      <section className="space-y-3">
-        <div>
-          <h3 className="font-medium text-sm">Ratings</h3>
-          <p className="text-muted-foreground text-sm">
-            Average scores and total review count.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <ProfessorMetricCard
-            icon={StarIcon}
-            label="Avg quality"
-            suffix="/5"
-            value={formatAverageScore(data.avgQuality)}
-          />
-          <ProfessorMetricCard
-            icon={GaugeIcon}
-            label="Avg difficulty"
-            suffix="/5"
-            value={formatAverageScore(data.avgDifficulty)}
-          />
-          <ProfessorMetricCard
-            icon={BookOpenTextIcon}
-            label="Total ratings"
-            value={String(data.ratingCount)}
-          />
-        </div>
-      </section>
-
-      {detailItems.length > 0 ? (
-        <section className="space-y-3">
-          <div>
-            <h3 className="font-medium text-sm">Details</h3>
-            <p className="text-muted-foreground text-sm">
-              Contact and profile links.
-            </p>
-          </div>
-          <div className="space-y-2">
-            {detailItems.map((item) => (
-              <ProfessorDetailRow
-                href={item.href}
-                icon={item.icon}
-                key={item.label}
-                label={item.label}
-                value={item.value as string}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       {data.researchAreas && data.researchAreas.length > 0 ? (
-        <section className="space-y-3">
-          <div>
-            <h3 className="font-medium text-sm">Research areas</h3>
-            <p className="text-muted-foreground text-sm">
-              Topics associated with this professor.
-            </p>
-          </div>
+        <section className="space-y-2">
+          <h3 className="font-medium text-sm">Research Area</h3>
           <div className="flex flex-wrap gap-2">
             {data.researchAreas.map((area) => (
               <Badge key={area} variant="outline">
@@ -365,63 +272,26 @@ function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
   );
 }
 
-function ProfessorMetricCard({
-  icon: Icon,
-  label,
-  suffix,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  suffix?: string;
-  value: string;
-}) {
-  return (
-    <div className="rounded-2xl border bg-background p-4">
-      <div className="flex items-center gap-2 text-muted-foreground text-xs uppercase tracking-[0.18em]">
-        <Icon className="size-3.5" />
-        <span>{label}</span>
-      </div>
-      <div className="mt-3 flex items-end gap-1">
-        <span className="font-heading text-3xl leading-none">{value}</span>
-        {suffix ? (
-          <span className="pb-0.5 text-muted-foreground text-sm">{suffix}</span>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-function ProfessorDetailRow({
+function ProfessorInfoItem({
   href,
   icon: Icon,
-  label,
   value,
 }: {
   href?: string;
   icon: React.ComponentType<{ className?: string }>;
-  label: string;
   value: string;
 }) {
   const content = (
     <>
-      <div className="flex size-9 items-center justify-center rounded-xl bg-muted/50">
-        <Icon className="size-4 text-muted-foreground" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="text-muted-foreground text-xs uppercase tracking-[0.18em]">
-          {label}
-        </div>
-        <div className="truncate text-sm">{value}</div>
-      </div>
-      {href ? <ExternalLinkIcon className="size-4 text-muted-foreground" /> : null}
+      <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+      <div className="min-w-0 truncate text-sm">{value}</div>
     </>
   );
 
   if (href) {
     return (
       <a
-        className="flex items-center gap-3 rounded-2xl border bg-background p-3 transition-colors hover:bg-muted/30"
+        className="flex min-w-0 items-start gap-1.5 transition-colors hover:text-foreground/80"
         href={href}
         rel="noreferrer"
         target="_blank"
@@ -431,15 +301,7 @@ function ProfessorDetailRow({
     );
   }
 
-  return (
-    <div className="flex items-center gap-3 rounded-2xl border bg-background p-3">
-      {content}
-    </div>
-  );
-}
-
-function formatAverageScore(value: number | null | undefined) {
-  return typeof value === "number" ? value.toFixed(1) : "--";
+  return <div className="flex min-w-0 items-start gap-1.5">{content}</div>;
 }
 
 function SheetStateMessage({

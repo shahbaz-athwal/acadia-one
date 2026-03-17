@@ -11,6 +11,7 @@ export const getSheetByExternalId = query({
       externalId: v.string(),
       name: v.string(),
       departmentPrefix: v.string(),
+      departmentName: v.string(),
       designation: v.optional(v.string()),
       officeLocation: v.optional(v.string()),
       email: v.optional(v.string()),
@@ -39,10 +40,18 @@ export const getSheetByExternalId = query({
       return null;
     }
 
+    const department = await getOneFrom(
+      ctx.db,
+      "departments",
+      "by_prefix",
+      professor.departmentPrefix
+    );
+
     return {
       externalId: professor.externalId,
       name: professor.name,
       departmentPrefix: professor.departmentPrefix,
+      departmentName: department?.name ?? professor.departmentPrefix,
       designation: professor.designation,
       officeLocation: professor.officeLocation,
       email: professor.email,
