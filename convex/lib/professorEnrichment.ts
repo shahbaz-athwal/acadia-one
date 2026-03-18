@@ -125,8 +125,9 @@ export function dedupeResearchAreas(values: string[] | null | undefined) {
     return undefined;
   }
 
-  const deduped = [...new Set(values.map((value) => cleanOptionalString(value)))]
-    .filter((value): value is string => value !== undefined);
+  const deduped = [
+    ...new Set(values.map((value) => cleanOptionalString(value))),
+  ].filter((value): value is string => value !== undefined);
 
   return deduped.length > 0 ? deduped : undefined;
 }
@@ -166,7 +167,9 @@ export function buildEnrichmentPatch(
   ) as unknown as ProfessorFacultyEnrichmentPatch;
 }
 
-export function hasUsableEnrichmentData(patch: ProfessorFacultyEnrichmentPatch) {
+export function hasUsableEnrichmentData(
+  patch: ProfessorFacultyEnrichmentPatch
+) {
   return Object.entries(patch).some(([key, value]) => {
     if (key === "lastFacultyEnrichedAt" || value === undefined) {
       return false;
@@ -288,7 +291,7 @@ export function resolveFacultyEnrichmentUpdates(args: {
       agentMatchesByName.set(professor.name, possibleMatches);
     }
 
-    if (!agentMatch || !agentMatch.matchedExternalId) {
+    if (!(agentMatch && agentMatch.matchedExternalId)) {
       skippedNoMatch += 1;
       unmatchedNames.push(professor.name);
       continue;

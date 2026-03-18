@@ -5,8 +5,8 @@ import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  FacultyProfessorDirectorySchema,
   type FacultyProfessor,
+  FacultyProfessorDirectorySchema,
   shouldProcessFacultyDepartment,
 } from "../convex/lib/professorEnrichment";
 
@@ -40,7 +40,10 @@ function parseArgs(argv: string[]): CliOptions {
     }
 
     if (arg.startsWith("--department=")) {
-      options.department = arg.slice("--department=".length).trim().toUpperCase();
+      options.department = arg
+        .slice("--department=".length)
+        .trim()
+        .toUpperCase();
       continue;
     }
 

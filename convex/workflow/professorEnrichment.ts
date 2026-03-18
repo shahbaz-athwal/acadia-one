@@ -8,14 +8,14 @@ import { z } from "zod";
 import { api, components, internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
 import { AI_FACULTY_ENRICHMENT_PROMPT } from "../lib/constants";
+import { posthog } from "../lib/posthog";
 import {
   buildAgentCandidatePool,
-  resolveDeterministicMatches,
-  resolveFacultyEnrichmentUpdates,
   type DbProfessorMatchCandidate,
   type FacultyProfessor,
+  resolveDeterministicMatches,
+  resolveFacultyEnrichmentUpdates,
 } from "../lib/professorEnrichment";
-import { posthog } from "../lib/posthog";
 
 const FacultyProfessorMatchSchema = z.array(
   z.object({
@@ -72,7 +72,9 @@ function formatDbProfessor(
 
 async function matchFacultyProfessorsWithAgent(
   thread: NonNullable<
-    Awaited<ReturnType<typeof professorEnrichmentAgent.continueThread>>["thread"]
+    Awaited<
+      ReturnType<typeof professorEnrichmentAgent.continueThread>
+    >["thread"]
   >,
   args: {
     departmentPrefix: string;
@@ -92,7 +94,9 @@ async function matchFacultyProfessorsWithAgent(
       }
       return a.departmentPrefix.localeCompare(b.departmentPrefix);
     })
-    .map((professor) => formatDbProfessor(professor, args.departmentNameByPrefix))
+    .map((professor) =>
+      formatDbProfessor(professor, args.departmentNameByPrefix)
+    )
     .join("\n");
 
   const prompt = `
@@ -153,7 +157,7 @@ export const enrichDepartmentProfessors = internalAction({
     const dryRun = args.dryRun ?? false;
     const [dbProfessors, departments]: [
       DbProfessorMatchCandidate[],
-      Array<{ prefix: string; name: string }>
+      Array<{ prefix: string; name: string }>,
     ] = await Promise.all([
       ctx.runQuery(internal.internal.listAllProfessors),
       ctx.runQuery(api.departments.list),

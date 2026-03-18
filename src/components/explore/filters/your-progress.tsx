@@ -69,8 +69,10 @@ const NODE_ID_PREFIX: Record<TreeLevel, string> = {
 };
 const INDENT_PER_LEVEL_PX = 14;
 const EXPANSION_STORAGE_KEY = "dryft.progressTree.expansionState.v1";
-const COLLAPSED_LEVELS_BY_DEFAULT: ReadonlySet<TreeLevel> =
-  new Set<TreeLevel>();
+const COLLAPSED_LEVELS_BY_DEFAULT: ReadonlySet<TreeLevel> = new Set<TreeLevel>([
+  "subrequirement",
+  "group",
+]);
 const LEVELS_WITH_DIRECTIVE: ReadonlySet<TreeLevel> = new Set<TreeLevel>([
   "requirement",
   "subrequirement",

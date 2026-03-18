@@ -545,7 +545,9 @@ export const updateProfessorFacultyEnrichment = internalMutation({
     for (const update of args.updates) {
       const professor = await ctx.db
         .query("professors")
-        .withIndex("by_externalId", (q) => q.eq("externalId", update.externalId))
+        .withIndex("by_externalId", (q) =>
+          q.eq("externalId", update.externalId)
+        )
         .first();
       if (!professor) {
         continue;

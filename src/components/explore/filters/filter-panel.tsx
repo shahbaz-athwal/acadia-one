@@ -3,8 +3,6 @@ import { FiltersTab } from "@/components/explore/filters/filters-tab";
 import { ProgressTab } from "@/components/explore/filters/progress-tab";
 import type { TabItem } from "@/components/kokonutui/smooth-tab";
 import SmoothTab from "@/components/kokonutui/smooth-tab";
-import { SlidersHorizontalIcon } from "@/components/ui/sliders-horizontal";
-import { TrendingUpIcon } from "@/components/ui/trending-up";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
 import { SEARCH_DEFAULTS } from "@/routes/explore";
 
@@ -26,14 +24,12 @@ export function FilterPanel() {
     {
       id: "filters",
       title: "Filters",
-      icon: SlidersHorizontalIcon,
       badge: filterCount,
       content: <FiltersTab />,
     },
     {
       id: "progress",
-      title: "Your Progress",
-      icon: TrendingUpIcon,
+      title: "Progress",
       content: <ProgressTab />,
     },
   ];
