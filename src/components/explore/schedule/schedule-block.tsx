@@ -1,5 +1,10 @@
 import { Button } from "@/components/ui/button";
 import {
+  Tooltip,
+  TooltipPopup,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   PreviewCard,
   PreviewCardPopup,
   PreviewCardTrigger,
@@ -7,6 +12,7 @@ import {
 import type { ScheduleItem } from "@/hooks/use-schedule-items";
 import { getBlockPosition } from "@/lib/schedule-time";
 import { cn, formatDays, stripProfessorSalutations } from "@/lib/utils";
+import { SparklesIcon } from "lucide-react";
 
 interface ScheduleBlockProps {
   item: ScheduleItem;
@@ -75,12 +81,25 @@ export function ScheduleBlock({
             }}
           >
             <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden">
-              <span
-                className="truncate font-semibold leading-tight"
-                style={{ color: item.color }}
-              >
-                {item.course.code}
-              </span>
+              <div className="flex items-start justify-between gap-1">
+                <span
+                  className="min-w-0 flex-1 truncate font-semibold leading-tight"
+                  style={{ color: item.color }}
+                >
+                  {item.course.code}
+                </span>
+                {item.isAiSuggested ? (
+                  <Tooltip>
+                    <TooltipTrigger
+                      aria-label="AI suggested section"
+                      className="mt-0.5 shrink-0 text-foreground/80"
+                    >
+                      <SparklesIcon className="size-3" />
+                    </TooltipTrigger>
+                    <TooltipPopup>AI suggested</TooltipPopup>
+                  </Tooltip>
+                ) : null}
+              </div>
               <span className="truncate text-[11px] leading-tight opacity-80">
                 {item.section.sectionCode}
               </span>

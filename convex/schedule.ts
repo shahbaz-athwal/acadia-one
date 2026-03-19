@@ -6,6 +6,7 @@ export const addSection = mutation({
     sessionId: v.string(),
     sectionId: v.id("sections"),
     color: v.string(),
+    isAiSuggested: v.optional(v.boolean()),
   },
   returns: v.object({
     id: v.id("scheduleItems"),
@@ -34,6 +35,7 @@ export const addSection = mutation({
       sessionId: args.sessionId,
       sectionId: args.sectionId,
       color: args.color,
+      isAiSuggested: args.isAiSuggested ?? false,
       addedAt: Date.now(),
     });
 
@@ -110,6 +112,7 @@ export const get = query({
           scheduleItemId: item._id,
           sectionDbId: item.sectionId,
           color: item.color,
+          isAiSuggested: item.isAiSuggested ?? false,
           section: {
             id: section.externalId,
             termCode: section.termCode,
