@@ -15,10 +15,10 @@ import {
   SLOT_COUNT,
   SLOT_HEIGHT,
   TIME_GUTTER_WIDTH,
-  WEEKDAYS,
 } from "@/lib/schedule-time";
 import { cn } from "@/lib/utils";
 import { api } from "../../../../convex/_generated/api";
+import { WEEKDAYS } from "../../../../shared/schedule-time";
 import { ScheduleBlock } from "./schedule-block";
 
 const DAY_MIN_WIDTH = 85;

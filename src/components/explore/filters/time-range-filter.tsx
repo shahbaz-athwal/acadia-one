@@ -6,7 +6,7 @@ import {
   TIME_RANGE_MINUTES,
   TIME_RANGE_STEP_MINUTES,
 } from "@/lib/explore-filter-constants";
-import { formatTime } from "@/lib/schedule-time";
+import { formatTime } from "../../../../shared/schedule-time";
 
 function formatTimeWithHourPadding(minutes: number): string {
   const formatted = formatTime(minutes);

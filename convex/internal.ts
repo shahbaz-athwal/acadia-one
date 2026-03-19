@@ -238,6 +238,33 @@ export const getExistingRsgKeys = internalQuery({
   },
 });
 
+export const getRsgEntriesByKeys = internalQuery({
+  args: { keys: v.array(v.string()) },
+  returns: v.array(
+    v.object({
+      key: v.string(),
+      courseCodes: v.array(v.string()),
+      type: literals("exact", "search"),
+    })
+  ),
+  handler: async (ctx, args) => {
+    const rows = await asyncMap(args.keys, (key) =>
+      ctx.db
+        .query("rsg")
+        .withIndex("by_key", (q) => q.eq("key", key))
+        .first()
+    );
+
+    return rows
+      .filter((row): row is NonNullable<typeof row> => !!row)
+      .map((row) => ({
+        key: row.key,
+        courseCodes: row.courseCodes,
+        type: row.type,
+      }));
+  },
+});
+
 export const upsertRsgEntries = internalMutation({
   args: {
     entries: v.array(vv.doc("rsg").omit("_id", "_creationTime")),

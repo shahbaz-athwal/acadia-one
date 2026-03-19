@@ -1,3 +1,5 @@
+import { useQueryClient } from "@tanstack/react-query";
+import { useAction } from "convex/react";
 import { SparklesIcon } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -9,7 +11,10 @@ import {
 } from "@/components/ui/morphing-popover";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
+import { useScheduleView } from "@/hooks/use-schedule-view";
+import { scheduleQuery } from "@/queries/explore";
 import { cn } from "@/lib/utils";
+import { api } from "../../../../convex/_generated/api";
 
 const POPOVER_TRANSITION = {
   bounce: 0.08,
@@ -24,9 +29,19 @@ const CONTENT_TRANSITION = {
 } as const;
 
 export function ExploreAiPromptFab() {
-  const { isAuthenticated } = useAuth();
+  const queryClient = useQueryClient();
+  const { isAuthenticated, sessionId, tokenHash } = useAuth();
+  const { termCode, termName } = useScheduleView();
+  const planScheduleForTerm = useAction(api.aiScheduleExecutor.planScheduleForTerm);
   const [isOpen, setIsOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [resultMessage, setResultMessage] = useState<{
+    summary: string;
+    studentMessage: string;
+    saved: boolean;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const composerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -36,6 +51,8 @@ export function ExploreAiPromptFab() {
 
     setIsOpen(false);
     setPrompt("");
+    setResultMessage(null);
+    setError(null);
   }, [isAuthenticated]);
 
   useEffect(() => {
@@ -56,7 +73,7 @@ export function ExploreAiPromptFab() {
     return null;
   }
 
-  const isGenerateDisabled = prompt.trim().length === 0;
+  const isGenerateDisabled = isGenerating || termCode.length === 0;
 
   return (
     <div
@@ -95,22 +112,79 @@ export function ExploreAiPromptFab() {
           >
             <form
               className="space-y-2"
-              onSubmit={(event) => {
+              onSubmit={async (event) => {
                 event.preventDefault();
+                if (isGenerateDisabled) {
+                  return;
+                }
+
+                setIsGenerating(true);
+                setError(null);
+                setResultMessage(null);
+
+                try {
+                  const result = await planScheduleForTerm({
+                    sessionId,
+                    tokenHash,
+                    termCode,
+                    instructions: prompt.trim() || undefined,
+                  });
+
+                  setResultMessage({
+                    summary: result.summary,
+                    studentMessage: result.studentMessage,
+                    saved: result.saved,
+                  });
+
+                  if (result.saved) {
+                    await queryClient.invalidateQueries({
+                      queryKey: scheduleQuery(sessionId).queryKey,
+                    });
+                  }
+                } catch (err) {
+                  setError(
+                    err instanceof Error
+                      ? err.message
+                      : "Schedule planning failed."
+                  );
+                } finally {
+                  setIsGenerating(false);
+                }
               }}
             >
+              <p className="px-2 pt-1 text-muted-foreground text-xs">
+                Planning for {termName || termCode || "the selected term"}
+              </p>
               <Textarea
                 aria-label="AI schedule prompt"
                 className="rounded-[1.125rem] border-transparent bg-transparent shadow-none before:hidden"
                 onChange={(event) => setPrompt(event.target.value)}
-                placeholder="Make me a schdeule with no class on friday. or No class after 4 pm"
+                placeholder="No class on Friday. No classes after 4 PM."
                 size="sm"
                 style={{ resize: "none" }}
                 value={prompt}
               />
+              {resultMessage ? (
+                <div
+                  className={cn(
+                    "rounded-2xl px-3 py-2 text-sm",
+                    resultMessage.saved
+                      ? "bg-primary/8 text-foreground"
+                      : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  <p>{resultMessage.studentMessage}</p>
+                  <p className="mt-1 text-xs opacity-80">{resultMessage.summary}</p>
+                </div>
+              ) : null}
+              {error ? (
+                <div className="rounded-2xl bg-destructive/10 px-3 py-2 text-destructive text-sm">
+                  {error}
+                </div>
+              ) : null}
               <div className="flex justify-end">
                 <Button disabled={isGenerateDisabled} size="sm" type="submit">
-                  Generate
+                  {isGenerating ? "Planning..." : "Generate"}
                 </Button>
               </div>
             </form>
