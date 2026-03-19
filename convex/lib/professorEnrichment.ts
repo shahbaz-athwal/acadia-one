@@ -91,6 +91,8 @@ const HONORIFIC_RE =
   /\b(?:dr|prof|professor|mr|mrs|ms|rev|reverend|fr|father)\.?\b/gi;
 const DEGREE_RE =
   /\b(?:ph\.?\s*d\.?|p\.?\s*stat\.?|m\.?\s*sc\.?|m\.?\s*a\.?|m\.?\s*ed\.?|b\.?\s*ed\.?|m\.?\s*b\.?\s*a\.?|mlt)\b/gi;
+const HTML_ANGLE_BRACKETS_RE = /[<>]/;
+const ENCODED_HTML_ANGLE_BRACKETS_RE = /%3c|%3e/i;
 
 export function cleanOptionalString(value: string | null | undefined) {
   if (!value) {
@@ -105,7 +107,10 @@ export function sanitizeUrl(value: string | null | undefined) {
   if (!cleaned) {
     return undefined;
   }
-  if (/[<>]/.test(cleaned) || /%3c|%3e/i.test(cleaned)) {
+  if (
+    HTML_ANGLE_BRACKETS_RE.test(cleaned) ||
+    ENCODED_HTML_ANGLE_BRACKETS_RE.test(cleaned)
+  ) {
     return undefined;
   }
 
@@ -291,7 +296,7 @@ export function resolveFacultyEnrichmentUpdates(args: {
       agentMatchesByName.set(professor.name, possibleMatches);
     }
 
-    if (!(agentMatch && agentMatch.matchedExternalId)) {
+    if (!agentMatch?.matchedExternalId) {
       skippedNoMatch += 1;
       unmatchedNames.push(professor.name);
       continue;

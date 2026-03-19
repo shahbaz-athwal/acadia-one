@@ -4,6 +4,7 @@ const SUBJECT_PATTERN = "[A-Za-z]{2,6}";
 const SEPARATED_NUMBER_PATTERN = "[A-Za-z0-9]{2,6}";
 const COMPACT_NUMBER_PATTERN = "[0-9]{3,4}[A-Za-z]?";
 const COURSE_CODE_REGEX_SOURCE = `\\b(${SUBJECT_PATTERN})(?:\\s*(?:-\\s*|\\s+)(${SEPARATED_NUMBER_PATTERN})|(${COMPACT_NUMBER_PATTERN}))\\b`;
+const CONTAINS_DIGIT_REGEX = /\d/;
 
 function createCourseCodeRegex(flags = "gi"): RegExp {
   return new RegExp(COURSE_CODE_REGEX_SOURCE, flags);
@@ -52,7 +53,11 @@ function extractCourseCodesAndAnnotate(text: string) {
   for (const match of text.matchAll(regexForExtract)) {
     const subject = match[1];
     const number = match[2] ?? match[3];
-    if (subject == null || number == null || !/\d/.test(number)) {
+    if (
+      subject == null ||
+      number == null ||
+      !CONTAINS_DIGIT_REGEX.test(number)
+    ) {
       continue;
     }
     codes.push(canonicalCourseCode(subject, number));
@@ -69,7 +74,11 @@ function extractCourseCodesAndAnnotate(text: string) {
     ) => {
       // If regex matched, subject/number are present; keep fallback for safety.
       const number = separatedNumber ?? compactNumber;
-      if (subject == null || number == null || !/\d/.test(number)) {
+      if (
+        subject == null ||
+        number == null ||
+        !CONTAINS_DIGIT_REGEX.test(number)
+      ) {
         return fullMatch;
       }
       const canonicalCode = canonicalCourseCode(subject, number);

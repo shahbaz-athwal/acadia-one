@@ -195,10 +195,10 @@ const TeacherRatingsResponseSchema = z.object({
 });
 
 export type TeacherRating = z.infer<typeof RatingNodeSchema>;
-export type TeacherRatingsPage<TRating = TeacherRating> = {
+export interface TeacherRatingsPage<TRating = TeacherRating> {
   ratings: TRating[];
   paging: z.infer<typeof PageInfoSchema>;
-};
+}
 
 const SchoolDepartmentsResponseSchema = z.object({
   search: z.object({
@@ -368,7 +368,7 @@ export class RateMyProfScraper {
     };
   }
 
-  async getAllTeacherRatings({ teacherId }: { teacherId: string }) {
+  getAllTeacherRatings({ teacherId }: { teacherId: string }) {
     return collectPaginatedRatings((cursor) =>
       this.getTeacherRatings({ teacherId, cursor })
     );

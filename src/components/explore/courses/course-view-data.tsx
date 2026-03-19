@@ -110,8 +110,228 @@ interface PendingSection {
   };
 }
 
+type Course = ReturnType<typeof useExploreCourses>["courses"][number];
+type Section = Course["sections"][number];
+
+interface SectionActionParams {
+  section: Section;
+  course: Course;
+  professorDisplayName: string;
+  color: string;
+  isAdded: boolean;
+}
+
 function formatAverageScore(value: number | null | undefined) {
   return typeof value === "number" ? value.toFixed(1) : "--";
+}
+
+function ProfessorInfo(props: {
+  imageUrl: string | undefined;
+  displayName: string;
+  avgQuality: number | null | undefined;
+}) {
+  return (
+    <>
+      <Avatar className="size-7">
+        <AvatarImage alt={props.displayName} src={props.imageUrl} />
+        <AvatarFallback>{getInitials(props.displayName)}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0">
+        <div className="truncate">{props.displayName}</div>
+        {typeof props.avgQuality === "number" ? (
+          <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
+            <StarIcon className="size-3" fill="currentColor" />
+            <span>{props.avgQuality.toFixed(1)}</span>
+          </div>
+        ) : null}
+      </div>
+    </>
+  );
+}
+
+function ProfessorCell(props: {
+  section: Section;
+  professorDisplayName: string;
+  openProfessor: (externalId: string) => void;
+  prefetchProfessor: (externalId: string) => void;
+}) {
+  const { section, professorDisplayName, openProfessor, prefetchProfessor } =
+    props;
+  const { professorExternalId } = section;
+
+  if (!professorExternalId) {
+    return (
+      <div className="flex items-center gap-2">
+        <ProfessorInfo
+          avgQuality={section.professorAvgQuality}
+          displayName={professorDisplayName}
+          imageUrl={section.professorImageUrl}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <button
+            className="flex cursor-pointer items-center gap-2 text-left transition-colors hover:text-foreground"
+            onClick={() => openProfessor(professorExternalId)}
+            onFocus={() => prefetchProfessor(professorExternalId)}
+            onMouseEnter={() => prefetchProfessor(professorExternalId)}
+            type="button"
+          >
+            <ProfessorInfo
+              avgQuality={section.professorAvgQuality}
+              displayName={professorDisplayName}
+              imageUrl={section.professorImageUrl}
+            />
+          </button>
+        }
+      />
+      <TooltipPopup>View full profile</TooltipPopup>
+    </Tooltip>
+  );
+}
+
+function SectionTimesCell(props: {
+  section: Section;
+  isContinuousIntake: boolean;
+}) {
+  if (props.isContinuousIntake) {
+    return <span className="text-muted-foreground">-</span>;
+  }
+
+  return (
+    <div className="space-y-0.5">
+      <div>
+        {props.section.classStartTime} - {props.section.classEndTime}
+      </div>
+      <div className="text-muted-foreground">
+        {formatDays(props.section.days)}
+      </div>
+    </div>
+  );
+}
+
+function SectionRow(props: {
+  section: Section;
+  course: Course;
+  addedSectionIds: Set<string>;
+  termNameByCode: Map<string, string>;
+  scheduleItemCount: number;
+  openProfessor: (externalId: string) => void;
+  prefetchProfessor: (externalId: string) => void;
+  handleAddSection: (params: SectionActionParams) => void;
+  handleSectionPreview: (params: SectionActionParams) => void;
+  clearPreview: () => void;
+  renderActionCell: (params: {
+    isContinuousIntake: boolean;
+    isAdded: boolean;
+    actionButton: ReactElement;
+  }) => ReactElement;
+}) {
+  const {
+    section,
+    course,
+    addedSectionIds,
+    termNameByCode,
+    scheduleItemCount,
+    openProfessor,
+    prefetchProfessor,
+    handleAddSection,
+    handleSectionPreview,
+    clearPreview,
+    renderActionCell,
+  } = props;
+  const isAdded = addedSectionIds.has(section.id);
+  const isContinuousIntake = isCoinTerm(section.termCode, termNameByCode);
+  const professorDisplayName = stripProfessorSalutations(section.professorName);
+  const color =
+    SCHEDULE_COLORS[scheduleItemCount % SCHEDULE_COLORS.length] ?? "#94a3b8";
+  const sectionAction = {
+    section,
+    course,
+    professorDisplayName,
+    color,
+    isAdded,
+  };
+  const actionButton = (
+    <Button
+      className={cn(isAdded && "cursor-default")}
+      disabled={isAdded}
+      onClick={() => {
+        handleAddSection(sectionAction);
+      }}
+      onMouseEnter={() => {
+        handleSectionPreview(sectionAction);
+      }}
+      onMouseLeave={() => {
+        clearPreview();
+      }}
+      size={isAdded ? "xs" : "icon-xs"}
+      variant={isAdded ? "secondary" : "default"}
+    >
+      {isAdded ? (
+        <>
+          <CheckIcon className="size-3.5" />
+          Added
+        </>
+      ) : (
+        <PlusIcon className="size-4" />
+      )}
+    </Button>
+  );
+
+  return (
+    <TableRow key={section.id}>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{section.sectionCode}</span>
+          <Badge variant="info">
+            {formatTermLabel(section.termCode, termNameByCode)}
+          </Badge>
+        </div>
+      </TableCell>
+
+      {SHOW_SEAT_COLUMNS ? (
+        <TableCell className="font-medium">--</TableCell>
+      ) : null}
+
+      <TableCell>
+        <SectionTimesCell
+          isContinuousIntake={isContinuousIntake}
+          section={section}
+        />
+      </TableCell>
+
+      <TableCell className="whitespace-normal">
+        <LocationDisplay
+          buildingName={section.buildingName}
+          isOnline={section.isOnline}
+          roomNumber={section.roomNumber}
+        />
+      </TableCell>
+
+      <TableCell>
+        <ProfessorCell
+          openProfessor={openProfessor}
+          prefetchProfessor={prefetchProfessor}
+          professorDisplayName={professorDisplayName}
+          section={section}
+        />
+      </TableCell>
+
+      <TableCell className="text-right">
+        {renderActionCell({
+          isContinuousIntake,
+          isAdded,
+          actionButton,
+        })}
+      </TableCell>
+    </TableRow>
+  );
 }
 
 export function CourseViewData() {
@@ -170,8 +390,6 @@ export function CourseViewData() {
     [userData]
   );
   const showRequisiteStatuses = isAuthenticated && !!userData;
-  type Course = (typeof courses)[number];
-  type Section = Course["sections"][number];
 
   const buildPendingSection = (
     section: Section,
@@ -198,13 +416,7 @@ export function CourseViewData() {
     },
   });
 
-  const handleAddSection = (params: {
-    section: Section;
-    course: Course;
-    professorDisplayName: string;
-    color: string;
-    isAdded: boolean;
-  }) => {
+  const handleAddSection = (params: SectionActionParams) => {
     const { section, course, professorDisplayName, color, isAdded } = params;
     clearPreview();
     if (isAdded) {
@@ -218,13 +430,7 @@ export function CourseViewData() {
     addSection({ sessionId, sectionId: section._id, color });
   };
 
-  const handleSectionPreview = (params: {
-    section: Section;
-    course: Course;
-    professorDisplayName: string;
-    color: string;
-    isAdded: boolean;
-  }) => {
+  const handleSectionPreview = (params: SectionActionParams) => {
     const { section, course, professorDisplayName, color, isAdded } = params;
     if (isAdded) {
       return;
@@ -377,190 +583,22 @@ export function CourseViewData() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {course.sections.map((s) => {
-                      const isAdded = addedSectionIds.has(s.id);
-                      const isContinuousIntake = isCoinTerm(
-                        s.termCode,
-                        termNameByCode
-                      );
-                      const professorExternalId = s.professorExternalId;
-                      const professorDisplayName = stripProfessorSalutations(
-                        s.professorName
-                      );
-                      const color =
-                        SCHEDULE_COLORS[
-                          allItems.length % SCHEDULE_COLORS.length
-                        ] ?? "#94a3b8";
-                      const actionButton = (
-                        <Button
-                          className={cn(isAdded && "cursor-default")}
-                          disabled={isAdded}
-                          onClick={() => {
-                            handleAddSection({
-                              section: s,
-                              course,
-                              professorDisplayName,
-                              color,
-                              isAdded,
-                            });
-                          }}
-                          onMouseEnter={() => {
-                            handleSectionPreview({
-                              section: s,
-                              course,
-                              professorDisplayName,
-                              color,
-                              isAdded,
-                            });
-                          }}
-                          onMouseLeave={() => {
-                            clearPreview();
-                          }}
-                          size={isAdded ? "xs" : "icon-xs"}
-                          variant={isAdded ? "secondary" : "default"}
-                        >
-                          {isAdded ? (
-                            <>
-                              <CheckIcon className="size-3.5" />
-                              Added
-                            </>
-                          ) : (
-                            <PlusIcon className="size-4" />
-                          )}
-                        </Button>
-                      );
-
-                      return (
-                        <TableRow key={s.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">
-                                {s.sectionCode}
-                              </span>
-                              <Badge variant="info">
-                                {formatTermLabel(s.termCode, termNameByCode)}
-                              </Badge>
-                            </div>
-                          </TableCell>
-
-                          {SHOW_SEAT_COLUMNS ? (
-                            <TableCell className="font-medium">--</TableCell>
-                          ) : null}
-
-                          <TableCell>
-                            {isContinuousIntake ? (
-                              <span className="text-muted-foreground">-</span>
-                            ) : (
-                              <div className="space-y-0.5">
-                                <div>
-                                  {s.classStartTime} - {s.classEndTime}
-                                </div>
-                                <div className="text-muted-foreground">
-                                  {formatDays(s.days)}
-                                </div>
-                              </div>
-                            )}
-                          </TableCell>
-
-                          <TableCell className="whitespace-normal">
-                            <LocationDisplay
-                              buildingName={s.buildingName}
-                              isOnline={s.isOnline}
-                              roomNumber={s.roomNumber}
-                            />
-                          </TableCell>
-
-                          <TableCell>
-                            {professorExternalId ? (
-                              <Tooltip>
-                                <TooltipTrigger
-                                  render={
-                                    <button
-                                      className="flex cursor-pointer items-center gap-2 text-left transition-colors hover:text-foreground"
-                                      onClick={() =>
-                                        openProfessor(professorExternalId)
-                                      }
-                                      onFocus={() =>
-                                        prefetchProfessor(professorExternalId)
-                                      }
-                                      onMouseEnter={() =>
-                                        prefetchProfessor(professorExternalId)
-                                      }
-                                      type="button"
-                                    >
-                                      <Avatar className="size-7">
-                                        <AvatarImage
-                                          alt={professorDisplayName}
-                                          src={s.professorImageUrl}
-                                        />
-                                        <AvatarFallback>
-                                          {getInitials(professorDisplayName)}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <div className="min-w-0">
-                                        <div className="truncate">
-                                          {professorDisplayName}
-                                        </div>
-                                        {typeof s.professorAvgQuality ===
-                                          "number" && (
-                                          <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
-                                            <StarIcon
-                                              className="size-3"
-                                              fill="currentColor"
-                                            />
-                                            <span>
-                                              {s.professorAvgQuality.toFixed(1)}
-                                            </span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    </button>
-                                  }
-                                />
-                                <TooltipPopup>View full profile</TooltipPopup>
-                              </Tooltip>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <Avatar className="size-7">
-                                  <AvatarImage
-                                    alt={professorDisplayName}
-                                    src={s.professorImageUrl}
-                                  />
-                                  <AvatarFallback>
-                                    {getInitials(professorDisplayName)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="min-w-0">
-                                  <div className="truncate">
-                                    {professorDisplayName}
-                                  </div>
-                                  {typeof s.professorAvgQuality ===
-                                    "number" && (
-                                    <div className="mt-0.5 inline-flex items-center gap-1 text-muted-foreground">
-                                      <StarIcon
-                                        className="size-3"
-                                        fill="currentColor"
-                                      />
-                                      <span>
-                                        {s.professorAvgQuality.toFixed(1)}
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </TableCell>
-
-                          <TableCell className="text-right">
-                            {renderActionCell({
-                              isContinuousIntake,
-                              isAdded,
-                              actionButton,
-                            })}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    {course.sections.map((section) => (
+                      <SectionRow
+                        addedSectionIds={addedSectionIds}
+                        clearPreview={clearPreview}
+                        course={course}
+                        handleAddSection={handleAddSection}
+                        handleSectionPreview={handleSectionPreview}
+                        key={section.id}
+                        openProfessor={openProfessor}
+                        prefetchProfessor={prefetchProfessor}
+                        renderActionCell={renderActionCell}
+                        scheduleItemCount={allItems.length}
+                        section={section}
+                        termNameByCode={termNameByCode}
+                      />
+                    ))}
                   </TableBody>
                 </Table>
               )}
