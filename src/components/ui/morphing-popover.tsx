@@ -16,10 +16,10 @@ import {
   Transition,
   Variants,
 } from 'motion/react';
-import useClickOutside from '@/hooks/useClickOutside';
+import useClickOutside from '@/hooks/use-click-outside';
 import { cn } from '@/lib/utils';
 
-const TRANSITION = {
+const TRANSITION: Transition = {
   type: 'spring',
   bounce: 0.1,
   duration: 0.4,
