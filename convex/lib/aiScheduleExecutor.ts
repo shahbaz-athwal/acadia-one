@@ -187,7 +187,10 @@ export function buildRemainingRequirementGroups(args: {
   courseStatuses: Doc<"acadiaUserData">["coursePlanningStatuses"];
   treatInProgressAsSatisfied: boolean;
   offeredCourseCodeSet: ReadonlySet<string>;
-  rsgByKey: ReadonlyMap<string, { courseCodes: string[]; type: "exact" | "search" }>;
+  rsgByKey: ReadonlyMap<
+    string,
+    { courseCodes: string[]; type: "exact" | "search" }
+  >;
 }) {
   const warnings: string[] = [];
   const groups: RemainingRequirementGroup[] = [];
@@ -209,12 +212,15 @@ export function buildRemainingRequirementGroups(args: {
             ? explicitCourseCodes
             : toUniqueSortedStrings(rsgEntry?.courseCodes ?? []);
         const groupType =
-          explicitCourseCodes.length > 0 ? "exact" : (rsgEntry?.type ?? "search");
-        const satisfiedByCourseCodes = candidateCourseCodes.filter((courseCode) =>
-          shouldStatusCountAsSatisfied(
-            args.courseStatuses?.[courseCode],
-            args.treatInProgressAsSatisfied
-          )
+          explicitCourseCodes.length > 0
+            ? "exact"
+            : (rsgEntry?.type ?? "search");
+        const satisfiedByCourseCodes = candidateCourseCodes.filter(
+          (courseCode) =>
+            shouldStatusCountAsSatisfied(
+              args.courseStatuses?.[courseCode],
+              args.treatInProgressAsSatisfied
+            )
         );
         const satisfied = satisfiedByCourseCodes.length > 0;
 
@@ -234,8 +240,8 @@ export function buildRemainingRequirementGroups(args: {
           );
         }
 
-        const offeredCandidateCourseCodes = candidateCourseCodes.filter((courseCode) =>
-          args.offeredCourseCodeSet.has(courseCode)
+        const offeredCandidateCourseCodes = candidateCourseCodes.filter(
+          (courseCode) => args.offeredCourseCodeSet.has(courseCode)
         );
         const unavailableCandidateCourseCodes = candidateCourseCodes.filter(
           (courseCode) => !args.offeredCourseCodeSet.has(courseCode)
@@ -292,19 +298,18 @@ export function buildPlanningPrompt(args: {
   const unmetRequirementsBlock =
     args.snapshot.remainingRequirementGroups.length > 0
       ? args.snapshot.remainingRequirementGroups
-          .map(
-            (group) =>
-              [
-                `Requirement Key: ${group.requirementKey}`,
-                `Requirement: ${group.requirementLabel}`,
-                `Subrequirement: ${group.subrequirementLabel}`,
-                `Group: ${group.groupLabel}`,
-                `Type: ${group.groupType}`,
-                `Directive: ${group.directiveText ?? "(none)"}`,
-                `Remaining candidate course codes: ${joinValues(group.remainingCandidateCourseCodes)}`,
-                `Offered this term: ${joinValues(group.offeredCandidateCourseCodes)}`,
-                `Not offered this term: ${joinValues(group.unavailableCandidateCourseCodes)}`,
-              ].join("\n")
+          .map((group) =>
+            [
+              `Requirement Key: ${group.requirementKey}`,
+              `Requirement: ${group.requirementLabel}`,
+              `Subrequirement: ${group.subrequirementLabel}`,
+              `Group: ${group.groupLabel}`,
+              `Type: ${group.groupType}`,
+              `Directive: ${group.directiveText ?? "(none)"}`,
+              `Remaining candidate course codes: ${joinValues(group.remainingCandidateCourseCodes)}`,
+              `Offered this term: ${joinValues(group.offeredCandidateCourseCodes)}`,
+              `Not offered this term: ${joinValues(group.unavailableCandidateCourseCodes)}`,
+            ].join("\n")
           )
           .join("\n\n")
       : "(none)";

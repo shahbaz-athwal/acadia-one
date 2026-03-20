@@ -712,7 +712,11 @@ export const detectScheduleConflictsForAi = query({
       await loadValidCandidateSections(ctx, candidateSectionIds, args.termCode);
     const savedScheduleSections =
       includeSavedSchedule && args.sessionId
-        ? await loadScheduleSectionsBySession(ctx, args.sessionId, args.termCode)
+        ? await loadScheduleSectionsBySession(
+            ctx,
+            args.sessionId,
+            args.termCode
+          )
         : [];
     const { conflictSections, stateByConflictId } = buildConflictState(
       enrichedCandidates,
@@ -784,7 +788,10 @@ export const saveAiScheduleSections = mutation({
     ).filter((section): section is SectionDoc => section !== null);
     const existingSectionIdSet = new Set(
       existingScheduleSections
-        .filter((section) => mode !== "replaceTerm" || section.termCode !== args.termCode)
+        .filter(
+          (section) =>
+            mode !== "replaceTerm" || section.termCode !== args.termCode
+        )
         .map((item) => item._id)
     );
     const invalidSectionIds: string[] = [];

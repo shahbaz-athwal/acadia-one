@@ -2,12 +2,12 @@
 
 import { google } from "@ai-sdk/google";
 import { withTracing } from "@posthog/ai";
-import { Output, generateText, stepCountIs, tool } from "ai";
+import { generateText, Output, stepCountIs, tool } from "ai";
 import { ConvexError, v } from "convex/values";
 import { z } from "zod";
 import { api, internal } from "./_generated/api";
 import type { Doc } from "./_generated/dataModel";
-import { action, type ActionCtx } from "./_generated/server";
+import { type ActionCtx, action } from "./_generated/server";
 import {
   buildPlannerSummary,
   buildPlanningPrompt,
@@ -16,9 +16,9 @@ import {
   buildStatusBuckets,
   dedupeWarnings,
   normalizePlannerOptions,
+  type PlannerExecutionResult,
   PlannerModelOutputSchema,
   resolveRequirementOutcomes,
-  type PlannerExecutionResult,
   type TermDescriptor,
   type TermScheduleSection,
 } from "./lib/aiScheduleExecutor";
@@ -211,18 +211,20 @@ export const planScheduleForTerm = action({
 
     try {
       const plannerOptions = normalizePlannerOptions(args.plannerOptions);
-      const [validation, userData, terms, allScheduleItems] = await Promise.all([
-        ctx.runQuery(api.sessions.validateSession, {
-          sessionId: args.sessionId,
-          tokenHash: args.tokenHash,
-        }),
-        ctx.runQuery(api.sessions.getUserData, {
-          sessionId: args.sessionId,
-          tokenHash: args.tokenHash,
-        }),
-        ctx.runQuery(api.terms.list, {}),
-        ctx.runQuery(api.schedule.get, { sessionId: args.sessionId }),
-      ]);
+      const [validation, userData, terms, allScheduleItems] = await Promise.all(
+        [
+          ctx.runQuery(api.sessions.validateSession, {
+            sessionId: args.sessionId,
+            tokenHash: args.tokenHash,
+          }),
+          ctx.runQuery(api.sessions.getUserData, {
+            sessionId: args.sessionId,
+            tokenHash: args.tokenHash,
+          }),
+          ctx.runQuery(api.terms.list, {}),
+          ctx.runQuery(api.schedule.get, { sessionId: args.sessionId }),
+        ]
+      );
 
       if (!validation.valid) {
         throw new ConvexError("Invalid session or token hash.");
@@ -244,9 +246,7 @@ export const planScheduleForTerm = action({
           term: selectedTerm,
           studentMessage:
             "Your Acadia data is not ready yet. Refresh your data and try planning again.",
-          warnings: [
-            `User data status is '${validation.userDataStatus}'.`,
-          ],
+          warnings: [`User data status is '${validation.userDataStatus}'.`],
         });
       }
 
@@ -264,26 +264,28 @@ export const planScheduleForTerm = action({
         userData.programEvaluation.requirements.flatMap((requirement) =>
           requirement.subrequirements.flatMap((subrequirement) =>
             subrequirement.groups.map((group) =>
-              buildRequirementKey(
-                requirement.code,
-                subrequirement.id,
-                group.id
-              )
+              buildRequirementKey(requirement.code, subrequirement.id, group.id)
             )
           )
         )
       );
-      const rsgEntries = await ctx.runQuery(internal.internal.getRsgEntriesByKeys, {
-        keys: requirementKeys,
-      });
+      const rsgEntries = await ctx.runQuery(
+        internal.internal.getRsgEntriesByKeys,
+        {
+          keys: requirementKeys,
+        }
+      );
       const rsgByKey = new Map(
-        rsgEntries.map((entry) => [
-          entry.key,
-          {
-            courseCodes: normalizeCourseCodes(entry.courseCodes),
-            type: entry.type,
-          },
-        ] as const)
+        rsgEntries.map(
+          (entry) =>
+            [
+              entry.key,
+              {
+                courseCodes: normalizeCourseCodes(entry.courseCodes),
+                type: entry.type,
+              },
+            ] as const
+        )
       );
 
       const candidateCourseCodes = collectCandidateCourseCodes({
@@ -305,7 +307,9 @@ export const planScheduleForTerm = action({
       const currentTermSchedule = allScheduleItems
         .filter((item) => item.section.termCode === args.termCode)
         .map(mapScheduleItemToSection);
-      originalTermSectionIds = currentTermSchedule.map((section) => section.sectionId);
+      originalTermSectionIds = currentTermSchedule.map(
+        (section) => section.sectionId
+      );
 
       const statusBuckets = buildStatusBuckets(userData.coursePlanningStatuses);
       const remainingRequirements = buildRemainingRequirementGroups({
@@ -366,7 +370,10 @@ export const planScheduleForTerm = action({
         remainingRequirementGroups: remainingRequirements.groups,
         warnings: remainingRequirements.warnings,
       };
-      const studentName = [userData.profile.firstName, userData.profile.lastName]
+      const studentName = [
+        userData.profile.firstName,
+        userData.profile.lastName,
+      ]
         .map((value) => value.trim())
         .filter(Boolean)
         .join(" ");
@@ -405,11 +412,14 @@ export const planScheduleForTerm = action({
                 searchedCourseCodes.add(courseCode);
               }
 
-              return await ctx.runQuery(api.aiScheduleTools.searchCoursesForAi, {
-                termCode: args.termCode,
-                courseCodes,
-                filters: input.filters,
-              });
+              return await ctx.runQuery(
+                api.aiScheduleTools.searchCoursesForAi,
+                {
+                  termCode: args.termCode,
+                  courseCodes,
+                  filters: input.filters,
+                }
+              );
             },
           }),
           detect_conflicts: tool({
@@ -427,13 +437,16 @@ export const planScheduleForTerm = action({
                 {
                   termCode: args.termCode,
                   candidateSectionIds,
-                  sessionId: input.includeSavedSchedule ? args.sessionId : undefined,
+                  sessionId: input.includeSavedSchedule
+                    ? args.sessionId
+                    : undefined,
                   includeSavedSchedule: input.includeSavedSchedule ?? false,
                 }
               );
 
               lastConflictFreeSectionIds =
-                !response.hasConflicts && response.invalidSectionIds.length === 0
+                !response.hasConflicts &&
+                response.invalidSectionIds.length === 0
                   ? candidateSectionIds
                   : null;
 
@@ -449,12 +462,16 @@ export const planScheduleForTerm = action({
               const mode = input.mode ?? "replaceTerm";
 
               if (mode !== "replaceTerm") {
-                throw new Error("This executor only supports save_schedule with replaceTerm.");
+                throw new Error(
+                  "This executor only supports save_schedule with replaceTerm."
+                );
               }
 
               if (
-                !lastConflictFreeSectionIds ||
-                !sameStringSet(lastConflictFreeSectionIds, sectionIds)
+                !(
+                  lastConflictFreeSectionIds &&
+                  sameStringSet(lastConflictFreeSectionIds, sectionIds)
+                )
               ) {
                 throw new Error(
                   "Run detect_conflicts on the exact final section ids and confirm there are no conflicts before saving."
@@ -485,7 +502,9 @@ export const planScheduleForTerm = action({
         },
       });
 
-      const modelOutput = PlannerModelOutputSchema.parse(result.experimental_output);
+      const modelOutput = PlannerModelOutputSchema.parse(
+        result.experimental_output
+      );
       const finalSectionIds = normalizeUniqueStrings(
         modelOutput.selectedSections.map((section) => section.sectionId)
       );
@@ -506,7 +525,10 @@ export const planScheduleForTerm = action({
 
       if (
         didPersistReplacement &&
-        (!lastSavedSectionIds || !sameStringSet(lastSavedSectionIds, finalSectionIds))
+        !(
+          lastSavedSectionIds &&
+          sameStringSet(lastSavedSectionIds, finalSectionIds)
+        )
       ) {
         await restoreOriginalTermSchedule({
           ctx,
@@ -545,7 +567,8 @@ export const planScheduleForTerm = action({
               conflictResult.summary,
             ]),
             satisfiedRequirementKeys: resolvedOutcomes.satisfiedRequirementKeys,
-            unresolvedRequirementKeys: resolvedOutcomes.unresolvedRequirementKeys,
+            unresolvedRequirementKeys:
+              resolvedOutcomes.unresolvedRequirementKeys,
             toolTrace,
           });
         }
@@ -553,10 +576,10 @@ export const planScheduleForTerm = action({
         const saveResult = await ctx.runMutation(
           api.aiScheduleTools.saveAiScheduleSections,
           {
-          sessionId: args.sessionId,
-          termCode: args.termCode,
-          sectionIds: finalSectionIds,
-          mode: "replaceTerm",
+            sessionId: args.sessionId,
+            termCode: args.termCode,
+            sectionIds: finalSectionIds,
+            mode: "replaceTerm",
           }
         );
         didPersistReplacement = true;
@@ -598,7 +621,11 @@ export const planScheduleForTerm = action({
         .map(mapScheduleItemToSection);
       const savedOutcomes = resolveRequirementOutcomes(
         remainingRequirements.groups,
-        new Set(normalizeCourseCodes(selectedSections.map((section) => section.courseCode)))
+        new Set(
+          normalizeCourseCodes(
+            selectedSections.map((section) => section.courseCode)
+          )
+        )
       );
       const warnings = dedupeWarnings([
         ...remainingRequirements.warnings,
@@ -633,7 +660,10 @@ export const planScheduleForTerm = action({
             originalSectionIds: originalTermSectionIds,
           });
         } catch (restoreError) {
-          console.error("Failed to restore original term schedule.", restoreError);
+          console.error(
+            "Failed to restore original term schedule.",
+            restoreError
+          );
         }
       }
 

@@ -12,8 +12,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { useScheduleView } from "@/hooks/use-schedule-view";
-import { scheduleQuery } from "@/queries/explore";
 import { cn } from "@/lib/utils";
+import { scheduleQuery } from "@/queries/explore";
 import { api } from "../../../../convex/_generated/api";
 
 const POPOVER_TRANSITION = {
@@ -32,7 +32,9 @@ export function ExploreAiPromptFab() {
   const queryClient = useQueryClient();
   const { isAuthenticated, sessionId, tokenHash } = useAuth();
   const { termCode, termName } = useScheduleView();
-  const planScheduleForTerm = useAction(api.aiScheduleExecutor.planScheduleForTerm);
+  const planScheduleForTerm = useAction(
+    api.aiScheduleExecutor.planScheduleForTerm
+  );
   const [isOpen, setIsOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -174,7 +176,9 @@ export function ExploreAiPromptFab() {
                   )}
                 >
                   <p>{resultMessage.studentMessage}</p>
-                  <p className="mt-1 text-xs opacity-80">{resultMessage.summary}</p>
+                  <p className="mt-1 text-xs opacity-80">
+                    {resultMessage.summary}
+                  </p>
                 </div>
               ) : null}
               {error ? (

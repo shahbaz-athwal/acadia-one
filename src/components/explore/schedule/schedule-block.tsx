@@ -1,18 +1,14 @@
+import { SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   PreviewCard,
   PreviewCardPopup,
   PreviewCardTrigger,
 } from "@/components/ui/preview-card";
+import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ScheduleItem } from "@/hooks/use-schedule-items";
 import { getBlockPosition } from "@/lib/schedule-time";
 import { cn, formatDays, stripProfessorSalutations } from "@/lib/utils";
-import { SparklesIcon } from "lucide-react";
 
 interface ScheduleBlockProps {
   item: ScheduleItem;
