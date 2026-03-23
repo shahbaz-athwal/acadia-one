@@ -91,6 +91,7 @@ function LocationDisplay(props: {
 
 interface PendingSection {
   isAiSuggested: boolean;
+  aiSuggestionSummary: string | undefined;
   section: {
     id: string;
     termCode: string;
@@ -399,6 +400,7 @@ export function CourseViewData() {
     professorDisplayName: string,
   ): PendingSection => ({
     isAiSuggested: false,
+    aiSuggestionSummary: undefined,
     section: {
       id: section.id,
       termCode: section.termCode,

@@ -24,7 +24,7 @@ import {
 } from "./lib/aiScheduleExecutor";
 import { posthog } from "./lib/posthog";
 
-const model = withTracing(google("gemini-pro-latest"), posthog, {});
+const model = withTracing(google("gemini-3.1-pro-preview"), posthog, {});
 
 const SearchCoursesToolInputSchema = z.object({
   courseCodes: z.array(z.string().trim().min(1)).min(1),
@@ -54,7 +54,7 @@ const SaveScheduleToolInputSchema = z.object({
 
 function normalizeUniqueStrings(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))].sort(
-    (left, right) => left.localeCompare(right)
+    (left, right) => left.localeCompare(right),
   );
 }
 
@@ -168,7 +168,7 @@ function collectCandidateCourseCodes(args: {
         const key = buildRequirementKey(
           requirement.code,
           subrequirement.id,
-          group.id
+          group.id,
         );
         courseCodes.push(...(args.rsgByKey.get(key)?.courseCodes ?? []));
       }
@@ -202,7 +202,7 @@ export const planScheduleForTerm = action({
       v.object({
         treatInProgressAsSatisfied: v.optional(v.boolean()),
         targetCourseCount: v.optional(v.number()),
-      })
+      }),
     ),
   },
   handler: async (ctx, args): Promise<PlannerExecutionResult> => {
@@ -223,7 +223,7 @@ export const planScheduleForTerm = action({
           }),
           ctx.runQuery(api.terms.list, {}),
           ctx.runQuery(api.schedule.get, { sessionId: args.sessionId }),
-        ]
+        ],
       );
 
       if (!validation.valid) {
@@ -264,16 +264,20 @@ export const planScheduleForTerm = action({
         userData.programEvaluation.requirements.flatMap((requirement) =>
           requirement.subrequirements.flatMap((subrequirement) =>
             subrequirement.groups.map((group) =>
-              buildRequirementKey(requirement.code, subrequirement.id, group.id)
-            )
-          )
-        )
+              buildRequirementKey(
+                requirement.code,
+                subrequirement.id,
+                group.id,
+              ),
+            ),
+          ),
+        ),
       );
       const rsgEntries = await ctx.runQuery(
         internal.internal.getRsgEntriesByKeys,
         {
           keys: requirementKeys,
-        }
+        },
       );
       const rsgByKey = new Map(
         rsgEntries.map(
@@ -284,8 +288,8 @@ export const planScheduleForTerm = action({
                 courseCodes: normalizeCourseCodes(entry.courseCodes),
                 type: entry.type,
               },
-            ] as const
-        )
+            ] as const,
+        ),
       );
 
       const candidateCourseCodes = collectCandidateCourseCodes({
@@ -300,7 +304,7 @@ export const planScheduleForTerm = action({
                   termCode: args.termCode,
                   courseCodes: candidateCourseCodes,
                 })
-              ).results.map((result) => result.courseCode)
+              ).results.map((result) => result.courseCode),
             )
           : new Set<string>();
 
@@ -308,7 +312,7 @@ export const planScheduleForTerm = action({
         .filter((item) => item.section.termCode === args.termCode)
         .map(mapScheduleItemToSection);
       originalTermSectionIds = currentTermSchedule.map(
-        (section) => section.sectionId
+        (section) => section.sectionId,
       );
 
       const statusBuckets = buildStatusBuckets(userData.coursePlanningStatuses);
@@ -331,10 +335,10 @@ export const planScheduleForTerm = action({
       }
 
       const unresolvedRequirementKeys = remainingRequirements.groups.map(
-        (group) => group.requirementKey
+        (group) => group.requirementKey,
       );
       const hasAnyCandidateCourses = remainingRequirements.groups.some(
-        (group) => group.remainingCandidateCourseCodes.length > 0
+        (group) => group.remainingCandidateCourseCodes.length > 0,
       );
       if (!hasAnyCandidateCourses) {
         return buildNoSaveResult({
@@ -348,7 +352,7 @@ export const planScheduleForTerm = action({
       }
 
       const hasAnyTermOfferings = remainingRequirements.groups.some(
-        (group) => group.offeredCandidateCourseCodes.length > 0
+        (group) => group.offeredCandidateCourseCodes.length > 0,
       );
       if (!hasAnyTermOfferings) {
         return buildNoSaveResult({
@@ -418,7 +422,7 @@ export const planScheduleForTerm = action({
                   termCode: args.termCode,
                   courseCodes,
                   filters: input.filters,
-                }
+                },
               );
             },
           }),
@@ -428,7 +432,7 @@ export const planScheduleForTerm = action({
             inputSchema: DetectConflictsToolInputSchema,
             execute: async (input) => {
               const candidateSectionIds = normalizeUniqueStrings(
-                input.candidateSectionIds
+                input.candidateSectionIds,
               );
               conflictChecks += 1;
 
@@ -441,7 +445,7 @@ export const planScheduleForTerm = action({
                     ? args.sessionId
                     : undefined,
                   includeSavedSchedule: input.includeSavedSchedule ?? false,
-                }
+                },
               );
 
               lastConflictFreeSectionIds =
@@ -463,7 +467,7 @@ export const planScheduleForTerm = action({
 
               if (mode !== "replaceTerm") {
                 throw new Error(
-                  "This executor only supports save_schedule with replaceTerm."
+                  "This executor only supports save_schedule with replaceTerm.",
                 );
               }
 
@@ -474,7 +478,7 @@ export const planScheduleForTerm = action({
                 )
               ) {
                 throw new Error(
-                  "Run detect_conflicts on the exact final section ids and confirm there are no conflicts before saving."
+                  "Run detect_conflicts on the exact final section ids and confirm there are no conflicts before saving.",
                 );
               }
 
@@ -485,12 +489,12 @@ export const planScheduleForTerm = action({
                   termCode: args.termCode,
                   sectionIds,
                   mode,
-                }
+                },
               );
 
               if (response.invalidSectionIds.length > 0) {
                 throw new Error(
-                  `save_schedule failed because ${response.invalidSectionIds.join(", ")} could not be resolved for ${args.termCode}.`
+                  `save_schedule failed because ${response.invalidSectionIds.join(", ")} could not be resolved for ${args.termCode}.`,
                 );
               }
 
@@ -503,25 +507,25 @@ export const planScheduleForTerm = action({
       });
 
       const modelOutput = PlannerModelOutputSchema.parse(
-        result.experimental_output
+        result.experimental_output,
       );
       const finalSectionIds = normalizeUniqueStrings(
-        modelOutput.selectedSections.map((section) => section.sectionId)
+        modelOutput.selectedSections.map((section) => section.sectionId),
       );
       const aiSuggestionSummaries = modelOutput.selectedSections.map(
         (section) => ({
           sectionId: section.sectionId,
           summary: section.summary,
-        })
+        }),
       );
       const finalSelectedCourseCodes = new Set(
         normalizeCourseCodes(
-          modelOutput.selectedSections.map((section) => section.courseCode)
-        )
+          modelOutput.selectedSections.map((section) => section.courseCode),
+        ),
       );
       const resolvedOutcomes = resolveRequirementOutcomes(
         remainingRequirements.groups,
-        finalSelectedCourseCodes
+        finalSelectedCourseCodes,
       );
       const toolTrace = {
         searchedCourseCodes: normalizeCourseCodes([...searchedCourseCodes]),
@@ -544,7 +548,7 @@ export const planScheduleForTerm = action({
         });
         didPersistReplacement = false;
         throw new ConvexError(
-          "Planner output did not match the sections that were saved."
+          "Planner output did not match the sections that were saved.",
         );
       }
 
@@ -557,7 +561,7 @@ export const planScheduleForTerm = action({
             sectionIds: finalSectionIds,
             aiSuggestionSummaries,
             mode: "replaceTerm",
-          }
+          },
         );
 
         if (saveResult.invalidSectionIds.length > 0) {
@@ -569,7 +573,7 @@ export const planScheduleForTerm = action({
           });
           didPersistReplacement = false;
           throw new ConvexError(
-            `The final schedule could not be saved because ${saveResult.invalidSectionIds.join(", ")} did not resolve in ${args.termCode}.`
+            `The final schedule could not be saved because ${saveResult.invalidSectionIds.join(", ")} did not resolve in ${args.termCode}.`,
           );
         }
 
@@ -583,7 +587,7 @@ export const planScheduleForTerm = action({
             termCode: args.termCode,
             candidateSectionIds: finalSectionIds,
             includeSavedSchedule: false,
-          }
+          },
         );
 
         if (
@@ -615,7 +619,7 @@ export const planScheduleForTerm = action({
             sectionIds: finalSectionIds,
             aiSuggestionSummaries,
             mode: "replaceTerm",
-          }
+          },
         );
         didPersistReplacement = true;
 
@@ -628,7 +632,7 @@ export const planScheduleForTerm = action({
           });
           didPersistReplacement = false;
           throw new ConvexError(
-            `The final schedule could not be saved because ${saveResult.invalidSectionIds.join(", ")} did not resolve in ${args.termCode}.`
+            `The final schedule could not be saved because ${saveResult.invalidSectionIds.join(", ")} did not resolve in ${args.termCode}.`,
           );
         }
       }
@@ -658,9 +662,9 @@ export const planScheduleForTerm = action({
         remainingRequirements.groups,
         new Set(
           normalizeCourseCodes(
-            selectedSections.map((section) => section.courseCode)
-          )
-        )
+            selectedSections.map((section) => section.courseCode),
+          ),
+        ),
       );
       const warnings = dedupeWarnings([
         ...remainingRequirements.warnings,
@@ -697,7 +701,7 @@ export const planScheduleForTerm = action({
         } catch (restoreError) {
           console.error(
             "Failed to restore original term schedule.",
-            restoreError
+            restoreError,
           );
         }
       }
@@ -709,7 +713,7 @@ export const planScheduleForTerm = action({
       throw new ConvexError(
         error instanceof Error
           ? error.message
-          : "Schedule planning failed unexpectedly."
+          : "Schedule planning failed unexpectedly.",
       );
     } finally {
       await posthog.shutdown();

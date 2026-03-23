@@ -39,7 +39,6 @@ export function ExploreAiPromptFab() {
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [resultMessage, setResultMessage] = useState<{
-    summary: string;
     studentMessage: string;
     saved: boolean;
   } | null>(null);
@@ -133,7 +132,6 @@ export function ExploreAiPromptFab() {
                   });
 
                   setResultMessage({
-                    summary: result.summary,
                     studentMessage: result.studentMessage,
                     saved: result.saved,
                   });
@@ -176,9 +174,6 @@ export function ExploreAiPromptFab() {
                   )}
                 >
                   <p>{resultMessage.studentMessage}</p>
-                  <p className="mt-1 text-xs opacity-80">
-                    {resultMessage.summary}
-                  </p>
                 </div>
               ) : null}
               {error ? (

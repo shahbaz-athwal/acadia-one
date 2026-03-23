@@ -55,6 +55,7 @@ export function ScheduleBlock({
   const professorName =
     stripProfessorSalutations(item.section.professorName) || "TBA";
   const professorExternalId = item.section.professorExternalId;
+  const aiSuggestionSummary = item.aiSuggestionSummary?.trim();
 
   return (
     <PreviewCard>
@@ -149,6 +150,16 @@ export function ScheduleBlock({
             )}
           </dd>
         </dl>
+        {item.isAiSuggested && aiSuggestionSummary ? (
+          <div className="space-y-1 rounded-md bg-muted/40 px-3 py-2">
+            <div className="font-medium text-[11px] uppercase tracking-wide">
+              AI suggestion
+            </div>
+            <p className="text-muted-foreground text-xs leading-snug">
+              {aiSuggestionSummary}
+            </p>
+          </div>
+        ) : null}
         <Button
           className="mt-1 w-full justify-center"
           onClick={() => onRemove?.(item.scheduleItemId)}
