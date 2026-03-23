@@ -1,11 +1,10 @@
 "use node";
 
-import { google } from "@ai-sdk/google";
-import { withTracing } from "@posthog/ai";
 import { generateObject } from "ai";
 import { z } from "zod";
 import { api, internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { geminiModel as model } from "../lib/aiModel";
 import { AI_MAPPING_PROMPT, RMP_ACADIA_ID } from "../lib/constants";
 import { posthog } from "../lib/posthog";
 import { scraper as rmpScraper, type TeacherNode } from "../lib/rmp";
@@ -27,9 +26,6 @@ const ProfessorMatchSchema = z.array(
     rmpId: z.string().nullable(),
   }),
 );
-
-const model = withTracing(google("gemini-3.1-pro-preview"), posthog, {});
-
 async function matchProfessorsWithRMP(
   localProfessors: LocalProfessor[],
   rmpProfessors: TeacherNode[],

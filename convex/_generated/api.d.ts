@@ -25,6 +25,7 @@ import type * as courses from "../courses.js";
 import type * as departments from "../departments.js";
 import type * as explore from "../explore.js";
 import type * as internal_ from "../internal.js";
+import type * as lib_aiModel from "../lib/aiModel.js";
 import type * as lib_aiScheduleExecutor from "../lib/aiScheduleExecutor.js";
 import type * as lib_constants from "../lib/constants.js";
 import type * as lib_courseCode from "../lib/courseCode.js";
@@ -70,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   departments: typeof departments;
   explore: typeof explore;
   internal: typeof internal_;
+  "lib/aiModel": typeof lib_aiModel;
   "lib/aiScheduleExecutor": typeof lib_aiScheduleExecutor;
   "lib/constants": typeof lib_constants;
   "lib/courseCode": typeof lib_courseCode;

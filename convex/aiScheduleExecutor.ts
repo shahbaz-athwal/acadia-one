@@ -1,7 +1,5 @@
 "use node";
 
-import { google } from "@ai-sdk/google";
-import { withTracing } from "@posthog/ai";
 import { generateText, Output, stepCountIs, tool } from "ai";
 import { ConvexError, v } from "convex/values";
 import { z } from "zod";
@@ -22,9 +20,8 @@ import {
   type TermDescriptor,
   type TermScheduleSection,
 } from "./lib/aiScheduleExecutor";
+import { geminiModel as model } from "./lib/aiModel";
 import { posthog } from "./lib/posthog";
-
-const model = withTracing(google("gemini-3.1-pro-preview"), posthog, {});
 
 const SearchCoursesToolInputSchema = z.object({
   courseCodes: z.array(z.string().trim().min(1)).min(1),

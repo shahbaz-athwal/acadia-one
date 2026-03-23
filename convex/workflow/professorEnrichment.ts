@@ -1,12 +1,11 @@
 "use node";
 
-import { google } from "@ai-sdk/google";
 import { Agent } from "@convex-dev/agent";
-import { withTracing } from "@posthog/ai";
 import { v } from "convex/values";
 import { z } from "zod";
 import { api, components, internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
+import { geminiModel as model } from "../lib/aiModel";
 import { AI_FACULTY_ENRICHMENT_PROMPT } from "../lib/constants";
 import { posthog } from "../lib/posthog";
 import {
@@ -25,8 +24,6 @@ const FacultyProfessorMatchSchema = z.array(
     reason: z.string(),
   }),
 );
-
-const model = withTracing(google("gemini-3.1-pro-preview"), posthog, {});
 
 const professorEnrichmentAgent = new Agent(components.agent, {
   name: "professor-faculty-enrichment",
