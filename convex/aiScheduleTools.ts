@@ -755,6 +755,14 @@ export const saveAiScheduleSections = mutation({
     sessionId: v.string(),
     termCode: v.string(),
     sectionIds: v.array(v.string()),
+    aiSuggestionSummaries: v.optional(
+      v.array(
+        v.object({
+          sectionId: v.string(),
+          summary: v.string(),
+        })
+      )
+    ),
     mode: v.optional(v.union(v.literal("append"), v.literal("replaceTerm"))),
   },
   handler: async (ctx, args): Promise<SaveAiScheduleSectionsResult> => {
@@ -763,6 +771,12 @@ export const saveAiScheduleSections = mutation({
       args.sectionIds.length === 0 && mode === "replaceTerm"
         ? []
         : normalizeSectionExternalIds(args.sectionIds, "sectionIds");
+    const aiSuggestionSummaryBySectionId = new Map(
+      (args.aiSuggestionSummaries ?? []).map((entry) => [
+        entry.sectionId.trim(),
+        entry.summary.trim(),
+      ])
+    );
 
     const [existingScheduleItems, sections] = await Promise.all([
       ctx.db
@@ -856,6 +870,9 @@ export const saveAiScheduleSections = mutation({
         sectionId: section.dbId,
         color,
         isAiSuggested: true,
+        aiSuggestionSummary: aiSuggestionSummaryBySectionId.get(
+          section.externalId
+        ),
         addedAt: Date.now(),
       });
 

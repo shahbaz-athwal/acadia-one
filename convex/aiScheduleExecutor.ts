@@ -508,6 +508,12 @@ export const planScheduleForTerm = action({
       const finalSectionIds = normalizeUniqueStrings(
         modelOutput.selectedSections.map((section) => section.sectionId)
       );
+      const aiSuggestionSummaries = modelOutput.selectedSections.map(
+        (section) => ({
+          sectionId: section.sectionId,
+          summary: section.summary,
+        })
+      );
       const finalSelectedCourseCodes = new Set(
         normalizeCourseCodes(
           modelOutput.selectedSections.map((section) => section.courseCode)
@@ -540,6 +546,34 @@ export const planScheduleForTerm = action({
         throw new ConvexError(
           "Planner output did not match the sections that were saved."
         );
+      }
+
+      if (didPersistReplacement && finalSectionIds.length > 0) {
+        const saveResult = await ctx.runMutation(
+          api.aiScheduleTools.saveAiScheduleSections,
+          {
+            sessionId: args.sessionId,
+            termCode: args.termCode,
+            sectionIds: finalSectionIds,
+            aiSuggestionSummaries,
+            mode: "replaceTerm",
+          }
+        );
+
+        if (saveResult.invalidSectionIds.length > 0) {
+          await restoreOriginalTermSchedule({
+            ctx,
+            sessionId: args.sessionId,
+            termCode: args.termCode,
+            originalSectionIds: originalTermSectionIds,
+          });
+          didPersistReplacement = false;
+          throw new ConvexError(
+            `The final schedule could not be saved because ${saveResult.invalidSectionIds.join(", ")} did not resolve in ${args.termCode}.`
+          );
+        }
+
+        lastSavedSectionIds = finalSectionIds;
       }
 
       if (!didPersistReplacement && finalSectionIds.length > 0) {
@@ -579,6 +613,7 @@ export const planScheduleForTerm = action({
             sessionId: args.sessionId,
             termCode: args.termCode,
             sectionIds: finalSectionIds,
+            aiSuggestionSummaries,
             mode: "replaceTerm",
           }
         );

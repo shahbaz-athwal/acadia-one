@@ -113,6 +113,7 @@ export const get = query({
           sectionDbId: item.sectionId,
           color: item.color,
           isAiSuggested: item.isAiSuggested ?? false,
+          aiSuggestionSummary: item.aiSuggestionSummary,
           section: {
             id: section.externalId,
             termCode: section.termCode,

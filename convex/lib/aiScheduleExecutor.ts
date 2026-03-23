@@ -78,6 +78,7 @@ export const PlannerModelOutputSchema = z.object({
       sectionId: z.string().trim().min(1),
       courseCode: z.string().trim().min(1),
       sectionCode: z.string().trim().min(1),
+      summary: z.string().trim().min(1),
     })
   ),
   satisfiedRequirementKeys: z.array(z.string().trim().min(1)),
@@ -327,6 +328,7 @@ export function buildPlanningPrompt(args: {
     "Only call save_schedule after detect_conflicts reports no invalid ids and no conflicts for that exact section set.",
     "The selected term schedule is replaced on save, so do not preserve old sections unless you intentionally choose them again.",
     "Your final response must be a structured object that matches the requested schema.",
+    "Every selected section must include its own short summary explaining why that course fits.",
   ].join("\n");
 
   const prompt = [
@@ -360,6 +362,9 @@ export function buildPlanningPrompt(args: {
     "3. Detect conflicts on the exact final candidate section ids.",
     "4. Save with replaceTerm only after the final candidate set is conflict-free.",
     "5. In the final object, explain what was scheduled and what still remains unresolved.",
+    "6. For each selected section, include a brief user-facing summary specific to that course or section.",
+    "7. Per-section summaries should mention unmet requirement coverage and major instruction or time-fit when relevant.",
+    "8. Do not reuse the same generic summary text across all selected sections.",
   ].join("\n");
 
   return { system, prompt };
