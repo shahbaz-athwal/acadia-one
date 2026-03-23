@@ -306,7 +306,10 @@ function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
                 label="Difficulty"
                 value={formatAverageScore(data.avgDifficulty)}
               />
-              <AggregateMetric label="Reviews" value={String(data.ratingCount)} />
+              <AggregateMetric
+                label="Reviews"
+                value={String(data.ratingCount)}
+              />
             </div>
           </div>
 
@@ -330,16 +333,10 @@ function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
   );
 }
 
-function AggregateMetric({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function AggregateMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline gap-1.5 text-right">
-      <span className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+      <span className="text-[11px] text-muted-foreground uppercase tracking-[0.08em]">
         {label}
       </span>
       <span className="font-semibold text-base leading-none">{value}</span>

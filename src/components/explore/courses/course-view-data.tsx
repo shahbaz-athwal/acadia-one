@@ -347,7 +347,7 @@ export function CourseViewData() {
     data: { terms },
   } = useSuspenseQuery(filterOptionsQuery());
   const { data: userData } = useSuspenseQuery(
-    userDataQuery(sessionId, tokenHash),
+    userDataQuery(sessionId, tokenHash)
   );
   const { allItems, termCode, setTermCode } = useScheduleItems();
   const { setPreviewSection } = useSchedulePreview();
@@ -380,24 +380,24 @@ export function CourseViewData() {
           ...pendingRef.current,
         },
       ]);
-    },
+    }
   );
 
   const addedSectionIds = new Set(allItems.map((item) => item.section.id));
   const termNameByCode = useMemo(
     () => new Map(terms.map((term) => [term.code, term.name])),
-    [terms],
+    [terms]
   );
   const courseStatusByCode = useMemo(
     () => buildCourseStatusByCode(userData),
-    [userData],
+    [userData]
   );
   const showRequisiteStatuses = isAuthenticated && !!userData;
 
   const buildPendingSection = (
     section: Section,
     course: Course,
-    professorDisplayName: string,
+    professorDisplayName: string
   ): PendingSection => ({
     isAiSuggested: false,
     aiSuggestionSummary: undefined,

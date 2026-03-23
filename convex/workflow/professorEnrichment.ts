@@ -22,7 +22,7 @@ const FacultyProfessorMatchSchema = z.array(
     matchedExternalId: z.string().nullable(),
     confidence: z.enum(["high", "low", "none"]),
     reason: z.string(),
-  }),
+  })
 );
 
 const professorEnrichmentAgent = new Agent(components.agent, {
@@ -59,7 +59,7 @@ function formatFacultyProfessor(professor: FacultyProfessor) {
 
 function formatDbProfessor(
   professor: DbProfessorMatchCandidate,
-  departmentNameByPrefix: Map<string, string>,
+  departmentNameByPrefix: Map<string, string>
 ) {
   const departmentName =
     departmentNameByPrefix.get(professor.departmentPrefix) ??
@@ -79,7 +79,7 @@ async function matchFacultyProfessorsWithAgent(
     professors: FacultyProfessor[];
     dbCandidates: DbProfessorMatchCandidate[];
     departmentNameByPrefix: Map<string, string>;
-  },
+  }
 ) {
   const formattedFacultyProfessors = args.professors
     .map((professor) => formatFacultyProfessor(professor))
@@ -92,7 +92,7 @@ async function matchFacultyProfessorsWithAgent(
       return a.departmentPrefix.localeCompare(b.departmentPrefix);
     })
     .map((professor) =>
-      formatDbProfessor(professor, args.departmentNameByPrefix),
+      formatDbProfessor(professor, args.departmentNameByPrefix)
     )
     .join("\n");
 
@@ -133,7 +133,7 @@ export const enrichDepartmentProfessors = internalAction({
         research_areas: v.array(v.string()),
         office: v.string(),
         description: v.string(),
-      }),
+      })
     ),
     dryRun: v.optional(v.boolean()),
   },
@@ -160,7 +160,7 @@ export const enrichDepartmentProfessors = internalAction({
       ctx.runQuery(api.departments.list),
     ]);
     const departmentNameByPrefix = new Map(
-      departments.map((department) => [department.prefix, department.name]),
+      departments.map((department) => [department.prefix, department.name])
     );
     const { threadId } = await professorEnrichmentAgent.createThread(ctx, {
       title: `Professor enrichment ${args.departmentPrefix}`,
@@ -175,12 +175,12 @@ export const enrichDepartmentProfessors = internalAction({
     const { autoMatches, unresolved } = resolveDeterministicMatches(
       args.professors,
       dbProfessors,
-      args.departmentPrefix,
+      args.departmentPrefix
     );
     const dbCandidates = buildAgentCandidatePool(
       unresolved,
       dbProfessors,
-      args.departmentPrefix,
+      args.departmentPrefix
     );
 
     let agentResults: z.infer<typeof FacultyProfessorMatchSchema> = [];
@@ -200,7 +200,7 @@ export const enrichDepartmentProfessors = internalAction({
       unresolved,
       agentMatches: agentResults,
       allowedExternalIds: new Set(
-        dbCandidates.map((professor) => professor.externalId),
+        dbCandidates.map((professor) => professor.externalId)
       ),
       timestamp,
     });
@@ -211,7 +211,7 @@ export const enrichDepartmentProfessors = internalAction({
             internal.internal.updateProfessorFacultyEnrichment,
             {
               updates: resolvedUpdates.updates,
-            },
+            }
           )) as number)
         : resolvedUpdates.updates.length;
 

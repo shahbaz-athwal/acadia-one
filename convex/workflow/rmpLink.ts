@@ -24,11 +24,11 @@ const ProfessorMatchSchema = z.array(
   z.object({
     professorId: z.string(),
     rmpId: z.string().nullable(),
-  }),
+  })
 );
 async function matchProfessorsWithRMP(
   localProfessors: LocalProfessor[],
-  rmpProfessors: TeacherNode[],
+  rmpProfessors: TeacherNode[]
 ) {
   const formatLocalProfs = [...localProfessors]
     .sort((a, b) => a.department.localeCompare(b.department))
@@ -39,7 +39,7 @@ async function matchProfessorsWithRMP(
     .sort((a, b) => a.department.localeCompare(b.department))
     .map(
       (p) =>
-        `[RMP_ID: ${p.id}] ${p.firstName} ${p.lastName} - Dept: ${p.department}`,
+        `[RMP_ID: ${p.id}] ${p.firstName} ${p.lastName} - Dept: ${p.department}`
     )
     .join("\n");
 
@@ -81,7 +81,7 @@ export const linkProfessorsWithRmp = internalAction({
 
     const departments = await ctx.runQuery(api.departments.list);
     const departmentByPrefix = new Map(
-      departments.map((department) => [department.prefix, department.name]),
+      departments.map((department) => [department.prefix, department.name])
     );
 
     const formattedProfessors = professors.map((professor) => ({
@@ -96,11 +96,11 @@ export const linkProfessorsWithRmp = internalAction({
       await rmpScraper.searchTeachersBySchoolId(RMP_ACADIA_ID);
     const matches = await matchProfessorsWithRMP(
       formattedProfessors,
-      rmpProfessors,
+      rmpProfessors
     );
 
     const rmpProfessorById = new Map(
-      rmpProfessors.map((professor) => [professor.id, professor]),
+      rmpProfessors.map((professor) => [professor.id, professor])
     );
     const updates = matches
       .filter((match) => match.rmpId)
@@ -126,7 +126,7 @@ export const linkProfessorsWithRmp = internalAction({
 
     const matched = await ctx.runMutation(
       internal.internal.updateProfessorRmpIds,
-      { updates },
+      { updates }
     );
 
     return {
