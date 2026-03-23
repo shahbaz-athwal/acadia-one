@@ -53,6 +53,26 @@ interface ProfessorSheetData {
   ratingCount: number;
   avgDifficulty: number | null;
   avgQuality: number | null;
+  ratings: Array<{
+    comment?: string;
+    quality: number;
+    difficulty: number;
+    postedAt: number;
+  }>;
+}
+
+const postedAtFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+function formatAverageScore(value: number | null) {
+  return typeof value === "number" ? value.toFixed(1) : "--";
+}
+
+function formatPostedAt(value: number) {
+  return postedAtFormatter.format(new Date(value));
 }
 
 export function ExploreDetailSheetHost() {
@@ -213,6 +233,10 @@ function ProfessorDetailSheetBody({
 }
 
 function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
+  const visibleRatings = data.ratings.filter(
+    (rating) => !!rating.comment?.trim()
+  );
+
   return (
     <>
       <section className="space-y-2">
@@ -257,18 +281,88 @@ function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
       </section>
 
       {data.researchAreas && data.researchAreas.length > 0 ? (
-        <section className="space-y-2">
-          <h3 className="font-medium text-sm">Research Area</h3>
+        <section className="space-y-3 pt-2">
+          <h3 className="font-semibold text-xl leading-none">Research Area</h3>
           <div className="flex flex-wrap gap-2">
             {data.researchAreas.map((area) => (
-              <Badge key={area} variant="outline">
+              <Badge className="font-normal" key={area} variant="outline">
                 {area}
               </Badge>
             ))}
           </div>
         </section>
       ) : null}
+
+      {data.ratingCount > 0 ? (
+        <section className="space-y-3 pt-2">
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3 pb-1">
+            <h3 className="font-semibold text-xl leading-none">Ratings</h3>
+            <div className="flex flex-wrap items-baseline justify-end gap-x-4 gap-y-1 text-sm">
+              <AggregateMetric
+                label="Quality"
+                value={formatAverageScore(data.avgQuality)}
+              />
+              <AggregateMetric
+                label="Difficulty"
+                value={formatAverageScore(data.avgDifficulty)}
+              />
+              <AggregateMetric label="Reviews" value={String(data.ratingCount)} />
+            </div>
+          </div>
+
+          {visibleRatings.length > 0 ? (
+            <div className="space-y-2">
+              {visibleRatings.map((rating) => (
+                <ProfessorRatingCard
+                  key={`${rating.postedAt}-${rating.quality}-${rating.difficulty}-${rating.comment?.slice(0, 24) ?? ""}`}
+                  rating={rating}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-muted-foreground text-sm">
+              No written comments yet.
+            </p>
+          )}
+        </section>
+      ) : null}
     </>
+  );
+}
+
+function AggregateMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-baseline gap-1.5 text-right">
+      <span className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground">
+        {label}
+      </span>
+      <span className="font-semibold text-base leading-none">{value}</span>
+    </div>
+  );
+}
+
+function ProfessorRatingCard({
+  rating,
+}: {
+  rating: ProfessorSheetData["ratings"][number];
+}) {
+  return (
+    <article className="space-y-1.5 rounded-xl border bg-muted/20 p-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-muted-foreground text-xs">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span>{`Quality ${rating.quality.toFixed(1)}`}</span>
+          <span>{`Difficulty ${rating.difficulty.toFixed(1)}`}</span>
+        </div>
+        <span>{formatPostedAt(rating.postedAt)}</span>
+      </div>
+      <p className="text-sm leading-5">{rating.comment?.trim()}</p>
+    </article>
   );
 }
 
