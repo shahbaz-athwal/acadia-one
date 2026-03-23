@@ -103,7 +103,7 @@ export function ExploreAiPromptFab() {
           <SparklesIcon className="size-5" />
         </MorphingPopoverTrigger>
 
-        <MorphingPopoverContent className="right-0 bottom-0 w-[min(24rem,calc(100vw-2rem))] rounded-[1.5rem] border-input bg-background p-2 text-foreground shadow-black/12 shadow-xl">
+        <MorphingPopoverContent className="right-0 bottom-0 w-[min(24rem,calc(100vw-2rem))] rounded-2xl border-input bg-background p-2 text-foreground shadow-black/12 shadow-xl">
           <motion.div
             animate={{ opacity: 1, y: 0 }}
             className="space-y-2"
@@ -159,7 +159,7 @@ export function ExploreAiPromptFab() {
               </p>
               <Textarea
                 aria-label="AI schedule prompt"
-                className="rounded-[1.125rem] border-transparent bg-transparent shadow-none before:hidden"
+                className="rounded-xl border-transparent bg-transparent shadow-none before:hidden"
                 onChange={(event) => setPrompt(event.target.value)}
                 placeholder="No class on Friday. No classes after 4 PM."
                 size="sm"
