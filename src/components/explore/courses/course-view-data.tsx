@@ -90,8 +90,13 @@ function LocationDisplay(props: {
 }
 
 interface PendingSection {
-  isAiSuggested: boolean;
   aiSuggestionSummary: string | undefined;
+  course: {
+    code: string;
+    title: string;
+    credits: number;
+  };
+  isAiSuggested: boolean;
   section: {
     id: string;
     termCode: string;
@@ -105,23 +110,18 @@ interface PendingSection {
     professorExternalId: string | undefined;
     professorName: string;
   };
-  course: {
-    code: string;
-    title: string;
-    credits: number;
-  };
 }
 
 type Course = ReturnType<typeof useExploreCourses>["courses"][number];
 type Section = Course["sections"][number];
 
 interface SectionActionParams {
-  section: Section;
-  course: Course;
-  professorDisplayName: string;
   color: string;
+  course: Course;
   isAdded: boolean;
   isAiSuggested?: boolean;
+  professorDisplayName: string;
+  section: Section;
 }
 
 function formatAverageScore(value: number | null | undefined) {

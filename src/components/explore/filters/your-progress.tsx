@@ -40,25 +40,25 @@ interface SearchGroupCourseData {
 }
 
 interface ProgressTreeNode {
-  id: string;
-  level: TreeLevel;
-  label: string;
+  children: ProgressTreeNode[];
+  courseCode?: string;
   description?: string;
   directive?: string;
+  id: string;
+  label: string;
+  level: TreeLevel;
   rsgKey?: string;
-  courseCode?: string;
   status?: CoursePlanningStatus | null;
-  children: ProgressTreeNode[];
 }
 
 interface ExpansionState {
-  userExpanded: Set<string>;
   userCollapsed: Set<string>;
+  userExpanded: Set<string>;
 }
 
 interface PersistedExpansionState {
-  userExpanded?: unknown;
   userCollapsed?: unknown;
+  userExpanded?: unknown;
 }
 
 const NODE_ID_PREFIX: Record<TreeLevel, string> = {
@@ -464,11 +464,11 @@ function renderSearchChip(
 }
 
 interface ProgressTreeBranchProps {
-  nodes: ProgressTreeNode[];
-  depth: number;
-  expansionState: ExpansionState;
   activeCourseCode?: string;
   activeRsgKey?: string;
+  depth: number;
+  expansionState: ExpansionState;
+  nodes: ProgressTreeNode[];
   onCourseToggle: (courseCode: string) => void;
   onSearchToggle: (rsgKey: string) => void;
   onToggle: (node: ProgressTreeNode) => void;

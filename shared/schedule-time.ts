@@ -8,46 +8,46 @@ export const WEEKDAYS = [
 ] as const;
 
 export interface ConflictCheckSection {
-  id: string;
-  termCode: string;
-  sectionCode: string;
-  classStartTime: string;
   classEndTime: string;
+  classStartTime: string;
   days: number[];
+  id: string;
+  sectionCode: string;
+  termCode: string;
 }
 
 export interface ConflictOverlap {
   day: number;
-  overlapStartMinutes: number;
   overlapEndMinutes: number;
-  overlapStartTime: string;
   overlapEndTime: string;
+  overlapStartMinutes: number;
+  overlapStartTime: string;
 }
 
 export interface SectionConflict<
   T extends ConflictCheckSection = ConflictCheckSection,
 > {
+  overlaps: ConflictOverlap[];
   sectionA: T;
   sectionB: T;
   sharedDays: number[];
-  overlaps: ConflictOverlap[];
 }
 
 export interface ConflictCheckResult<
   T extends ConflictCheckSection = ConflictCheckSection,
 > {
-  hasConflicts: boolean;
   conflicts: SectionConflict<T>[];
+  hasConflicts: boolean;
 }
 
 const AMPM_REGEX = /^(\d{1,2})(?::(\d{2}))?\s*(AM|PM|am|pm|a\.m\.|p\.m\.)$/;
 const TIME_24H_REGEX = /^(\d{1,2}):(\d{2})$/;
 
 interface NormalizedConflictSection<T extends ConflictCheckSection> {
+  days: number[];
+  endMinutes: number;
   section: T;
   startMinutes: number;
-  endMinutes: number;
-  days: number[];
 }
 
 function parseAmPmMatch(match: RegExpMatchArray): number | null {

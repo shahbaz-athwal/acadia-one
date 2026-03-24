@@ -25,40 +25,40 @@ import { getInitials } from "@/lib/utils";
 import { courseSheetQuery, professorSheetQuery } from "@/queries/explore";
 
 interface CourseSheetData {
-  code: string;
-  title: string;
-  description: string;
-  credits: number;
-  isLab: boolean;
-  ratingCount: number;
   avgDifficulty: number | null;
   avgQuality: number | null;
+  code: string;
+  credits: number;
+  description: string;
+  isLab: boolean;
+  ratingCount: number;
+  title: string;
 }
 
 interface ProfessorSheetData {
-  externalId: string;
-  name: string;
-  departmentPrefix: string;
-  departmentName: string;
-  designation?: string;
-  officeLocation?: string;
-  email?: string;
-  phone?: string;
-  linkedinUrl?: string;
-  websiteUrl?: string;
-  imageUrl?: string;
-  description?: string;
-  researchAreas?: string[];
-  sourceUrl?: string;
-  ratingCount: number;
   avgDifficulty: number | null;
   avgQuality: number | null;
+  departmentName: string;
+  departmentPrefix: string;
+  description?: string;
+  designation?: string;
+  email?: string;
+  externalId: string;
+  imageUrl?: string;
+  linkedinUrl?: string;
+  name: string;
+  officeLocation?: string;
+  phone?: string;
+  ratingCount: number;
   ratings: Array<{
     comment?: string;
     quality: number;
     difficulty: number;
     postedAt: number;
   }>;
+  researchAreas?: string[];
+  sourceUrl?: string;
+  websiteUrl?: string;
 }
 
 const postedAtFormatter = new Intl.DateTimeFormat("en-US", {

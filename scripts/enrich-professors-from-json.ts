@@ -12,22 +12,22 @@ import {
 
 interface CliOptions {
   department?: string;
-  resumeFrom?: string;
   dryRun: boolean;
+  resumeFrom?: string;
 }
 
 interface DepartmentEnrichmentResult {
-  departmentPrefix: string;
-  departmentName: string;
-  total: number;
-  autoMatched: number;
   agentMatched: number;
-  updated: number;
-  skippedNoMatch: number;
+  autoMatched: number;
+  departmentName: string;
+  departmentPrefix: string;
   skippedLowConfidence: number;
   skippedNoData: number;
-  warnings: string[];
+  skippedNoMatch: number;
+  total: number;
   unmatchedNames: string[];
+  updated: number;
+  warnings: string[];
 }
 
 function parseArgs(argv: string[]): CliOptions {

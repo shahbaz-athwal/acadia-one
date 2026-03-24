@@ -15,8 +15,8 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 
 interface SignInDialogProps {
-  open: boolean;
   onOpenChange: (open: boolean) => void;
+  open: boolean;
 }
 
 export function SignInDialog({ open, onOpenChange }: SignInDialogProps) {

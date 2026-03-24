@@ -161,11 +161,11 @@ const RatingNodeSchema = z
     difficulty: raw.difficultyRating,
     isForCredit: raw.isForCredit,
     comment: raw.comment,
-    textBookRequired: raw.textbookUse !== null ? raw.textbookUse === 1 : null,
+    textBookRequired: raw.textbookUse === null ? null : raw.textbookUse === 1,
     attendanceRequired: raw.attendanceMandatory === "mandatory",
     gradeReceived: raw.grade,
     wouldTakeAgain:
-      raw.wouldTakeAgain !== null ? raw.wouldTakeAgain === 1 : null,
+      raw.wouldTakeAgain === null ? null : raw.wouldTakeAgain === 1,
     thumbsUpTotal: raw.thumbsUpTotal,
     thumbsDownTotal: raw.thumbsDownTotal,
     tags: raw.ratingTags ? raw.ratingTags.split("--") : [],
@@ -196,8 +196,8 @@ const TeacherRatingsResponseSchema = z.object({
 
 export type TeacherRating = z.infer<typeof RatingNodeSchema>;
 export interface TeacherRatingsPage<TRating = TeacherRating> {
-  ratings: TRating[];
   paging: z.infer<typeof PageInfoSchema>;
+  ratings: TRating[];
 }
 
 const SchoolDepartmentsResponseSchema = z.object({

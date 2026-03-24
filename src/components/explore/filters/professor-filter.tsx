@@ -13,8 +13,8 @@ import { useExploreFilters } from "@/hooks/use-explore-filters";
 import { stripProfessorSalutations } from "@/lib/utils";
 
 interface FilterOption {
-  value: string;
   label: string;
+  value: string;
 }
 
 export function ProfessorFilter() {

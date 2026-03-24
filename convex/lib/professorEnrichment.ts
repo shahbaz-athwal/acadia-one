@@ -38,22 +38,22 @@ export type FacultyProfessorDirectory = z.infer<
 >;
 
 export interface DbProfessorMatchCandidate {
+  departmentPrefix: string;
   externalId: string;
   name: string;
-  departmentPrefix: string;
 }
 
 export interface ProfessorFacultyEnrichmentPatch {
-  designation?: string;
-  officeLocation?: string;
-  email?: string;
-  phone?: string;
-  websiteUrl?: string;
-  imageUrl?: string;
   description?: string;
+  designation?: string;
+  email?: string;
+  imageUrl?: string;
+  lastFacultyEnrichedAt: number;
+  officeLocation?: string;
+  phone?: string;
   researchAreas?: string[];
   sourceUrl?: string;
-  lastFacultyEnrichedAt: number;
+  websiteUrl?: string;
 }
 
 export interface DeterministicProfessorMatch {
@@ -62,9 +62,9 @@ export interface DeterministicProfessorMatch {
 }
 
 export interface AgentProfessorMatch {
+  confidence: "high" | "low" | "none";
   jsonName: string;
   matchedExternalId: string | null;
-  confidence: "high" | "low" | "none";
   reason: string;
 }
 
@@ -79,12 +79,12 @@ export interface FacultyEnrichmentUpdate
 }
 
 export interface FacultyEnrichmentResolution {
-  updates: FacultyEnrichmentUpdate[];
   agentMatched: number;
-  skippedNoMatch: number;
   skippedLowConfidence: number;
   skippedNoData: number;
+  skippedNoMatch: number;
   unmatchedNames: string[];
+  updates: FacultyEnrichmentUpdate[];
 }
 
 const HONORIFIC_RE =

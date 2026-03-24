@@ -2,6 +2,7 @@ import { createContext, type ReactNode, useContext, useState } from "react";
 
 export interface PreviewSection {
   color: string;
+  course: { code: string; title: string };
   section: {
     termCode: string;
     classStartTime: string;
@@ -13,7 +14,6 @@ export interface PreviewSection {
     roomNumber: string;
     professorName: string;
   };
-  course: { code: string; title: string };
 }
 
 interface SchedulePreviewContextValue {

@@ -6,10 +6,8 @@ import { useDropzone } from "react-dropzone";
 import { cn } from "@/lib/utils";
 
 interface UploadDropzoneProps {
-  control: UploadHookControl<true>;
-  id?: string;
   accept?: string;
-  metadata?: Record<string, unknown>;
+  control: UploadHookControl<true>;
   description?:
     | {
         fileTypes?: string;
@@ -17,6 +15,8 @@ interface UploadDropzoneProps {
         maxFiles?: number;
       }
     | string;
+  id?: string;
+  metadata?: Record<string, unknown>;
   uploadOverride?: (
     ...args: Parameters<UploadHookControl<true>["upload"]>
   ) => void;
@@ -93,9 +93,9 @@ export function UploadDropzone({
             ) : (
               <>
                 {description?.maxFiles &&
-                  `You can upload ${description.maxFiles} file${description.maxFiles !== 1 ? "s" : ""}.`}{" "}
+                  `You can upload ${description.maxFiles} file${description.maxFiles === 1 ? "" : "s"}.`}{" "}
                 {description?.maxFileSize &&
-                  `${description.maxFiles !== 1 ? "Each u" : "U"}p to ${description.maxFileSize}.`}{" "}
+                  `${description.maxFiles === 1 ? "U" : "Each u"}p to ${description.maxFileSize}.`}{" "}
                 {description?.fileTypes && `Accepted ${description.fileTypes}.`}
               </>
             )}

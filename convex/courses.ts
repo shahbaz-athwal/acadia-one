@@ -10,19 +10,19 @@ import type { QueryCtx } from "./_generated/server";
 import { query } from "./_generated/server";
 
 interface TimeRange {
-  start: number;
   end: number;
+  start: number;
 }
 
 interface ResolvedFilters {
+  academicLevels: number[];
   courseCode: string;
+  days: number[];
+  departmentPrefixes: string[];
+  professorIds: Id<"professors">[];
   rsgCourseCodes: string[];
   searchQuery: string;
-  departmentPrefixes: string[];
   termCodes: string[];
-  professorIds: Id<"professors">[];
-  days: number[];
-  academicLevels: number[];
   timeRange: TimeRange | null;
 }
 

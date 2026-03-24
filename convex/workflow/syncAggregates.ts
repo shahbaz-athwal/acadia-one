@@ -4,8 +4,8 @@ import { internalAction } from "../_generated/server";
 
 interface SyncAggregateDocumentsResult {
   coursesSynced: number;
-  professorsSynced: number;
   message: string;
+  professorsSynced: number;
 }
 
 export const syncAggregateDocuments = internalAction({

@@ -15,9 +15,9 @@ interface LinkProfessorsWithRmpResult {
 }
 
 interface LocalProfessor {
+  department: string;
   id: string;
   name: string;
-  department: string;
 }
 
 const ProfessorMatchSchema = z.array(

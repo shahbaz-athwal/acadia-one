@@ -12,8 +12,8 @@ import {
 import { useExploreFilters } from "@/hooks/use-explore-filters";
 
 interface FilterOption {
-  value: string;
   label: string;
+  value: string;
 }
 
 export function DepartmentFilter() {

@@ -9,8 +9,8 @@ type CoursePlanningStatuses = NonNullable<
 export type CoursePlanningStatus = CoursePlanningStatuses[string];
 
 export interface ExecutorPlannerOptions {
-  treatInProgressAsSatisfied: boolean;
   targetCourseCount: number;
+  treatInProgressAsSatisfied: boolean;
 }
 
 export interface TermDescriptor {
@@ -19,57 +19,57 @@ export interface TermDescriptor {
 }
 
 export interface TermScheduleSection {
-  sectionId: string;
+  classEndTime: string;
+  classStartTime: string;
+  color?: string;
   courseCode: string;
   courseTitle?: string;
-  sectionCode: string;
-  termCode: string;
-  classStartTime: string;
-  classEndTime: string;
   daysOfWeek: string[];
   professorName: string;
-  color?: string;
+  sectionCode: string;
+  sectionId: string;
+  termCode: string;
 }
 
 export interface RemainingRequirementGroup {
-  requirementKey: string;
-  requirementLabel: string;
-  subrequirementLabel: string;
+  directiveText?: string;
   groupLabel: string;
   groupType: "exact" | "search";
-  directiveText?: string;
+  offeredCandidateCourseCodes: string[];
+  remainingCandidateCourseCodes: string[];
+  requirementKey: string;
+  requirementLabel: string;
   satisfied: boolean;
   satisfiedByCourseCodes: string[];
-  remainingCandidateCourseCodes: string[];
-  offeredCandidateCourseCodes: string[];
+  subrequirementLabel: string;
   unavailableCandidateCourseCodes: string[];
 }
 
 export interface RequirementPlanningSnapshot {
   completedCourseCodes: string[];
-  inProgressCourseCodes: string[];
-  droppedCourseCodes: string[];
-  withdrawnCourseCodes: string[];
-  failedCourseCodes: string[];
   currentTermSchedule: TermScheduleSection[];
+  droppedCourseCodes: string[];
+  failedCourseCodes: string[];
+  inProgressCourseCodes: string[];
   remainingRequirementGroups: RemainingRequirementGroup[];
   warnings: string[];
+  withdrawnCourseCodes: string[];
 }
 
 export interface PlannerExecutionResult {
-  termCode: string;
-  saved: boolean;
-  summary: string;
-  studentMessage: string;
-  selectedSections: TermScheduleSection[];
   satisfiedRequirementKeys: string[];
-  unresolvedRequirementKeys: string[];
-  warnings: string[];
+  saved: boolean;
+  selectedSections: TermScheduleSection[];
+  studentMessage: string;
+  summary: string;
+  termCode: string;
   toolTrace?: {
     searchedCourseCodes: string[];
     conflictChecks: number;
     saveMode: "replaceTerm";
   };
+  unresolvedRequirementKeys: string[];
+  warnings: string[];
 }
 
 export const PlannerModelOutputSchema = z.object({

@@ -11,10 +11,9 @@ import { getBlockPosition } from "@/lib/schedule-time";
 import { cn, formatDays, stripProfessorSalutations } from "@/lib/utils";
 
 interface ScheduleBlockProps {
-  item: ScheduleItem;
-  dimmed?: boolean;
   className?: string;
-  slotHeight?: number;
+  dimmed?: boolean;
+  item: ScheduleItem;
   onOpenCourse?: (courseCode: string) => void;
   onOpenProfessor?: (professorExternalId: string) => void;
   onPrefetchCourse?: (courseCode: string) => void;
@@ -22,6 +21,7 @@ interface ScheduleBlockProps {
   onRemove?: (
     scheduleItemId: ScheduleItem["scheduleItemId"]
   ) => void | Promise<void>;
+  slotHeight?: number;
 }
 
 function getLocation(item: ScheduleItem) {

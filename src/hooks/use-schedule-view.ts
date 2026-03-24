@@ -41,7 +41,7 @@ export function useScheduleView() {
 
     // Default: first active term, or first term if none active
     const activeIdx = terms.findIndex((t) => t.isActive);
-    const idx = activeIdx !== -1 ? activeIdx : 0;
+    const idx = activeIdx === -1 ? 0 : activeIdx;
     return {
       termCode: terms[idx].code,
       termIndex: idx,

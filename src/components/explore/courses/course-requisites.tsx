@@ -21,16 +21,16 @@ interface LinkedRequisiteCourse {
 }
 
 interface CourseRequisite {
-  text: string;
   annotatedText: string;
   linkedCourses: LinkedRequisiteCourse[];
+  text: string;
 }
 
 interface CourseRequisitesProps {
-  requisites: CourseRequisite[];
-  courseStatusByCode: Map<string, CoursePlanningStatus>;
-  showStatuses: boolean;
   className?: string;
+  courseStatusByCode: Map<string, CoursePlanningStatus>;
+  requisites: CourseRequisite[];
+  showStatuses: boolean;
 }
 
 type AnnotatedSegment =

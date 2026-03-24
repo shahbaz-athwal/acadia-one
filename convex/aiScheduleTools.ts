@@ -17,43 +17,43 @@ type ProfessorDoc = Doc<"professors">;
 type SectionDoc = Doc<"sections">;
 
 interface AiTimeRange {
-  start: number;
   end: number;
+  start: number;
 }
 
 interface NormalizedAiSearchFilters {
-  timeRange: AiTimeRange | null;
-  days: number[];
   academicLevels: number[];
+  days: number[];
+  timeRange: AiTimeRange | null;
 }
 
 interface EnrichedSectionRecord {
-  section: SectionDoc;
   course: CourseDoc;
   professor: ProfessorDoc | null;
+  section: SectionDoc;
 }
 
 export interface AiFormattedSection {
-  sectionId: string;
-  termCode: string;
-  sectionCode: string;
-  professorName: string;
-  professorExternalId: string | null;
-  classStartTime: string;
+  buildingName: string;
   classEndTime: string;
+  classStartTime: string;
   days: number[];
   daysOfWeek: string[];
-  buildingName: string;
-  roomNumber: string;
   isOnline: boolean;
+  professorExternalId: string | null;
+  professorName: string;
+  roomNumber: string;
+  sectionCode: string;
+  sectionId: string;
+  termCode: string;
 }
 
 export interface AiCourseSearchResult {
-  courseCode: string;
-  title: string;
-  credits: number;
   academicLevel: number;
+  courseCode: string;
+  credits: number;
   sections: AiFormattedSection[];
+  title: string;
 }
 
 type ConflictSectionSource =
@@ -62,44 +62,44 @@ type ConflictSectionSource =
   | "candidateAndSavedSchedule";
 
 interface AiConflictSection extends ConflictCheckSection {
-  sectionId: string;
   courseCode: string;
   courseTitle: string;
-  professorName: string;
   daysOfWeek: string[];
+  professorName: string;
+  sectionId: string;
   source: ConflictSectionSource;
 }
 
 interface AiConflictOverlap {
   day: number;
   dayOfWeek: string;
-  overlapStartMinutes: number;
   overlapEndMinutes: number;
-  overlapStartTime: string;
   overlapEndTime: string;
+  overlapStartMinutes: number;
+  overlapStartTime: string;
 }
 
 interface AiConflictResult {
+  overlaps: AiConflictOverlap[];
   sectionA: AiConflictSection;
   sectionB: AiConflictSection;
   sharedDays: number[];
   sharedDaysOfWeek: string[];
-  overlaps: AiConflictOverlap[];
 }
 
 interface SearchCoursesForAiResult {
-  results: AiCourseSearchResult[];
   missingCourseCodes: string[];
+  results: AiCourseSearchResult[];
   summary: string;
 }
 
 interface DetectScheduleConflictsForAiResult {
-  hasConflicts: boolean;
   candidateConflicts: AiConflictResult[];
-  savedScheduleConflicts: AiConflictResult[];
-  invalidSectionIds: string[];
-  summary: string;
   feedback: string[];
+  hasConflicts: boolean;
+  invalidSectionIds: string[];
+  savedScheduleConflicts: AiConflictResult[];
+  summary: string;
 }
 
 interface SaveAiScheduleSectionsResult {
@@ -108,16 +108,16 @@ interface SaveAiScheduleSectionsResult {
     sectionId: string;
     color: string;
   }>;
-  skippedExistingSectionIds: string[];
   invalidSectionIds: string[];
-  totalSavedCount: number;
+  skippedExistingSectionIds: string[];
   summary: string;
+  totalSavedCount: number;
 }
 
 interface ConflictSectionState {
-  record: EnrichedSectionRecord;
   isCandidate: boolean;
   isSavedSchedule: boolean;
+  record: EnrichedSectionRecord;
 }
 
 const DAY_VALUE_BY_NAME = new Map(
