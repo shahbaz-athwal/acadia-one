@@ -17,7 +17,7 @@
     "typecheck": "tsc --noEmit && tsc -p convex/tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@ai-sdk/google": "^2.0.63",
+    "@ai-sdk/google": "^3.0.53",
     "@base-ui/react": "^1.3.0",
     "@better-upload/client": "^3.0.14",
     "@convex-dev/react-query": "^0.1.0",
@@ -31,7 +31,7 @@
     "@tanstack/router-plugin": "^1.167.4",
     "@tanstack/zod-adapter": "^1.166.9",
     "@vercel/config": "^0.0.41",
-    "ai": "^5.0.160",
+    "ai": "^6.0.138",
     "axios": "^1.13.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

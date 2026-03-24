@@ -389,13 +389,13 @@ export const planScheduleForTerm = action({
       let lastConflictFreeSectionIds: string[] | null = null;
       let lastSavedSectionIds: string[] | null = null;
 
-      const result = await generateText({
+      const { output: modelOutput } = await generateText({
         model,
         system,
         prompt,
         temperature: 0.2,
         stopWhen: stepCountIs(12),
-        experimental_output: Output.object({
+        output: Output.object({
           schema: PlannerModelOutputSchema,
         }),
         tools: {
@@ -499,9 +499,6 @@ export const planScheduleForTerm = action({
         },
       });
 
-      const modelOutput = PlannerModelOutputSchema.parse(
-        result.experimental_output
-      );
       const finalSectionIds = normalizeUniqueStrings(
         modelOutput.selectedSections.map((section) => section.sectionId)
       );

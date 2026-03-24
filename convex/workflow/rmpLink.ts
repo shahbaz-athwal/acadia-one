@@ -1,6 +1,6 @@
 "use node";
 
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 import { api, internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
@@ -52,15 +52,17 @@ Rate My Professor Data:
 ${formatRMPProfs}
 `;
 
-  const result = await generateObject({
+  const result = await generateText({
     model,
-    schema: ProfessorMatchSchema,
+    output: Output.object({
+      schema: ProfessorMatchSchema,
+    }),
     prompt,
   });
 
   await posthog.shutdown();
 
-  return result.object;
+  return result.output;
 }
 
 // Tested ✅
