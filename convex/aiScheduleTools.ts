@@ -688,6 +688,49 @@ export const searchCoursesForAi = query({
   },
 });
 
+export const getCourseTitlesByCodes = query({
+  args: {
+    courseCodes: v.array(v.string()),
+  },
+  returns: v.array(
+    v.object({
+      courseCode: v.string(),
+      courseTitle: v.string(),
+    })
+  ),
+  handler: async (ctx, args) => {
+    const courseCodes =
+      args.courseCodes.length > 0
+        ? [...new Set(args.courseCodes.map((courseCode) => courseCode.trim()))]
+            .filter(Boolean)
+            .map((courseCode) => courseCode.toUpperCase())
+        : [];
+    if (courseCodes.length === 0) {
+      return [];
+    }
+
+    const courses = await Promise.all(
+      courseCodes.map((courseCode) =>
+        ctx.db
+          .query("courses")
+          .withIndex("by_code", (q) => q.eq("code", courseCode))
+          .first()
+      )
+    );
+
+    return courses.flatMap((course) =>
+      course
+        ? [
+            {
+              courseCode: course.code,
+              courseTitle: course.title,
+            },
+          ]
+        : []
+    );
+  },
+});
+
 export const detectScheduleConflictsForAi = query({
   args: {
     termCode: v.string(),

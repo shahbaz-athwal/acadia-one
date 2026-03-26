@@ -4,23 +4,31 @@ import { generateText, Output, stepCountIs, tool } from "ai";
 import { ConvexError, v } from "convex/values";
 import { z } from "zod";
 import { api, internal } from "./_generated/api";
-import type { Doc } from "./_generated/dataModel";
 import { type ActionCtx, action } from "./_generated/server";
 import { geminiModel as model } from "./lib/aiModel";
 import {
-  buildPlannerSummary,
-  buildPlanningPrompt,
-  buildRemainingRequirementGroups,
-  buildRequirementKey,
-  buildStatusBuckets,
-  dedupeWarnings,
+  getTreatInProgressAsSatisfiedFlag,
   normalizePlannerOptions,
+} from "./lib/aiSchedule/config";
+import { buildPlanningPrompt } from "./lib/aiSchedule/prompt";
+import {
+  buildNoSaveResult,
+  buildPlannerSummary,
+  resolveRequirementOutcomes,
+} from "./lib/aiSchedule/result";
+import {
+  buildPlanningSnapshot,
+  buildRequirementKey,
+  collectCandidateCourseCodes,
+  dedupeWarnings,
+  normalizeCourseCodes,
+} from "./lib/aiSchedule/snapshot";
+import {
   type PlannerExecutionResult,
   PlannerModelOutputSchema,
-  resolveRequirementOutcomes,
   type TermDescriptor,
   type TermScheduleSection,
-} from "./lib/aiScheduleExecutor";
+} from "./lib/aiSchedule/types";
 import { posthog } from "./lib/posthog";
 
 const SearchCoursesToolInputSchema = z.object({
@@ -53,10 +61,6 @@ function normalizeUniqueStrings(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))].sort(
     (left, right) => left.localeCompare(right)
   );
-}
-
-function normalizeCourseCodes(values: string[]): string[] {
-  return normalizeUniqueStrings(values.map((value) => value.toUpperCase()));
 }
 
 function sameStringSet(left: string[], right: string[]) {
@@ -115,66 +119,6 @@ function mapScheduleItemToSection(item: {
   };
 }
 
-function buildNoSaveResult(args: {
-  termCode: string;
-  term: TermDescriptor;
-  studentMessage: string;
-  warnings?: string[];
-  satisfiedRequirementKeys?: string[];
-  unresolvedRequirementKeys?: string[];
-  toolTrace?: PlannerExecutionResult["toolTrace"];
-}): PlannerExecutionResult {
-  const warnings = dedupeWarnings(args.warnings ?? []);
-  const satisfiedRequirementKeys = args.satisfiedRequirementKeys ?? [];
-  const unresolvedRequirementKeys = args.unresolvedRequirementKeys ?? [];
-
-  return {
-    termCode: args.termCode,
-    saved: false,
-    summary: buildPlannerSummary({
-      term: args.term,
-      saved: false,
-      selectedSections: [],
-      satisfiedRequirementKeys,
-      unresolvedRequirementKeys,
-      warnings,
-    }),
-    studentMessage: args.studentMessage,
-    selectedSections: [],
-    satisfiedRequirementKeys,
-    unresolvedRequirementKeys,
-    warnings,
-    toolTrace: args.toolTrace,
-  };
-}
-
-function collectCandidateCourseCodes(args: {
-  programEvaluation: Doc<"acadiaUserData">["programEvaluation"];
-  rsgByKey: ReadonlyMap<string, { courseCodes: string[] }>;
-}) {
-  const courseCodes: string[] = [];
-
-  for (const requirement of args.programEvaluation.requirements) {
-    for (const subrequirement of requirement.subrequirements) {
-      for (const group of subrequirement.groups) {
-        if (group.courses.length > 0) {
-          courseCodes.push(...group.courses.map((course) => course.code));
-          continue;
-        }
-
-        const key = buildRequirementKey(
-          requirement.code,
-          subrequirement.id,
-          group.id
-        );
-        courseCodes.push(...(args.rsgByKey.get(key)?.courseCodes ?? []));
-      }
-    }
-  }
-
-  return normalizeCourseCodes(courseCodes);
-}
-
 async function restoreOriginalTermSchedule(args: {
   ctx: ActionCtx;
   sessionId: string;
@@ -202,12 +146,14 @@ export const planScheduleForTerm = action({
       })
     ),
   },
+  // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: This action coordinates validation, snapshot building, model tool use, and schedule persistence.
   handler: async (ctx, args): Promise<PlannerExecutionResult> => {
     let didPersistReplacement = false;
     let originalTermSectionIds: string[] = [];
 
     try {
       const plannerOptions = normalizePlannerOptions(args.plannerOptions);
+      const treatInProgressAsSatisfied = getTreatInProgressAsSatisfiedFlag();
       const [validation, userData, terms, allScheduleItems] = await Promise.all(
         [
           ctx.runQuery(api.sessions.validateSession, {
@@ -289,17 +235,41 @@ export const planScheduleForTerm = action({
         programEvaluation: userData.programEvaluation,
         rsgByKey,
       });
-      const offeredCourseCodeSet =
+      const completedCourseCodes = Object.entries(
+        userData.coursePlanningStatuses ?? {}
+      )
+        .filter(([, status]) => status === "completed")
+        .map(([courseCode]) => courseCode);
+      const inProgressCourseCodes = Object.entries(
+        userData.coursePlanningStatuses ?? {}
+      )
+        .filter(([, status]) => status === "inProgress")
+        .map(([courseCode]) => courseCode);
+      const [offeredCourseSearch, courseTitleEntries] = await Promise.all([
         candidateCourseCodes.length > 0
-          ? new Set(
-              (
-                await ctx.runQuery(api.aiScheduleTools.searchCoursesForAi, {
-                  termCode: args.termCode,
-                  courseCodes: candidateCourseCodes,
-                })
-              ).results.map((result) => result.courseCode)
-            )
-          : new Set<string>();
+          ? ctx.runQuery(api.aiScheduleTools.searchCoursesForAi, {
+              termCode: args.termCode,
+              courseCodes: candidateCourseCodes,
+            })
+          : Promise.resolve({
+              missingCourseCodes: [],
+              results: [],
+              summary: "",
+            }),
+        ctx.runQuery(api.aiScheduleTools.getCourseTitlesByCodes, {
+          courseCodes: normalizeCourseCodes([
+            ...candidateCourseCodes,
+            ...completedCourseCodes,
+            ...inProgressCourseCodes,
+          ]),
+        }),
+      ]);
+      const offeredCourseCodeSet = new Set(
+        offeredCourseSearch.results.map((result) => result.courseCode)
+      );
+      const courseTitleByCode = new Map(
+        courseTitleEntries.map((entry) => [entry.courseCode, entry.courseTitle])
+      );
 
       const currentTermSchedule = allScheduleItems
         .filter((item) => item.section.termCode === args.termCode)
@@ -308,44 +278,31 @@ export const planScheduleForTerm = action({
         (section) => section.sectionId
       );
 
-      const statusBuckets = buildStatusBuckets(userData.coursePlanningStatuses);
-      const remainingRequirements = buildRemainingRequirementGroups({
-        programEvaluation: userData.programEvaluation,
+      const snapshot = buildPlanningSnapshot({
         courseStatuses: userData.coursePlanningStatuses,
-        treatInProgressAsSatisfied: plannerOptions.treatInProgressAsSatisfied,
+        courseTitleByCode,
+        currentTermSchedule,
         offeredCourseCodeSet,
+        programEvaluation: userData.programEvaluation,
         rsgByKey,
+        treatInProgressAsSatisfied,
       });
 
-      if (remainingRequirements.groups.length === 0) {
+      if (snapshot.unmetRequirementGroups.length === 0) {
         return buildNoSaveResult({
           termCode: args.termCode,
           term: selectedTerm,
           studentMessage:
             "I could not find any unmet requirement groups to plan for this term.",
-          warnings: remainingRequirements.warnings,
+          warnings: snapshot.warnings,
         });
       }
 
-      const unresolvedRequirementKeys = remainingRequirements.groups.map(
+      const unresolvedRequirementKeys = snapshot.unmetRequirementGroups.map(
         (group) => group.requirementKey
       );
-      const hasAnyCandidateCourses = remainingRequirements.groups.some(
-        (group) => group.remainingCandidateCourseCodes.length > 0
-      );
-      if (!hasAnyCandidateCourses) {
-        return buildNoSaveResult({
-          termCode: args.termCode,
-          term: selectedTerm,
-          studentMessage:
-            "I found unmet requirements, but there were no candidate course codes available to plan from.",
-          warnings: remainingRequirements.warnings,
-          unresolvedRequirementKeys,
-        });
-      }
-
-      const hasAnyTermOfferings = remainingRequirements.groups.some(
-        (group) => group.offeredCandidateCourseCodes.length > 0
+      const hasAnyTermOfferings = snapshot.unmetRequirementGroups.some(
+        (group) => group.offeredCourses.length > 0
       );
       if (!hasAnyTermOfferings) {
         return buildNoSaveResult({
@@ -354,28 +311,14 @@ export const planScheduleForTerm = action({
           studentMessage:
             "I found unmet requirements, but none of their candidate courses appear to have offerings in the selected term.",
           warnings: dedupeWarnings([
-            ...remainingRequirements.warnings,
+            ...snapshot.warnings,
             `No remaining requirement candidates have offerings in ${selectedTerm.name} (${selectedTerm.code}).`,
           ]),
           unresolvedRequirementKeys,
         });
       }
 
-      const snapshot = {
-        ...statusBuckets,
-        currentTermSchedule,
-        remainingRequirementGroups: remainingRequirements.groups,
-        warnings: remainingRequirements.warnings,
-      };
-      const studentName = [
-        userData.profile.firstName,
-        userData.profile.lastName,
-      ]
-        .map((value) => value.trim())
-        .filter(Boolean)
-        .join(" ");
       const { system, prompt } = buildPlanningPrompt({
-        studentName: studentName || validation.studentId,
         programTitle: userData.programEvaluation.title,
         programCode: userData.programEvaluation.code,
         term: selectedTerm,
@@ -514,7 +457,7 @@ export const planScheduleForTerm = action({
         )
       );
       const resolvedOutcomes = resolveRequirementOutcomes(
-        remainingRequirements.groups,
+        snapshot.unmetRequirementGroups,
         finalSelectedCourseCodes
       );
       const toolTrace = {
@@ -589,7 +532,7 @@ export const planScheduleForTerm = action({
             term: selectedTerm,
             studentMessage: modelOutput.studentMessage,
             warnings: dedupeWarnings([
-              ...remainingRequirements.warnings,
+              ...snapshot.warnings,
               ...modelOutput.warnings,
               ...conflictResult.feedback,
               conflictResult.summary,
@@ -633,7 +576,7 @@ export const planScheduleForTerm = action({
           term: selectedTerm,
           studentMessage: modelOutput.studentMessage,
           warnings: dedupeWarnings([
-            ...remainingRequirements.warnings,
+            ...snapshot.warnings,
             ...modelOutput.warnings,
           ]),
           satisfiedRequirementKeys: resolvedOutcomes.satisfiedRequirementKeys,
@@ -649,7 +592,7 @@ export const planScheduleForTerm = action({
         .filter((item) => item.section.termCode === args.termCode)
         .map(mapScheduleItemToSection);
       const savedOutcomes = resolveRequirementOutcomes(
-        remainingRequirements.groups,
+        snapshot.unmetRequirementGroups,
         new Set(
           normalizeCourseCodes(
             selectedSections.map((section) => section.courseCode)
@@ -657,7 +600,7 @@ export const planScheduleForTerm = action({
         )
       );
       const warnings = dedupeWarnings([
-        ...remainingRequirements.warnings,
+        ...snapshot.warnings,
         ...modelOutput.warnings,
       ]);
 
