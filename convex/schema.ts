@@ -94,17 +94,20 @@ const schema = defineSchema({
           code: v.string(),
           description: v.string(),
           directive: v.string(),
+          completionStatus: v.union(v.string(), v.null()),
           subrequirements: v.array(
             v.object({
               id: v.string(),
               code: v.string(),
               displayText: v.string(),
               directive: v.string(),
+              completionStatus: v.union(v.string(), v.null()),
               groups: v.array(
                 v.object({
                   id: v.string(),
                   displayText: v.string(),
                   directive: v.string(),
+                  completionStatus: v.union(v.string(), v.null()),
                   courses: v.array(
                     v.object({
                       id: v.string(),

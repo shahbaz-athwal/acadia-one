@@ -16,6 +16,7 @@ const ProgramEvaluationGroupSchema = z.object({
   Id: z.string(),
   DisplayText: z.string(),
   Directive: z.string(),
+  CompletionStatus: z.string().nullable().optional(),
   Courses: z.array(ProgramEvaluationCourseSchema),
 });
 
@@ -24,6 +25,7 @@ const ProgramEvaluationSubrequirementSchema = z.object({
   Code: z.string(),
   DisplayText: z.string(),
   Directive: z.string(),
+  CompletionStatus: z.string().nullable().optional(),
   Groups: z.array(ProgramEvaluationGroupSchema),
 });
 
@@ -32,6 +34,7 @@ const ProgramEvaluationRequirementSchema = z.object({
   Code: z.string(),
   Description: z.string(),
   Directive: z.string(),
+  CompletionStatus: z.string().nullable().optional(),
   Subrequirements: z.array(ProgramEvaluationSubrequirementSchema),
 });
 
@@ -58,15 +61,18 @@ export const ProgramEvaluationFilteredResponseSchema = z
         code: req.Code,
         description: req.Description,
         directive: req.Directive,
+        completionStatus: req.CompletionStatus ?? null,
         subrequirements: req.Subrequirements.map((sub) => ({
           id: sub.Id,
           code: sub.Code,
           displayText: sub.DisplayText,
           directive: sub.Directive,
+          completionStatus: sub.CompletionStatus ?? null,
           groups: sub.Groups.map((group) => ({
             id: group.Id,
             displayText: group.DisplayText,
             directive: group.Directive,
+            completionStatus: group.CompletionStatus ?? null,
             courses: group.Courses.map((course) => ({
               id: course.Id,
               code: canonicalCourseCode(course.SubjectCode, course.Number),
