@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ChevronDownIcon, ChevronRightIcon, InfoIcon } from "lucide-react";
 import {
+  type ComponentProps,
   type ReactNode,
   useCallback,
   useEffect,
@@ -41,6 +42,7 @@ interface SearchGroupCourseData {
 
 interface ProgressTreeNode {
   children: ProgressTreeNode[];
+  completionStatus?: string | null;
   courseCode?: string;
   description?: string;
   directive?: string;
@@ -82,6 +84,25 @@ const LEVELS_WITH_TRUNCATED_TITLE: ReadonlySet<TreeLevel> = new Set<TreeLevel>([
   "group",
   "course",
 ]);
+interface CompletionStatusMeta {
+  label: string;
+  variant: ComponentProps<typeof Badge>["variant"];
+}
+
+const COMPLETION_STATUS_META: Record<string, CompletionStatusMeta> = {
+  Completed: {
+    label: "Completed",
+    variant: "success",
+  },
+  PartiallyCompleted: {
+    label: "Partially completed",
+    variant: "warning",
+  },
+  NotCompleted: {
+    label: "Not completed",
+    variant: "outline",
+  },
+};
 
 function createEmptyExpansionState(): ExpansionState {
   return {
@@ -93,6 +114,36 @@ function createEmptyExpansionState(): ExpansionState {
 function toOptionalText(value: string | null | undefined): string | undefined {
   const trimmed = value?.trim();
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
+}
+
+function toReadableCompletionStatus(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    return "";
+  }
+
+  return trimmed
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+}
+
+function getCompletionStatusMeta(
+  value: string | null | undefined
+): CompletionStatusMeta | null {
+  const normalizedValue = toOptionalText(value);
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const knownMeta = COMPLETION_STATUS_META[normalizedValue];
+  if (knownMeta) {
+    return knownMeta;
+  }
+
+  return {
+    label: toReadableCompletionStatus(normalizedValue) || normalizedValue,
+    variant: "outline",
+  };
 }
 
 function joinNonEmpty(
@@ -226,6 +277,7 @@ function mapGroupNode(
     id: buildNodeId("group", [requirementId, subrequirementId, group.id]),
     level: "group",
     label,
+    completionStatus: group.completionStatus,
     rsgKey,
     children:
       group.courses.length > 0
@@ -277,6 +329,7 @@ function mapSubrequirementNode(
     id: buildNodeId("subrequirement", [requirementId, subrequirement.id]),
     level: "subrequirement",
     label,
+    completionStatus: subrequirement.completionStatus,
     directive: isFlattened
       ? undefined
       : toOptionalText(subrequirement.directive),
@@ -294,6 +347,7 @@ function mapRequirementNode(
     id: buildNodeId("requirement", [requirement.id]),
     level: "requirement",
     label: requirement.description,
+    completionStatus: requirement.completionStatus,
     description: requirement.description,
     directive: toOptionalText(requirement.directive),
     children: requirement.subrequirements.map((subrequirement) =>
@@ -463,6 +517,30 @@ function renderSearchChip(
   );
 }
 
+function renderCompletionStatusBadge(node: ProgressTreeNode): ReactNode {
+  if (node.level === "course") {
+    return null;
+  }
+
+  const completionStatus = toOptionalText(node.completionStatus);
+  const meta = getCompletionStatusMeta(completionStatus);
+  if (!(completionStatus && meta)) {
+    return null;
+  }
+
+  return (
+    <Badge
+      className="max-w-32"
+      data-ignore-tree-toggle="true"
+      size="sm"
+      title={meta.label === completionStatus ? undefined : completionStatus}
+      variant={meta.variant}
+    >
+      <span className="truncate">{meta.label}</span>
+    </Badge>
+  );
+}
+
 interface ProgressTreeBranchProps {
   activeCourseCode?: string;
   activeRsgKey?: string;
@@ -492,6 +570,7 @@ function ProgressTreeBranch({
         const isCourseActive =
           node.level === "course" && activeCourseCode === node.courseCode;
         const showDirective = LEVELS_WITH_DIRECTIVE.has(node.level);
+        const completionStatusBadge = renderCompletionStatusBadge(node);
 
         return (
           <li key={node.id}>
@@ -522,8 +601,9 @@ function ProgressTreeBranch({
               >
                 {renderNodeContent(node, expanded)}
               </button>
-              {node.rsgKey || showDirective ? (
-                <div className="flex shrink-0 items-center gap-1 pr-1">
+              {completionStatusBadge || node.rsgKey || showDirective ? (
+                <div className="flex shrink-0 items-center gap-1.5 pr-1">
+                  {completionStatusBadge}
                   {renderSearchChip(node.rsgKey, activeRsgKey, onSearchToggle)}
                   {showDirective ? renderDirective(node.directive) : null}
                 </div>
