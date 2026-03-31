@@ -523,6 +523,9 @@ function renderCompletionStatusBadge(node: ProgressTreeNode): ReactNode {
   }
 
   const completionStatus = toOptionalText(node.completionStatus);
+  if (completionStatus === "PartiallyCompleted") {
+    return null;
+  }
   const meta = getCompletionStatusMeta(completionStatus);
   if (!(completionStatus && meta)) {
     return null;
