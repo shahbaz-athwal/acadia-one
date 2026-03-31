@@ -52,23 +52,10 @@ const DetectConflictsToolInputSchema = z.object({
   includeSavedSchedule: z.boolean().optional(),
 });
 
-const SaveScheduleToolInputSchema = z.object({
-  sectionIds: z.array(z.string().trim().min(1)).min(1),
-  mode: z.enum(["append", "replaceTerm"]).optional(),
-});
-
 function normalizeUniqueStrings(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))].sort(
     (left, right) => left.localeCompare(right)
   );
-}
-
-function sameStringSet(left: string[], right: string[]) {
-  if (left.length !== right.length) {
-    return false;
-  }
-
-  return left.every((value, index) => value === right[index]);
 }
 
 function mapScheduleItemToSection(item: {
@@ -329,8 +316,6 @@ export const planScheduleForTerm = action({
 
       const searchedCourseCodes = new Set<string>();
       let conflictChecks = 0;
-      let lastConflictFreeSectionIds: string[] | null = null;
-      let lastSavedSectionIds: string[] | null = null;
 
       const { output: modelOutput } = await generateText({
         model,
@@ -384,58 +369,6 @@ export const planScheduleForTerm = action({
                 }
               );
 
-              lastConflictFreeSectionIds =
-                !response.hasConflicts &&
-                response.invalidSectionIds.length === 0
-                  ? candidateSectionIds
-                  : null;
-
-              return response;
-            },
-          }),
-          save_schedule: tool({
-            description:
-              "Replace the selected term schedule with the exact final section ids.",
-            inputSchema: SaveScheduleToolInputSchema,
-            execute: async (input) => {
-              const sectionIds = normalizeUniqueStrings(input.sectionIds);
-              const mode = input.mode ?? "replaceTerm";
-
-              if (mode !== "replaceTerm") {
-                throw new Error(
-                  "This executor only supports save_schedule with replaceTerm."
-                );
-              }
-
-              if (
-                !(
-                  lastConflictFreeSectionIds &&
-                  sameStringSet(lastConflictFreeSectionIds, sectionIds)
-                )
-              ) {
-                throw new Error(
-                  "Run detect_conflicts on the exact final section ids and confirm there are no conflicts before saving."
-                );
-              }
-
-              const response = await ctx.runMutation(
-                api.aiScheduleTools.saveAiScheduleSections,
-                {
-                  sessionId: args.sessionId,
-                  termCode: args.termCode,
-                  sectionIds,
-                  mode,
-                }
-              );
-
-              if (response.invalidSectionIds.length > 0) {
-                throw new Error(
-                  `save_schedule failed because ${response.invalidSectionIds.join(", ")} could not be resolved for ${args.termCode}.`
-                );
-              }
-
-              didPersistReplacement = true;
-              lastSavedSectionIds = sectionIds;
               return response;
             },
           }),
@@ -465,53 +398,6 @@ export const planScheduleForTerm = action({
         conflictChecks,
         saveMode: "replaceTerm" as const,
       };
-
-      if (
-        didPersistReplacement &&
-        !(
-          lastSavedSectionIds &&
-          sameStringSet(lastSavedSectionIds, finalSectionIds)
-        )
-      ) {
-        await restoreOriginalTermSchedule({
-          ctx,
-          sessionId: args.sessionId,
-          termCode: args.termCode,
-          originalSectionIds: originalTermSectionIds,
-        });
-        didPersistReplacement = false;
-        throw new ConvexError(
-          "Planner output did not match the sections that were saved."
-        );
-      }
-
-      if (didPersistReplacement && finalSectionIds.length > 0) {
-        const saveResult = await ctx.runMutation(
-          api.aiScheduleTools.saveAiScheduleSections,
-          {
-            sessionId: args.sessionId,
-            termCode: args.termCode,
-            sectionIds: finalSectionIds,
-            aiSuggestionSummaries,
-            mode: "replaceTerm",
-          }
-        );
-
-        if (saveResult.invalidSectionIds.length > 0) {
-          await restoreOriginalTermSchedule({
-            ctx,
-            sessionId: args.sessionId,
-            termCode: args.termCode,
-            originalSectionIds: originalTermSectionIds,
-          });
-          didPersistReplacement = false;
-          throw new ConvexError(
-            `The final schedule could not be saved because ${saveResult.invalidSectionIds.join(", ")} did not resolve in ${args.termCode}.`
-          );
-        }
-
-        lastSavedSectionIds = finalSectionIds;
-      }
 
       if (!didPersistReplacement && finalSectionIds.length > 0) {
         const conflictResult = await ctx.runQuery(

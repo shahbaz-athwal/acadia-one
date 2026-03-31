@@ -2240,22 +2240,143 @@
       "department": "Economics",
       "input_url": "https://economics.acadiau.ca/our-people.html",
       "status": "success",
-      "visited_urls": ["https://economics.acadiau.ca/our-people.html"],
+      "visited_urls": [
+        "https://economics.acadiau.ca/our-people.html",
+        "https://economics.acadiau.ca/burc-kayahan.html",
+        "https://economics.acadiau.ca/andrew-davis.html",
+        "https://economics.acadiau.ca/hassouna-moussa.html",
+        "https://economics.acadiau.ca/brian-vanBlarcom.html",
+        "https://economics.acadiau.ca/xiaoting-wang.html",
+        "https://economics.acadiau.ca/our-people/justin-beaudoin.html",
+        "https://economics.acadiau.ca/barry-watson.html"
+      ],
       "warnings": [],
       "professors": [
         {
           "prefix": "ECON",
           "department": "Economics",
-          "source_url": "https://economics.acadiau.ca/our-people.html",
+          "source_url": "https://economics.acadiau.ca/burc-kayahan.html",
+          "name": "Burc Kayahan",
+          "title": "Professor",
+          "email": "burc.kayahan@acadiau.ca",
+          "phone": "(902) 585-1505",
+          "profile_url": "https://economics.acadiau.ca/burc-kayahan.html",
+          "profile_image_url": "https://economics.acadiau.ca/assets/images/8/Burc%20Kayahan%20-%20picture-1f617d65.jpg",
+          "research_areas": [
+            "Applied Econometrics",
+            "Tourism Economics",
+            "Environmental Economics"
+          ],
+          "office": "BAC 345",
+          "description": "Office Location:BAC 345 Phone:(902) 585-1505 E-mail:burc.kayahan@acadiau.ca Undergraduate:Marmara University,Turkey, 2000 Master’s:University of Guelph,Canada, 2001 PhD:University of Guelph,Canada, 2007"
+        },
+        {
+          "prefix": "ECON",
+          "department": "Economics",
+          "source_url": "https://economics.acadiau.ca/andrew-davis.html",
+          "name": "Andrew Davis",
+          "title": "Associate Professor, Department Head",
+          "email": "andrew.davis@acadiau.ca",
+          "phone": "(902) 585-1240",
+          "profile_url": "https://economics.acadiau.ca/andrew-davis.html",
+          "profile_image_url": "https://economics.acadiau.ca/assets/images/6/Andrew%20Davis%20041%20copy-c5a8d8e4.jpg",
+          "research_areas": [
+            "Macroeconomics",
+            "Personal Finance",
+            "Job Search and Matching"
+          ],
+          "office": "BAC 344",
+          "description": "Office Location:BAC 344 Phone:(902) 585-1240 E-mail:andrew.davis@acadiau.ca Undergraduate:Memorial University, 2008 Master’s:University of Rochester, 2011 PhD:University of Rochester, 2014"
+        },
+        {
+          "prefix": "ECON",
+          "department": "Economics",
+          "source_url": "https://economics.acadiau.ca/hassouna-moussa.html",
           "name": "Hassouna Moussa",
-          "title": "",
-          "email": "",
-          "phone": "",
+          "title": "Professor",
+          "email": "hassouna.moussa@acadiau.ca",
+          "phone": "(902) 585-1511",
+          "profile_url": "https://economics.acadiau.ca/hassouna-moussa.html",
+          "profile_image_url": "https://economics.acadiau.ca/assets/images/b/Hassouna%20Moussa%20Compressed-aa6fb2db.jpg",
+          "research_areas": [
+            "Financial Structure and Economic Development"
+          ],
+          "office": "BAC 347",
+          "description": "Office Location:BAC 347 Phone:(902) 585-1511 E-mail:hassouna.moussa@acadiau.ca License (Economics):University of Tunis, 1969 Master’s (Mathematics):University of Minnesota, 1974 PhD (Economics):University of Minnesota, 1978"
+        },
+        {
+          "prefix": "ECON",
+          "department": "Economics",
+          "source_url": "https://economics.acadiau.ca/brian-vanBlarcom.html",
+          "name": "Brian VanBlarcom",
+          "title": "Associate Professor",
+          "email": "brian.vanblarcom@acadiau.ca",
+          "phone": "(902) 585-1137",
+          "profile_url": "https://economics.acadiau.ca/brian-vanBlarcom.html",
+          "profile_image_url": "https://economics.acadiau.ca/assets/images/5/Brian%20VanBlarcom-9b0bd3a7.jpg",
+          "research_areas": [
+            "Tourism",
+            "Sports and Recreation",
+            "Financial Markets"
+          ],
+          "office": "BAC 342",
+          "description": "Office Location:BAC 342 Phone:(902) 585-1137 E-mail:brian.vanblarcom@acadiau.ca Undergraduate:Acadia University, 1983 Master’s:Acadia University, 1985 PhD:Clemson University, 2001"
+        },
+        {
+          "prefix": "ECON",
+          "department": "Economics",
+          "source_url": "https://economics.acadiau.ca/xiaoting-wang.html",
+          "name": "Xiaoting Wang",
+          "title": "Professor",
+          "email": "xiaoting.wang@acadiau.ca",
+          "phone": "(902) 585-1461",
+          "profile_url": "https://economics.acadiau.ca/xiaoting-wang.html",
+          "profile_image_url": "https://economics.acadiau.ca/assets/images/4/Xiaoting%20Wang%20Compressed-9ff80851.jpg",
+          "research_areas": [
+            "Industrial Organization",
+            "Microeconomic Theory",
+            "Behavioral Economics"
+          ],
+          "office": "BAC 341",
+          "description": "Office Location:BAC 341 Phone:(902) 585-1461 E-mail:xiaoting.wang@acadiau.ca Undergraduate: Renmin University of China, 中国人民大学，1997 Master’s:Queen’s University, Canada, 1999 PhD:Queen’s University, Canada, 2007"
+        },
+        {
+          "prefix": "ECON",
+          "department": "Economics",
+          "source_url": "https://economics.acadiau.ca/our-people/justin-beaudoin.html",
+          "name": "Justin Beaudoin",
+          "title": "Associate Professor",
+          "email": "justin.beaudoin@acadiau.ca",
+          "phone": "(902) 585-1347",
           "profile_url": "https://economics.acadiau.ca/our-people/justin-beaudoin.html",
-          "profile_image_url": "",
-          "research_areas": [],
-          "office": "",
-          "description": "Faculty and Staff Justin Beaudoin Andrew Davis Burc Kayahan Hassouna Moussa Brian VanBlarcom Xiaoting Wang Barry Watson"
+          "profile_image_url": "https://economics.acadiau.ca/our-people/assets/images/5/Beaudoin-8741f22a.jpg",
+          "research_areas": [
+            "Transportation Economics",
+            "Environmental Economics",
+            "Urban Economics",
+            "Energy Economics"
+          ],
+          "office": "BAC 346",
+          "description": "Office Location:BAC 346 Phone:(902) 585-1347 E-mail:justin.beaudoin@acadiau.ca Website:https://sites.google.com/site/beaudoinjustin/ Undergraduate:University of British Columbia, 2004 Master’s:University of British Columbia, 2006 PhD:University of California, Davis, 2015"
+        },
+        {
+          "prefix": "ECON",
+          "department": "Economics",
+          "source_url": "https://economics.acadiau.ca/barry-watson.html",
+          "name": "Barry Watson",
+          "title": "Professor",
+          "email": "barry.watson@acadiau.ca",
+          "phone": "",
+          "profile_url": "https://economics.acadiau.ca/barry-watson.html",
+          "profile_image_url": "https://economics.acadiau.ca/assets/images/b/Barry_Watson-7391d5c0.jpg",
+          "research_areas": [
+            "Health Economics",
+            "Labour Economics",
+            "Applied Economics",
+            "Well-Being"
+          ],
+          "office": "BAC 343",
+          "description": "Office Location:BAC 343 Phone:n/a E-mail:barry.watson@acadiau.ca Website:barrywatson.ca Undergraduate:University of New Brunswick, 2003 Master’s:University of New Brunswick, 2006 PhD:Dalhousie University, 2015"
         }
       ]
     },

@@ -72,11 +72,11 @@ export function buildPlanningPrompt(args: {
     `Target ${args.plannerOptions.targetCourseCount} courses unless the available offerings or constraints make that impossible.`,
     "Choose sections only from courses listed under unmet progress.",
     "Respect the student instructions exactly.",
-    "Use the provided tools to search sections, verify conflicts, and save the final schedule.",
+    "Use the provided tools to search sections and verify conflicts.",
     "Search courses before selecting sections.",
     "Run detect_conflicts on the exact final candidate section ids before saving.",
-    "Only call save_schedule after detect_conflicts reports no invalid ids and no conflicts for that exact section set.",
-    "The selected term schedule is replaced on save, so do not preserve old sections unless you intentionally choose them again.",
+    "After detect_conflicts reports no invalid ids and no conflicts for that exact section set, stop calling tools and return the final object.",
+    "The selected term schedule will be replaced in code after you return the final object, so do not preserve old sections unless you intentionally choose them again.",
     "Your final response must be a structured object that matches the requested schema.",
     "Every selected section must include its own short summary explaining why that course fits.",
   ].join("\n");
@@ -108,7 +108,7 @@ export function buildPlanningPrompt(args: {
     "1. Search sections for courses shown under unmet progress.",
     "2. Choose sections that satisfy the most unmet groups while honoring the student instructions.",
     "3. Detect conflicts on the exact final candidate section ids.",
-    "4. Save with replaceTerm only after the final candidate set is conflict-free.",
+    "4. After the final candidate set is conflict-free, return the final object immediately.",
     "5. In the final object, explain what was scheduled and what still remains unresolved.",
     "6. For each selected section, include a brief user-facing summary specific to that course or section.",
   ].join("\n");
