@@ -9,7 +9,6 @@
     "dev:convex": "convex dev",
     "dev:setup": "convex dev --configure --until-success",
     "build": "vite build",
-    "enrich:professors": "bun scripts/enrich-professors-from-json.ts",
     "start": "portless acadia-one vite preview",
     "lint": "ultracite fix",
     "lint:check": "ultracite check",
