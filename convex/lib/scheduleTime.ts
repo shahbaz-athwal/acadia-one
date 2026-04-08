@@ -44,7 +44,7 @@ function parse24HourMatch(match: RegExpMatchArray): number | null {
  * Parse a display time string into total minutes since midnight.
  * Accepts formats: "10 AM", "10:00 AM", "2:30 PM", "14:30", "09:00"
  */
-export function parseTimeToMinutesOrNull(time: string): number | null {
+export function parseTimeToMinutes(time: string) {
   const trimmed = time.trim();
   const ampmMatch = trimmed.match(AMPM_REGEX);
   if (ampmMatch) {
@@ -57,14 +57,6 @@ export function parseTimeToMinutesOrNull(time: string): number | null {
   }
 
   return null;
-}
-
-/**
- * Parse a display time string into total minutes since midnight.
- * Returns 0 for invalid inputs to preserve legacy frontend behavior.
- */
-export function parseTimeToMinutes(time: string): number {
-  return parseTimeToMinutesOrNull(time) ?? 0;
 }
 
 /**
@@ -86,22 +78,4 @@ export function formatTime(minutes: number): string {
     return `${hours12} ${period}`;
   }
   return `${hours12}:${mins.toString().padStart(2, "0")} ${period}`;
-}
-
-export function getWeekdayLongName(day: number): string {
-  return WEEKDAYS.find((weekday) => weekday.day === day)?.long ?? `Day ${day}`;
-}
-
-export function getWeekdayShortName(day: number): string {
-  return WEEKDAYS.find((weekday) => weekday.day === day)?.short ?? `Day ${day}`;
-}
-
-export function formatWeekdayNames(
-  days: number[],
-  style: "long" | "short" = "long"
-): string[] {
-  const names = days.map((day) =>
-    style === "long" ? getWeekdayLongName(day) : getWeekdayShortName(day)
-  );
-  return [...new Set(names)];
 }

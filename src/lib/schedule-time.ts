@@ -1,4 +1,4 @@
-import { formatTime, parseTimeToMinutes } from "../../shared/schedule-time";
+import { formatTime, parseTimeToMinutes } from "../../convex/lib/scheduleTime";
 
 /**
  * Schedule time utilities for converting time strings to grid positions
@@ -43,8 +43,8 @@ export function getBlockPosition(
   endTime: string,
   slotHeight: number = SLOT_HEIGHT
 ): { top: number; height: number } {
-  const startMinutes = parseTimeToMinutes(startTime);
-  const endMinutes = parseTimeToMinutes(endTime);
+  const startMinutes = parseTimeToMinutes(startTime) ?? 0;
+  const endMinutes = parseTimeToMinutes(endTime) ?? 0;
   const top = minutesToPixelOffset(startMinutes, slotHeight);
   const height = ((endMinutes - startMinutes) / 30) * slotHeight;
   return { top, height };

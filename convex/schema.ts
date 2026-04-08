@@ -51,7 +51,7 @@ const schema = defineSchema({
             name: v.string(),
             startDate: v.union(v.string(), v.null()),
             endDate: v.union(v.string(), v.null()),
-          }),
+          })
         ),
         minors: v.array(
           v.object({
@@ -59,9 +59,9 @@ const schema = defineSchema({
             name: v.string(),
             startDate: v.union(v.string(), v.null()),
             endDate: v.union(v.string(), v.null()),
-          }),
+          })
         ),
-      }),
+      })
     ),
     grades: v.object({
       terms: v.array(
@@ -79,9 +79,9 @@ const schema = defineSchema({
               startDate: v.union(v.string(), v.null()),
               endDate: v.union(v.string(), v.null()),
               finalGrade: v.string(),
-            }),
+            })
           ),
-        }),
+        })
       ),
     }),
     programEvaluation: v.object({
@@ -115,20 +115,20 @@ const schema = defineSchema({
                       number: v.string(),
                       title: v.string(),
                       courseName: v.string(),
-                    }),
+                    })
                   ),
-                }),
+                })
               ),
-            }),
+            })
           ),
-        }),
+        })
       ),
     }),
     coursePlanningStatuses: v.optional(
       v.record(
         v.string(),
-        literals("completed", "inProgress", "dropped", "withdrawn", "failed"),
-      ),
+        literals("completed", "inProgress", "dropped", "withdrawn", "failed")
+      )
     ),
     updatedAt: v.number(),
   }).index("by_sessionId", ["sessionId"]),
@@ -198,8 +198,8 @@ const schema = defineSchema({
           displayTextAnnotated: v.string(),
           displayTextExtension: v.string(),
           displayTextExtensionAnnotated: v.optional(v.string()),
-        }),
-      ),
+        })
+      )
     ),
     lastSectionPulledAt: v.optional(v.number()),
     ratingCount: v.number(),

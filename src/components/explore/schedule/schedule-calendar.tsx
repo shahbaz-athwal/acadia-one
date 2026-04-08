@@ -18,7 +18,7 @@ import {
 } from "@/lib/schedule-time";
 import { cn } from "@/lib/utils";
 import { api } from "../../../../convex/_generated/api";
-import { WEEKDAYS } from "../../../../shared/schedule-time";
+import { WEEKDAYS } from "../../../../convex/lib/scheduleTime";
 import { ScheduleBlock } from "./schedule-block";
 
 const DAY_MIN_WIDTH = 85;

@@ -30,6 +30,7 @@ import type * as lib_encryption from "../lib/encryption.js";
 import type * as lib_posthog from "../lib/posthog.js";
 import type * as lib_ratingIdentity from "../lib/ratingIdentity.js";
 import type * as lib_rmp from "../lib/rmp.js";
+import type * as lib_scheduleTime from "../lib/scheduleTime.js";
 import type * as lib_time from "../lib/time.js";
 import type * as professors from "../professors.js";
 import type * as schedule from "../schedule.js";
@@ -71,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   "lib/posthog": typeof lib_posthog;
   "lib/ratingIdentity": typeof lib_ratingIdentity;
   "lib/rmp": typeof lib_rmp;
+  "lib/scheduleTime": typeof lib_scheduleTime;
   "lib/time": typeof lib_time;
   professors: typeof professors;
   schedule: typeof schedule;
