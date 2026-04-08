@@ -2,7 +2,6 @@ import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { useDefaultLayout } from "react-resizable-panels";
 import { z } from "zod";
-import { ExploreAiPromptFab } from "@/components/explore/ai/explore-ai-prompt-fab";
 import { CourseView } from "@/components/explore/courses/course-view";
 import { ExploreDetailSheetHost } from "@/components/explore/details/explore-detail-sheet-host";
 import { FilterPanel } from "@/components/explore/filters/filter-panel";
@@ -234,7 +233,6 @@ function RouteComponent() {
             </ResizablePanel>
           </ResizablePanelGroup>
         </main>
-        <ExploreAiPromptFab />
         <ExploreDetailSheetHost />
       </div>
     </SchedulePreviewProvider>

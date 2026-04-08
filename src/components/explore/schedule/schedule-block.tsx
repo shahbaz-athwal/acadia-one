@@ -1,11 +1,9 @@
-import { SparklesIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   PreviewCard,
   PreviewCardPopup,
   PreviewCardTrigger,
 } from "@/components/ui/preview-card";
-import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
 import type { ScheduleItem } from "@/hooks/use-schedule-items";
 import { getBlockPosition } from "@/lib/schedule-time";
 import { cn, formatDays, stripProfessorSalutations } from "@/lib/utils";
@@ -55,8 +53,6 @@ export function ScheduleBlock({
   const professorName =
     stripProfessorSalutations(item.section.professorName) || "TBA";
   const professorExternalId = item.section.professorExternalId;
-  const aiSuggestionSummary = item.aiSuggestionSummary?.trim();
-
   return (
     <PreviewCard>
       <PreviewCardTrigger
@@ -85,17 +81,6 @@ export function ScheduleBlock({
                 >
                   {item.course.code}
                 </span>
-                {item.isAiSuggested ? (
-                  <Tooltip>
-                    <TooltipTrigger
-                      aria-label="AI suggested section"
-                      className="mt-0.5 shrink-0 text-foreground/80"
-                    >
-                      <SparklesIcon className="size-3" />
-                    </TooltipTrigger>
-                    <TooltipPopup>AI suggested</TooltipPopup>
-                  </Tooltip>
-                ) : null}
               </div>
               <span className="truncate text-[11px] leading-tight opacity-80">
                 {item.section.sectionCode}
@@ -150,16 +135,6 @@ export function ScheduleBlock({
             )}
           </dd>
         </dl>
-        {item.isAiSuggested && aiSuggestionSummary ? (
-          <div className="space-y-1 rounded-md bg-muted/40 px-3 py-2">
-            <div className="font-medium text-[11px] uppercase tracking-wide">
-              AI suggestion
-            </div>
-            <p className="text-muted-foreground text-xs leading-snug">
-              {aiSuggestionSummary}
-            </p>
-          </div>
-        ) : null}
         <Button
           className="mt-1 w-full justify-center"
           onClick={() => onRemove?.(item.scheduleItemId)}

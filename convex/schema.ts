@@ -264,8 +264,6 @@ const schema = defineSchema({
     sessionId: v.string(),
     sectionId: v.id("sections"),
     color: v.string(),
-    isAiSuggested: v.optional(v.boolean()),
-    aiSuggestionSummary: v.optional(v.string()),
     addedAt: v.number(),
   })
     .index("by_sessionId", ["sessionId"])

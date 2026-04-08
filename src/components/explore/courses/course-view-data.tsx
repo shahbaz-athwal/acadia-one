@@ -90,13 +90,11 @@ function LocationDisplay(props: {
 }
 
 interface PendingSection {
-  aiSuggestionSummary: string | undefined;
   course: {
     code: string;
     title: string;
     credits: number;
   };
-  isAiSuggested: boolean;
   section: {
     id: string;
     termCode: string;
@@ -119,7 +117,6 @@ interface SectionActionParams {
   color: string;
   course: Course;
   isAdded: boolean;
-  isAiSuggested?: boolean;
   professorDisplayName: string;
   section: Section;
 }
@@ -399,8 +396,6 @@ export function CourseViewData() {
     course: Course,
     professorDisplayName: string
   ): PendingSection => ({
-    isAiSuggested: false,
-    aiSuggestionSummary: undefined,
     section: {
       id: section.id,
       termCode: section.termCode,
@@ -422,23 +417,17 @@ export function CourseViewData() {
   });
 
   const handleAddSection = (params: SectionActionParams) => {
-    const {
-      section,
-      course,
-      professorDisplayName,
-      color,
-      isAdded,
-      isAiSuggested = false,
-    } = params;
+    const { section, course, professorDisplayName, color, isAdded } = params;
     clearPreview();
     if (isAdded) {
       return;
     }
-    pendingRef.current = {
-      ...buildPendingSection(section, course, professorDisplayName),
-      isAiSuggested,
-    };
-    addSection({ sessionId, sectionId: section._id, color, isAiSuggested });
+    pendingRef.current = buildPendingSection(
+      section,
+      course,
+      professorDisplayName
+    );
+    addSection({ sessionId, sectionId: section._id, color });
   };
 
   const handleSectionPreview = (params: SectionActionParams) => {
