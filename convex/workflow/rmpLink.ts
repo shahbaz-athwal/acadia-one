@@ -1,12 +1,9 @@
-"use node";
-
 import { generateText, Output } from "ai";
 import { z } from "zod";
 import { api, internal } from "../_generated/api";
 import { internalAction } from "../_generated/server";
 import { geminiModel as model } from "../lib/aiModel";
 import { AI_MAPPING_PROMPT, RMP_ACADIA_ID } from "../lib/constants";
-import { posthog } from "../lib/posthog";
 import { scraper as rmpScraper, type TeacherNode } from "../lib/rmp";
 
 interface LinkProfessorsWithRmpResult {
@@ -56,8 +53,6 @@ ${formatRMPProfs}
     }),
     prompt,
   });
-
-  await posthog.shutdown();
 
   return result.output;
 }

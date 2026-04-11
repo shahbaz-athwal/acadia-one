@@ -27,7 +27,6 @@ import type * as lib_aiModel from "../lib/aiModel.js";
 import type * as lib_constants from "../lib/constants.js";
 import type * as lib_courseCode from "../lib/courseCode.js";
 import type * as lib_encryption from "../lib/encryption.js";
-import type * as lib_posthog from "../lib/posthog.js";
 import type * as lib_ratingIdentity from "../lib/ratingIdentity.js";
 import type * as lib_rmp from "../lib/rmp.js";
 import type * as lib_scheduleTime from "../lib/scheduleTime.js";
@@ -43,7 +42,11 @@ import type * as workflow_pullUserData from "../workflow/pullUserData.js";
 import type * as workflow_rmpLink from "../workflow/rmpLink.js";
 import type * as workflow_syncAggregates from "../workflow/syncAggregates.js";
 
-import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
 
 declare const fullApi: ApiFromModules<{
   "acadia/auth": typeof acadia_auth;
@@ -65,7 +68,6 @@ declare const fullApi: ApiFromModules<{
   "lib/constants": typeof lib_constants;
   "lib/courseCode": typeof lib_courseCode;
   "lib/encryption": typeof lib_encryption;
-  "lib/posthog": typeof lib_posthog;
   "lib/ratingIdentity": typeof lib_ratingIdentity;
   "lib/rmp": typeof lib_rmp;
   "lib/scheduleTime": typeof lib_scheduleTime;
@@ -90,7 +92,10 @@ declare const fullApi: ApiFromModules<{
  * const myFunctionReference = api.myModule.myFunction;
  * ```
  */
-export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "public">>;
+export declare const api: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "public">
+>;
 
 /**
  * A utility for referencing Convex functions in your app's internal API.
@@ -100,6 +105,9 @@ export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "publ
  * const myFunctionReference = internal.myModule.myFunction;
  * ```
  */
-export declare const internal: FilterApi<typeof fullApi, FunctionReference<any, "internal">>;
+export declare const internal: FilterApi<
+  typeof fullApi,
+  FunctionReference<any, "internal">
+>;
 
 export declare const components: {};
