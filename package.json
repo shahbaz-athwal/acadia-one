@@ -9,7 +9,7 @@
     "dev:convex": "convex dev",
     "dev:setup": "convex dev --configure --until-success",
     "build": "vp build",
-    "start": "portless acadia-one vite preview"
+    "start": "portless acadia-one vp preview"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.53",
