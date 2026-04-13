@@ -25,4 +25,4 @@ cmds = [
 ]
 
 [start]
-cmd = "pnpm exec vp preview --host 0.0.0.0 --port ${PORT:-3000}"
+cmd = "pnpm exec serve dist --single --listen tcp://0.0.0.0:${PORT:-3000}"
