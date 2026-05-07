@@ -27,9 +27,7 @@ const SchedulePreviewContext = createContext<SchedulePreviewContextValue>({
 });
 
 export function SchedulePreviewProvider({ children }: { children: ReactNode }) {
-  const [previewSection, setPreviewSection] = useState<PreviewSection | null>(
-    null
-  );
+  const [previewSection, setPreviewSection] = useState<PreviewSection | null>(null);
 
   return (
     <SchedulePreviewContext value={{ previewSection, setPreviewSection }}>

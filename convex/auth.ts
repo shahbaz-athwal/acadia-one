@@ -30,10 +30,7 @@ type RefreshResult =
     };
 
 function sha256HexFromTokenHex(tokenHex: string): string {
-  return crypto
-    .createHash("sha256")
-    .update(Buffer.from(tokenHex, "hex"))
-    .digest("hex");
+  return crypto.createHash("sha256").update(Buffer.from(tokenHex, "hex")).digest("hex");
 }
 
 export const authenticateUser = action(
@@ -47,7 +44,7 @@ export const authenticateUser = action(
       sessionId: string;
       username: string;
       password: string;
-    }
+    },
   ): Promise<AuthResult> => {
     try {
       // Authenticate with Acadia
@@ -65,17 +62,10 @@ export const authenticateUser = action(
       }
 
       const token = crypto.randomBytes(32).toString("hex");
-      const tokenHash = crypto
-        .createHash("sha256")
-        .update(Buffer.from(token, "hex"))
-        .digest("hex");
+      const tokenHash = crypto.createHash("sha256").update(Buffer.from(token, "hex")).digest("hex");
 
       // Encrypt credentials using the token as the encryption key
-      const encryptedCredentials = encryptCredentials(
-        username,
-        password,
-        token
-      );
+      const encryptedCredentials = encryptCredentials(username, password, token);
 
       // Calculate expiration (7 days from now)
       const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
@@ -92,14 +82,10 @@ export const authenticateUser = action(
         expiresAt,
       });
 
-      await ctx.scheduler.runAfter(
-        0,
-        internal.workflow.pullUserData.pullUserData,
-        {
-          sessionId,
-          token,
-        }
-      );
+      await ctx.scheduler.runAfter(0, internal.workflow.pullUserData.pullUserData, {
+        sessionId,
+        token,
+      });
 
       return {
         success: true,
@@ -114,7 +100,7 @@ export const authenticateUser = action(
         status: 500,
       };
     }
-  }
+  },
 );
 
 export const refreshUserData = action(
@@ -126,7 +112,7 @@ export const refreshUserData = action(
     }: {
       sessionId: string;
       token: string;
-    }
+    },
   ): Promise<RefreshResult> => {
     try {
       const [user, session] = await Promise.all([
@@ -149,14 +135,10 @@ export const refreshUserData = action(
         };
       }
 
-      await ctx.scheduler.runAfter(
-        0,
-        internal.workflow.pullUserData.pullUserData,
-        {
-          sessionId,
-          token,
-        }
-      );
+      await ctx.scheduler.runAfter(0, internal.workflow.pullUserData.pullUserData, {
+        sessionId,
+        token,
+      });
 
       return { success: true };
     } catch (error) {
@@ -166,5 +148,5 @@ export const refreshUserData = action(
         error: "Could not refresh data. Please try again.",
       };
     }
-  }
+  },
 );

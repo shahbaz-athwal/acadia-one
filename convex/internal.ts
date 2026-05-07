@@ -9,11 +9,7 @@ import { vv } from "./schema";
 const IS_LAB_COURSE_CODE_RE = /\d+L$/i;
 const ACADEMIC_LEVEL_RE = /(\d{3,4})[A-Z]?$/;
 
-function buildCourseSearchText(course: {
-  code: string;
-  title: string;
-  description?: string;
-}) {
+function buildCourseSearchText(course: { code: string; title: string; description?: string }) {
   return [course.code, course.title, course.description ?? ""]
     .map((value) => value.trim())
     .filter(Boolean)
@@ -40,7 +36,7 @@ export const getAcadiaSession = internalQuery({
       lastAcadiaAuth: v.number(),
       expiresAt: v.number(),
     }),
-    v.null()
+    v.null(),
   ),
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -186,7 +182,7 @@ export const setAcadiaUserData = internalMutation({
       "programs",
       "grades",
       "programEvaluation",
-      "coursePlanningStatuses"
+      "coursePlanningStatuses",
     ),
   handler: async (ctx, args) => {
     const existingUser = await ctx.db
@@ -229,12 +225,10 @@ export const getExistingRsgKeys = internalQuery({
       ctx.db
         .query("rsg")
         .withIndex("by_key", (q) => q.eq("key", key))
-        .first()
+        .first(),
     );
 
-    return rows
-      .filter((row): row is NonNullable<typeof row> => !!row)
-      .map((row) => row.key);
+    return rows.filter((row): row is NonNullable<typeof row> => !!row).map((row) => row.key);
   },
 });
 
@@ -245,14 +239,14 @@ export const getRsgEntriesByKeys = internalQuery({
       key: v.string(),
       courseCodes: v.array(v.string()),
       type: literals("exact", "search"),
-    })
+    }),
   ),
   handler: async (ctx, args) => {
     const rows = await asyncMap(args.keys, (key) =>
       ctx.db
         .query("rsg")
         .withIndex("by_key", (q) => q.eq("key", key))
-        .first()
+        .first(),
     );
 
     return rows
@@ -325,17 +319,13 @@ export const existsTerms = internalMutation({
 
 export const existsProfessors = internalMutation({
   args: {
-    professors: v.array(
-      vv.doc("professors").pick("externalId", "name", "departmentPrefix")
-    ),
+    professors: v.array(vv.doc("professors").pick("externalId", "name", "departmentPrefix")),
   },
   handler: async (ctx, args) => {
     for (const professor of args.professors) {
       const existing = await ctx.db
         .query("professors")
-        .withIndex("by_externalId", (q) =>
-          q.eq("externalId", professor.externalId)
-        )
+        .withIndex("by_externalId", (q) => q.eq("externalId", professor.externalId))
         .first();
       if (existing) {
         continue;
@@ -369,10 +359,10 @@ export const upsertCourses = internalMutation({
               displayTextAnnotated: v.string(),
               displayTextExtension: v.string(),
               displayTextExtensionAnnotated: v.optional(v.string()),
-            })
-          )
+            }),
+          ),
         ),
-      })
+      }),
     ),
   },
   returns: v.number(),
@@ -381,9 +371,7 @@ export const upsertCourses = internalMutation({
     for (const course of args.courses) {
       const existing = await ctx.db
         .query("courses")
-        .withIndex("by_externalId", (q) =>
-          q.eq("externalId", course.externalId)
-        )
+        .withIndex("by_externalId", (q) => q.eq("externalId", course.externalId))
         .first();
       const searchText = buildCourseSearchText(course);
       const isLab = isLabCourseCode(course.code);
@@ -468,7 +456,7 @@ export const upsertCourseProfessors = internalMutation({
         professorId: v.id("professors"),
         courseExternalId: v.string(),
         professorExternalId: v.string(),
-      })
+      }),
     ),
   },
   handler: async (ctx, args) => {
@@ -476,7 +464,7 @@ export const upsertCourseProfessors = internalMutation({
       const existing = await ctx.db
         .query("courseProfessors")
         .withIndex("by_courseId_and_professorId", (q) =>
-          q.eq("courseId", link.courseId).eq("professorId", link.professorId)
+          q.eq("courseId", link.courseId).eq("professorId", link.professorId),
         )
         .first();
       if (!existing) {
@@ -507,7 +495,7 @@ export const upsertSections = internalMutation({
         refreshedAt: v.number(),
         instructorTBD: v.boolean(),
         isOnline: v.boolean(),
-      })
+      }),
     ),
   },
   returns: v.number(),
@@ -517,9 +505,7 @@ export const upsertSections = internalMutation({
       const existing = await ctx.db
         .query("sections")
         .withIndex("by_externalId_and_termCode", (q) =>
-          q
-            .eq("externalId", section.externalId)
-            .eq("termCode", section.termCode)
+          q.eq("externalId", section.externalId).eq("termCode", section.termCode),
         )
         .first();
       if (existing) {
@@ -569,9 +555,7 @@ export const insertRatings = internalMutation({
       if (existingLookup?.indexName === "by_rmpLegacyId") {
         const existing = await ctx.db
           .query("ratings")
-          .withIndex("by_rmpLegacyId", (q) =>
-            q.eq("rmpLegacyId", existingLookup.value)
-          )
+          .withIndex("by_rmpLegacyId", (q) => q.eq("rmpLegacyId", existingLookup.value))
           .first();
         if (existing) {
           continue;
@@ -623,15 +607,9 @@ export const recomputeCourseSectionFilters = internalMutation({
 
     const termCodes = [...new Set(sections.map((s) => s.termCode))];
     const professorIds = [
-      ...new Set(
-        sections
-          .map((s) => s.professorId)
-          .filter((id): id is Id<"professors"> => !!id)
-      ),
+      ...new Set(sections.map((s) => s.professorId).filter((id): id is Id<"professors"> => !!id)),
     ];
-    const days = [...new Set(sections.flatMap((s) => s.days))].sort(
-      (a, b) => a - b
-    );
+    const days = [...new Set(sections.flatMap((s) => s.days))].sort((a, b) => a - b);
 
     await ctx.db.patch(args.courseId, {
       sectionTermCodes: termCodes,
@@ -678,7 +656,7 @@ export const getProfessorByExternalId = internalQuery({
       externalId: v.string(),
       name: v.string(),
       departmentPrefix: v.string(),
-    })
+    }),
   ),
   handler: async (ctx, args) => {
     const professor = await ctx.db
@@ -707,11 +685,9 @@ export const getCoursesByCodes = internalQuery({
       ctx.db
         .query("courses")
         .withIndex("by_code", (q) => q.eq("code", code))
-        .first()
+        .first(),
     );
-    return courses.filter(
-      (course): course is NonNullable<typeof course> => !!course
-    );
+    return courses.filter((course): course is NonNullable<typeof course> => !!course);
   },
 });
 
@@ -723,7 +699,7 @@ export const listCoursesForProcessing = internalQuery({
       externalId: v.string(),
       matchingSectionIds: v.array(v.string()),
       departmentPrefix: v.string(),
-    })
+    }),
   ),
   handler: async (ctx) => {
     const courses = await ctx.db.query("courses").collect();
@@ -753,7 +729,7 @@ export const listProfessorsWithRmpId = internalQuery({
     v.object({
       _id: v.id("professors"),
       rmpId: v.string(),
-    })
+    }),
   ),
   handler: async (ctx) => {
     const professors = await ctx.db.query("professors").collect();
@@ -773,7 +749,7 @@ export const listAllProfessors = internalQuery({
       externalId: v.string(),
       name: v.string(),
       departmentPrefix: v.string(),
-    })
+    }),
   ),
   handler: async (ctx) => {
     const professors = await ctx.db.query("professors").collect();
@@ -803,7 +779,7 @@ export const getProfessorById = internalQuery({
       externalId: v.string(),
       name: v.string(),
       departmentPrefix: v.string(),
-    })
+    }),
   ),
   handler: async (ctx, args) => {
     const professor = await ctx.db.get(args.id);
@@ -826,7 +802,7 @@ export const updateProfessorRmpIds = internalMutation({
         externalId: v.string(),
         rmpId: v.string(),
         rmpLegacyId: v.number(),
-      })
+      }),
     ),
   },
   returns: v.number(),
@@ -835,9 +811,7 @@ export const updateProfessorRmpIds = internalMutation({
     for (const update of args.updates) {
       const professor = await ctx.db
         .query("professors")
-        .withIndex("by_externalId", (q) =>
-          q.eq("externalId", update.externalId)
-        )
+        .withIndex("by_externalId", (q) => q.eq("externalId", update.externalId))
         .first();
       if (!professor) {
         continue;

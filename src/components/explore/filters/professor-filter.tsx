@@ -25,9 +25,7 @@ export function ProfessorFilter() {
     label: stripProfessorSalutations(p.name),
   }));
 
-  const selected = items.filter((i) =>
-    filters.professorExternalIds.includes(i.value)
-  );
+  const selected = items.filter((i) => filters.professorExternalIds.includes(i.value));
 
   return (
     <Combobox<FilterOption, true>

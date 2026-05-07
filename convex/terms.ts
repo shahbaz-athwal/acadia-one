@@ -10,7 +10,7 @@ export const list = query({
       isActive: v.boolean(),
       startDate: v.number(),
       endDate: v.number(),
-    })
+    }),
   ),
   handler: async (ctx) => {
     const terms = await ctx.db.query("terms").collect();

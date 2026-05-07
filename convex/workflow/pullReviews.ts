@@ -7,8 +7,7 @@ import { internalAction } from "../_generated/server";
 import { parseCanonicalCourseCode } from "../lib/courseCode";
 import { scraper as rmpScraper } from "../lib/rmp";
 
-const toOptional = <T>(value: T | null | undefined): T | undefined =>
-  value ?? undefined;
+const toOptional = <T>(value: T | null | undefined): T | undefined => value ?? undefined;
 
 export const normalizeRmpCourseCode = (courseCode: string | null | undefined) =>
   parseCanonicalCourseCode(courseCode) ?? undefined;
@@ -18,10 +17,7 @@ interface PullRmpReviewsArgs {
   rmpId: string;
 }
 
-async function pullRmpReviewsInternal(
-  ctx: ActionCtx,
-  args: PullRmpReviewsArgs
-) {
+async function pullRmpReviewsInternal(ctx: ActionCtx, args: PullRmpReviewsArgs) {
   const { professorId, rmpId } = args;
   const ratings = await rmpScraper.getAllTeacherRatings({ teacherId: rmpId });
 
@@ -33,7 +29,7 @@ async function pullRmpReviewsInternal(
     ...new Set(
       ratings
         .map((rating) => normalizeRmpCourseCode(rating.courseCode))
-        .filter((code): code is string => !!code)
+        .filter((code): code is string => !!code),
     ),
   ];
 
@@ -120,9 +116,7 @@ async function pullRmpReviewsInternal(
   });
 
   if (created > 0) {
-    const courseIds = [
-      ...new Set(ratingsToCreate.map((rating) => rating.courseId)),
-    ];
+    const courseIds = [...new Set(ratingsToCreate.map((rating) => rating.courseId))];
     for (const courseId of courseIds) {
       await ctx.runMutation(internal.internal.recomputeCourseAggregates, {
         courseId,
@@ -155,19 +149,13 @@ export const pullRmpReviews = internalAction({
 export const triggerRmpReviewsPulling = internalAction({
   args: {},
   handler: async (ctx): Promise<string> => {
-    const professors = await ctx.runQuery(
-      internal.internal.listProfessorsWithRmpId
-    );
+    const professors = await ctx.runQuery(internal.internal.listProfessorsWithRmpId);
 
     for (const [index, professor] of professors.entries()) {
-      await ctx.scheduler.runAfter(
-        index * 1000,
-        internal.workflow.pullReviews.pullRmpReviews,
-        {
-          professorId: professor._id,
-          rmpId: professor.rmpId,
-        }
-      );
+      await ctx.scheduler.runAfter(index * 1000, internal.workflow.pullReviews.pullRmpReviews, {
+        professorId: professor._id,
+        rmpId: professor.rmpId,
+      });
     }
 
     return `Scheduled ${professors.length} professors for RMP review pulling.`;

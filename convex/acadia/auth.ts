@@ -12,30 +12,22 @@ export const clientConfig = {
   httpsAgent: new https.Agent({ rejectUnauthorized: false }),
 };
 
-export const createClient = (
-  config: typeof clientConfig = clientConfig
-): AxiosInstance => axios.create(config);
+export const createClient = (config: typeof clientConfig = clientConfig): AxiosInstance =>
+  axios.create(config);
 
 const authClient = createClient();
 
-export async function authenticateWithAxios(
-  username: string,
-  password: string
-): Promise<string> {
+export async function authenticateWithAxios(username: string, password: string): Promise<string> {
   const formData = new URLSearchParams();
   formData.append("UserName", username);
   formData.append("Password", password);
 
-  const response = await authClient.post(
-    "/student/Account/Login",
-    formData.toString(),
-    {
-      maxRedirects: 0,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    }
-  );
+  const response = await authClient.post("/student/Account/Login", formData.toString(), {
+    maxRedirects: 0,
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+  });
 
   const setCookieHeaders = response.headers["set-cookie"];
   let allCookies: string[] = [];

@@ -4,9 +4,21 @@ import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "vite-plus";
 
 const config = defineConfig({
+  fmt: {
+    ignorePatterns: ["convex/_generated"],
+  },
+  lint: {
+    options: { typeAware: true, typeCheck: true },
+    ignorePatterns: [
+      "src/components/ui",
+      "src/components/kokonutui",
+      "convex/_generated",
+      "pnpm-lock.json",
+    ],
+  },
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),

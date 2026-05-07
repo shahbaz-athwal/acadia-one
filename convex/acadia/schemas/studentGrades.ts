@@ -35,9 +35,7 @@ export const StudentGradesFilteredResponseSchema = z
       endDate: term.EndDate,
       gpa: term.CompletedGpa,
       courses: term.StudentGrades.map((grade) => ({
-        courseCode:
-          parseCanonicalCourseCode(grade.CourseNameSort) ??
-          grade.CourseNameSort,
+        courseCode: parseCanonicalCourseCode(grade.CourseNameSort) ?? grade.CourseNameSort,
         title: grade.Title,
         credits: grade.CreditsCeus,
         startDate: grade.StartDate,
@@ -47,6 +45,4 @@ export const StudentGradesFilteredResponseSchema = z
     })),
   }));
 
-export type StudentGradesTransformed = z.infer<
-  typeof StudentGradesFilteredResponseSchema
->;
+export type StudentGradesTransformed = z.infer<typeof StudentGradesFilteredResponseSchema>;

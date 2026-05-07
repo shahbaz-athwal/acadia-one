@@ -13,11 +13,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipPopup,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipTrigger, TooltipPopup } from "@/components/ui/tooltip";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export interface TabItem {
@@ -120,8 +116,7 @@ export default function SmoothTab({
   compact = false,
   onChange,
 }: SmoothTabProps) {
-  const [internalSelected, setInternalSelected] =
-    React.useState<string>(defaultTabId);
+  const [internalSelected, setInternalSelected] = React.useState<string>(defaultTabId);
   const selected = value ?? internalSelected;
   const [direction, setDirection] = React.useState(0);
   const [dimensions, setDimensions] = React.useState({ width: 0, left: 0 });
@@ -185,10 +180,7 @@ export default function SmoothTab({
     onChange?.(tabId);
   };
 
-  const handleKeyDown = (
-    e: React.KeyboardEvent<HTMLButtonElement>,
-    tabId: string
-  ) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, tabId: string) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       handleTabClick(tabId);
@@ -210,7 +202,7 @@ export default function SmoothTab({
         "w-full bg-background",
         compact ? "rounded-lg border" : "rounded-xl border",
         "transition-all duration-200",
-        className
+        className,
       )}
       ref={containerRef}
       role="tablist"
@@ -224,7 +216,7 @@ export default function SmoothTab({
         className={cn(
           "absolute z-1",
           compact ? "rounded-md" : "rounded-lg",
-          selectedItem?.color || activeColor
+          selectedItem?.color || activeColor,
         )}
         initial={false}
         style={{
@@ -254,16 +246,14 @@ export default function SmoothTab({
               aria-selected={isSelected}
               className={cn(
                 "relative flex items-center justify-center",
-                compact
-                  ? "gap-1 rounded-md px-1.5 py-0.5"
-                  : "gap-1.5 rounded-lg px-2 py-1.5",
+                compact ? "gap-1 rounded-md px-1.5 py-0.5" : "gap-1.5 rounded-lg px-2 py-1.5",
                 compact ? "font-medium text-xs" : "font-medium text-sm",
                 "transition-all duration-300",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 "truncate",
                 isSelected
                   ? "text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
               )}
               id={`tab-${item.id}`}
               key={item.id}
@@ -295,7 +285,7 @@ export default function SmoothTab({
                     "ml-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold leading-none",
                     isSelected
                       ? "bg-primary-foreground/25 text-primary-foreground"
-                      : "bg-primary/15 text-primary"
+                      : "bg-primary/15 text-primary",
                   )}
                 >
                   {item.badge}
@@ -325,11 +315,7 @@ export default function SmoothTab({
         <div className="relative mb-4 flex-1">
           <div className="relative h-[200px] w-full rounded-lg border bg-card">
             <div className="absolute inset-0 overflow-hidden rounded-lg">
-              <AnimatePresence
-                custom={direction}
-                initial={false}
-                mode="popLayout"
-              >
+              <AnimatePresence custom={direction} initial={false} mode="popLayout">
                 <motion.div
                   animate="center"
                   className="absolute inset-0 h-full w-full bg-card will-change-transform"
@@ -362,11 +348,7 @@ export default function SmoothTab({
         {tabBar}
         <div className="relative min-h-0 flex-1">
           <ScrollArea hideVerticalScrollbar className="h-full" scrollFade>
-            <AnimatePresence
-              custom={direction}
-              initial={false}
-              mode="wait"
-            >
+            <AnimatePresence custom={direction} initial={false} mode="wait">
               <motion.div
                 animate="center"
                 className="h-full"

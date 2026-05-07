@@ -35,13 +35,7 @@ export function FiltersTab() {
   );
 }
 
-function FilterSection({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+function FilterSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="font-medium text-muted-foreground text-xs">{label}</span>

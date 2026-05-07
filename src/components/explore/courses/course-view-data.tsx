@@ -33,12 +33,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipPopup, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/use-auth";
 import { useExploreCourses } from "@/hooks/use-explore-courses";
 import { useExploreDetailSheet } from "@/hooks/use-explore-detail-sheet";
@@ -60,19 +55,12 @@ import { SCHEDULE_COLORS } from "../../../../convex/lib/constants";
 
 const SHOW_SEAT_COLUMNS = false;
 
-function LocationDisplay(props: {
-  isOnline: boolean;
-  buildingName: string;
-  roomNumber: string;
-}) {
+function LocationDisplay(props: { isOnline: boolean; buildingName: string; roomNumber: string }) {
   if (props.isOnline) {
     return <span>Online</span>;
   }
 
-  const abbreviated = [
-    getBuildingAbbreviation(props.buildingName),
-    props.roomNumber.trim(),
-  ]
+  const abbreviated = [getBuildingAbbreviation(props.buildingName), props.roomNumber.trim()]
     .filter(Boolean)
     .join(" ");
 
@@ -155,8 +143,7 @@ function ProfessorCell(props: {
   openProfessor: (externalId: string) => void;
   prefetchProfessor: (externalId: string) => void;
 }) {
-  const { section, professorDisplayName, openProfessor, prefetchProfessor } =
-    props;
+  const { section, professorDisplayName, openProfessor, prefetchProfessor } = props;
   const { professorExternalId } = section;
 
   if (!professorExternalId) {
@@ -195,10 +182,7 @@ function ProfessorCell(props: {
   );
 }
 
-function SectionTimesCell(props: {
-  section: Section;
-  isContinuousIntake: boolean;
-}) {
+function SectionTimesCell(props: { section: Section; isContinuousIntake: boolean }) {
   if (props.isContinuousIntake) {
     return <span className="text-muted-foreground">-</span>;
   }
@@ -208,9 +192,7 @@ function SectionTimesCell(props: {
       <div>
         {props.section.classStartTime} - {props.section.classEndTime}
       </div>
-      <div className="text-muted-foreground">
-        {formatDays(props.section.days)}
-      </div>
+      <div className="text-muted-foreground">{formatDays(props.section.days)}</div>
     </div>
   );
 }
@@ -248,8 +230,7 @@ function SectionRow(props: {
   const isAdded = addedSectionIds.has(section.id);
   const isContinuousIntake = isCoinTerm(section.termCode, termNameByCode);
   const professorDisplayName = stripProfessorSalutations(section.professorName);
-  const color =
-    SCHEDULE_COLORS[scheduleItemCount % SCHEDULE_COLORS.length] ?? "#94a3b8";
+  const color = SCHEDULE_COLORS[scheduleItemCount % SCHEDULE_COLORS.length] ?? "#94a3b8";
   const sectionAction = {
     section,
     course,
@@ -289,21 +270,14 @@ function SectionRow(props: {
       <TableCell>
         <div className="flex items-center gap-2">
           <span className="font-medium">{section.sectionCode}</span>
-          <Badge variant="info">
-            {formatTermLabel(section.termCode, termNameByCode)}
-          </Badge>
+          <Badge variant="info">{formatTermLabel(section.termCode, termNameByCode)}</Badge>
         </div>
       </TableCell>
 
-      {SHOW_SEAT_COLUMNS ? (
-        <TableCell className="font-medium">--</TableCell>
-      ) : null}
+      {SHOW_SEAT_COLUMNS ? <TableCell className="font-medium">--</TableCell> : null}
 
       <TableCell>
-        <SectionTimesCell
-          isContinuousIntake={isContinuousIntake}
-          section={section}
-        />
+        <SectionTimesCell isContinuousIntake={isContinuousIntake} section={section} />
       </TableCell>
 
       <TableCell className="whitespace-normal">
@@ -337,15 +311,12 @@ function SectionRow(props: {
 export function CourseViewData() {
   const { isAuthenticated, sessionId, tokenHash } = useAuth();
   const { courses } = useExploreCourses();
-  const { openCourse, openProfessor, prefetchCourse, prefetchProfessor } =
-    useExploreDetailSheet();
+  const { openCourse, openProfessor, prefetchCourse, prefetchProfessor } = useExploreDetailSheet();
   const { selectedCourseCode } = useExploreFilters();
   const {
     data: { terms },
   } = useSuspenseQuery(filterOptionsQuery());
-  const { data: userData } = useSuspenseQuery(
-    userDataQuery(sessionId, tokenHash)
-  );
+  const { data: userData } = useSuspenseQuery(userDataQuery(sessionId, tokenHash));
   const { allItems, termCode, setTermCode } = useScheduleItems();
   const { setPreviewSection } = useSchedulePreview();
 
@@ -377,24 +348,21 @@ export function CourseViewData() {
           ...pendingRef.current,
         },
       ]);
-    }
+    },
   );
 
   const addedSectionIds = new Set(allItems.map((item) => item.section.id));
   const termNameByCode = useMemo(
     () => new Map(terms.map((term) => [term.code, term.name])),
-    [terms]
+    [terms],
   );
-  const courseStatusByCode = useMemo(
-    () => buildCourseStatusByCode(userData),
-    [userData]
-  );
+  const courseStatusByCode = useMemo(() => buildCourseStatusByCode(userData), [userData]);
   const showRequisiteStatuses = isAuthenticated && !!userData;
 
   const buildPendingSection = (
     section: Section,
     course: Course,
-    professorDisplayName: string
+    professorDisplayName: string,
   ): PendingSection => ({
     section: {
       id: section.id,
@@ -422,11 +390,7 @@ export function CourseViewData() {
     if (isAdded) {
       return;
     }
-    pendingRef.current = buildPendingSection(
-      section,
-      course,
-      professorDisplayName
-    );
+    pendingRef.current = buildPendingSection(section, course, professorDisplayName);
     addSection({ sessionId, sectionId: section._id, color });
   };
 
@@ -504,9 +468,7 @@ export function CourseViewData() {
       <div className="space-y-2 p-2">
         {courses.map((course) => {
           const courseStatus = courseStatusByCode.get(course.code);
-          const courseStatusMeta = courseStatus
-            ? COURSE_STATUS_META[courseStatus]
-            : null;
+          const courseStatusMeta = courseStatus ? COURSE_STATUS_META[courseStatus] : null;
           const CourseStatusIcon = courseStatusMeta?.icon;
 
           return (
@@ -524,10 +486,7 @@ export function CourseViewData() {
                       {course.code} {course.title}
                     </button>
                     {courseStatusMeta && CourseStatusIcon ? (
-                      <Badge
-                        className="shrink-0"
-                        variant={courseStatusMeta.variant}
-                      >
+                      <Badge className="shrink-0" variant={courseStatusMeta.variant}>
                         <CourseStatusIcon />
                         {courseStatusMeta.label}
                       </Badge>

@@ -53,9 +53,7 @@ export const populateProfessors = internalAction({
 
     for (const department of departments) {
       await sleep(FACULTY_FETCH_DELAY_MS);
-      const faculties = await scraper.getFacultiesByDepartment(
-        department.prefix
-      );
+      const faculties = await scraper.getFacultiesByDepartment(department.prefix);
       for (const faculty of faculties) {
         professors.push({
           externalId: faculty.id,

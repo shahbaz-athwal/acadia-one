@@ -28,7 +28,7 @@ export const SectionDetailsFilteredResponseSchema = z
                     Days: z.array(z.number()),
                     Room: z.string(),
                     IsOnline: z.boolean(),
-                  })
+                  }),
                 ),
                 Id: z.string(),
                 Available: z.number(),
@@ -44,11 +44,11 @@ export const SectionDetailsFilteredResponseSchema = z
                 z.object({
                   FacultyId: z.string(),
                   FacultyName: z.string(),
-                })
+                }),
               ),
-            })
+            }),
           ),
-        })
+        }),
       ),
     }),
   })
@@ -74,23 +74,21 @@ export const SectionDetailsFilteredResponseSchema = z
           enrolled: sectionData.Section.Enrolled,
           waitlisted: sectionData.Section.Waitlisted,
         },
-        meetingTimes: sectionData.Section.FormattedMeetingTimes.map(
-          (meeting) => ({
-            instructionalMethod: meeting.InstructionalMethodDisplay,
-            daysOfWeek: meeting.DaysOfWeekDisplay,
-            startTime: meeting.StartTimeDisplay,
-            endTime: meeting.EndTimeDisplay,
-            buildingName: meeting.BuildingDisplay,
-            roomNumber: meeting.RoomDisplay,
-            showTBD: meeting.ShowTBD,
-            days: meeting.Days,
-            isOnline: meeting.IsOnline,
-          })
-        ),
+        meetingTimes: sectionData.Section.FormattedMeetingTimes.map((meeting) => ({
+          instructionalMethod: meeting.InstructionalMethodDisplay,
+          daysOfWeek: meeting.DaysOfWeekDisplay,
+          startTime: meeting.StartTimeDisplay,
+          endTime: meeting.EndTimeDisplay,
+          buildingName: meeting.BuildingDisplay,
+          roomNumber: meeting.RoomDisplay,
+          showTBD: meeting.ShowTBD,
+          days: meeting.Days,
+          isOnline: meeting.IsOnline,
+        })),
         instructors: sectionData.InstructorDetails.map((instructor) => ({
           id: instructor.FacultyId,
           name: instructor.FacultyName,
         })),
-      }))
-    )
+      })),
+    ),
   );

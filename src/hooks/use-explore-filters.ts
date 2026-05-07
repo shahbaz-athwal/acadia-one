@@ -1,24 +1,15 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import {
-  TIME_RANGE_MAX_MINUTES,
-  TIME_RANGE_MINUTES,
-} from "@/lib/explore-filter-constants";
+import { TIME_RANGE_MAX_MINUTES, TIME_RANGE_MINUTES } from "@/lib/explore-filter-constants";
 import { filterOptionsQuery } from "@/queries/explore";
-import {
-  SEARCH_DEFAULTS as DEFAULTS,
-  withSearchDefaults as withDefaults,
-} from "@/routes/explore";
+import { SEARCH_DEFAULTS as DEFAULTS, withSearchDefaults as withDefaults } from "@/routes/explore";
 
 const routeApi = getRouteApi("/explore");
 export type FilterPanelTab = "filters" | "progress";
 
 function normalizeMinute(value: number): number {
   const roundedToHalfHour = Math.round(value / 30) * 30;
-  return Math.max(
-    TIME_RANGE_MINUTES,
-    Math.min(TIME_RANGE_MAX_MINUTES, roundedToHalfHour)
-  );
+  return Math.max(TIME_RANGE_MINUTES, Math.min(TIME_RANGE_MAX_MINUTES, roundedToHalfHour));
 }
 
 export function useExploreFilters() {
@@ -53,9 +44,7 @@ export function useExploreFilters() {
   const selectedCourseCode = search.cc;
 
   const navigateWithSearch = (
-    updater: (
-      prev: ReturnType<typeof withDefaults>
-    ) => ReturnType<typeof withDefaults>
+    updater: (prev: ReturnType<typeof withDefaults>) => ReturnType<typeof withDefaults>,
   ) => {
     navigate({
       to: "/explore",

@@ -2,10 +2,7 @@ import { useMutation } from "convex/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useExploreDetailSheet } from "@/hooks/use-explore-detail-sheet";
-import {
-  type ScheduleItem,
-  useScheduleItems,
-} from "@/hooks/use-schedule-items";
+import { type ScheduleItem, useScheduleItems } from "@/hooks/use-schedule-items";
 import { useSchedulePreview } from "@/hooks/use-schedule-preview";
 import {
   GRID_START_MINUTES,
@@ -44,29 +41,28 @@ function groupByDay(items: ScheduleItem[]): Map<number, ScheduleItem[]> {
 
 export function ScheduleCalendar() {
   const { items, termCode, sessionId } = useScheduleItems();
-  const { openCourse, openProfessor, prefetchCourse, prefetchProfessor } =
-    useExploreDetailSheet();
+  const { openCourse, openProfessor, prefetchCourse, prefetchProfessor } = useExploreDetailSheet();
   const { previewSection } = useSchedulePreview();
   const timeSlots = useMemo(() => getTimeSlots(), []);
   const gridLineSlots = useMemo(() => timeSlots.slice(0, -1), [timeSlots]);
   const itemsByDay = useMemo(() => groupByDay(items ?? []), [items]);
   const isPreviewingCurrentTerm =
     previewSection !== null && previewSection.section.termCode === termCode;
-  const removeScheduleItem = useMutation(
-    api.schedule.removeScheduleItem
-  ).withOptimisticUpdate((localStore, args) => {
-    const current = localStore.getQuery(api.schedule.get, {
-      sessionId: args.sessionId,
-    });
-    if (current === undefined) {
-      return;
-    }
-    localStore.setQuery(
-      api.schedule.get,
-      { sessionId: args.sessionId },
-      current.filter((item) => item.scheduleItemId !== args.scheduleItemId)
-    );
-  });
+  const removeScheduleItem = useMutation(api.schedule.removeScheduleItem).withOptimisticUpdate(
+    (localStore, args) => {
+      const current = localStore.getQuery(api.schedule.get, {
+        sessionId: args.sessionId,
+      });
+      if (current === undefined) {
+        return;
+      }
+      localStore.setQuery(
+        api.schedule.get,
+        { sessionId: args.sessionId },
+        current.filter((item) => item.scheduleItemId !== args.scheduleItemId),
+      );
+    },
+  );
   const handleRemoveSection = useCallback(
     (scheduleItemId: ScheduleItem["scheduleItemId"]) => {
       removeScheduleItem({
@@ -74,30 +70,22 @@ export function ScheduleCalendar() {
         scheduleItemId,
       });
     },
-    [removeScheduleItem, sessionId]
+    [removeScheduleItem, sessionId],
   );
 
   const calendarRef = useRef<HTMLDivElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
-  const [availableBodyHeight, setAvailableBodyHeight] = useState<number | null>(
-    null
-  );
+  const [availableBodyHeight, setAvailableBodyHeight] = useState<number | null>(null);
   const measuredBodyHeight = useMemo(
     () => availableBodyHeight ?? SLOT_COUNT * SLOT_HEIGHT,
-    [availableBodyHeight]
+    [availableBodyHeight],
   );
   const { slotHeight, gridHeight } = useMemo(() => {
     const rawSlotHeight = measuredBodyHeight / SLOT_COUNT;
-    const clampedSlotHeight = Math.min(
-      MAX_SLOT_HEIGHT,
-      Math.max(MIN_SLOT_HEIGHT, rawSlotHeight)
-    );
+    const clampedSlotHeight = Math.min(MAX_SLOT_HEIGHT, Math.max(MIN_SLOT_HEIGHT, rawSlotHeight));
     // Prevent tiny overflow from borders/subpixel rounding by never exceeding
     // the measured body height.
-    const nextGridHeight = Math.min(
-      measuredBodyHeight,
-      clampedSlotHeight * SLOT_COUNT
-    );
+    const nextGridHeight = Math.min(measuredBodyHeight, clampedSlotHeight * SLOT_COUNT);
     return {
       slotHeight: nextGridHeight / SLOT_COUNT,
       gridHeight: nextGridHeight,
@@ -111,9 +99,7 @@ export function ScheduleCalendar() {
     }
     const measure = () => {
       const rootHeight = root.clientHeight;
-      setAvailableBodyHeight(
-        Math.max(0, rootHeight - HEADER_HEIGHT - HEADER_ROW_CHROME)
-      );
+      setAvailableBodyHeight(Math.max(0, rootHeight - HEADER_HEIGHT - HEADER_ROW_CHROME));
     };
     measure();
     const observer = new ResizeObserver(measure);
@@ -136,16 +122,12 @@ export function ScheduleCalendar() {
     if (!root) {
       return;
     }
-    const viewport = root.querySelector<HTMLElement>(
-      '[data-slot="scroll-area-viewport"]'
-    );
+    const viewport = root.querySelector<HTMLElement>('[data-slot="scroll-area-viewport"]');
     if (!viewport) {
       return;
     }
 
-    const dayColumn = root.querySelector<HTMLElement>(
-      `[data-schedule-day="${targetDay}"]`
-    );
+    const dayColumn = root.querySelector<HTMLElement>(`[data-schedule-day="${targetDay}"]`);
     if (!dayColumn) {
       return;
     }
@@ -180,7 +162,7 @@ export function ScheduleCalendar() {
             <div
               className={cn(
                 "absolute right-0 left-0 flex items-start justify-end pr-2 text-[10px] text-muted-foreground",
-                !slot.isHour && "opacity-0"
+                !slot.isHour && "opacity-0",
               )}
               key={slot.minutes}
               style={{
@@ -214,23 +196,17 @@ export function ScheduleCalendar() {
                 </div>
 
                 {/* Day body: time grid + positioned blocks */}
-                <div
-                  className="relative overflow-hidden"
-                  style={{ height: gridHeight }}
-                >
+                <div className="relative overflow-hidden" style={{ height: gridHeight }}>
                   {/* Grid lines */}
                   {gridLineSlots.map((slot) => (
                     <div
                       className={cn(
                         "absolute right-0 left-0 border-b",
-                        slot.isHour ? "border-border/60" : "border-border/25"
+                        slot.isHour ? "border-border/60" : "border-border/25",
                       )}
                       key={slot.minutes}
                       style={{
-                        top:
-                          ((slot.minutes - GRID_START_MINUTES) / 30) *
-                            slotHeight +
-                          slotHeight,
+                        top: ((slot.minutes - GRID_START_MINUTES) / 30) * slotHeight + slotHeight,
                       }}
                     />
                   ))}
@@ -251,13 +227,9 @@ export function ScheduleCalendar() {
                   ))}
 
                   {/* Preview ghost block */}
-                  {isPreviewingCurrentTerm &&
-                    previewSection.section.days.includes(day) && (
-                      <PreviewBlock
-                        preview={previewSection}
-                        slotHeight={slotHeight}
-                      />
-                    )}
+                  {isPreviewingCurrentTerm && previewSection.section.days.includes(day) && (
+                    <PreviewBlock preview={previewSection} slotHeight={slotHeight} />
+                  )}
                 </div>
               </div>
             ))}
@@ -278,7 +250,7 @@ function PreviewBlock({
   const { top, height } = getBlockPosition(
     preview.section.classStartTime,
     preview.section.classEndTime,
-    slotHeight
+    slotHeight,
   );
 
   return (
@@ -293,10 +265,7 @@ function PreviewBlock({
       }}
     >
       <div className="flex h-full min-h-0 flex-col gap-1 overflow-hidden">
-        <span
-          className="truncate font-semibold leading-tight"
-          style={{ color: preview.color }}
-        >
+        <span className="truncate font-semibold leading-tight" style={{ color: preview.color }}>
           {preview.course.code}
         </span>
         <span className="truncate text-[11px] leading-tight opacity-80">

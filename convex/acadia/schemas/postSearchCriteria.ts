@@ -53,11 +53,7 @@ function extractCourseCodesAndAnnotate(text: string) {
   for (const match of text.matchAll(regexForExtract)) {
     const subject = match[1];
     const number = match[2] ?? match[3];
-    if (
-      subject == null ||
-      number == null ||
-      !CONTAINS_DIGIT_REGEX.test(number)
-    ) {
+    if (subject == null || number == null || !CONTAINS_DIGIT_REGEX.test(number)) {
       continue;
     }
     codes.push(canonicalCourseCode(subject, number));
@@ -70,20 +66,16 @@ function extractCourseCodesAndAnnotate(text: string) {
       fullMatch,
       subject: string,
       separatedNumber: string | undefined,
-      compactNumber: string | undefined
+      compactNumber: string | undefined,
     ) => {
       // If regex matched, subject/number are present; keep fallback for safety.
       const number = separatedNumber ?? compactNumber;
-      if (
-        subject == null ||
-        number == null ||
-        !CONTAINS_DIGIT_REGEX.test(number)
-      ) {
+      if (subject == null || number == null || !CONTAINS_DIGIT_REGEX.test(number)) {
         return fullMatch;
       }
       const canonicalCode = canonicalCourseCode(subject, number);
       return `[[course:${canonicalCode}|${canonicalCode}]]`;
-    }
+    },
   );
 
   return { codes: dedupePreserveOrder(codes), annotated };
@@ -118,9 +110,9 @@ export const PostSearchCriteriaFilteredResponseSchema = z
           z.object({
             DisplayText: z.string(),
             DisplayTextExtension: z.string(),
-          })
+          }),
         ),
-      })
+      }),
     ),
     TotalItems: z.number(),
     TotalPages: z.number(),
@@ -132,13 +124,13 @@ export const PostSearchCriteriaFilteredResponseSchema = z
         Description: z.string(),
         Count: z.number(),
         Selected: z.boolean(),
-      })
+      }),
     ),
     Faculty: z.array(
       z.object({
         Value: z.string(),
         Description: z.string(),
-      })
+      }),
     ),
   })
   .transform((data) => ({
@@ -154,13 +146,8 @@ export const PostSearchCriteriaFilteredResponseSchema = z
       courseRequisites: course.CourseRequisites.map((req) => ({
         ...(() => {
           const display = extractCourseCodesAndAnnotate(req.DisplayText);
-          const extension = extractCourseCodesAndAnnotate(
-            req.DisplayTextExtension
-          );
-          const allCodes = dedupePreserveOrder([
-            ...display.codes,
-            ...extension.codes,
-          ]);
+          const extension = extractCourseCodesAndAnnotate(req.DisplayTextExtension);
+          const allCodes = dedupePreserveOrder([...display.codes, ...extension.codes]);
           return {
             codes: allCodes,
             // New: tokens for frontend parsing / hover cards.

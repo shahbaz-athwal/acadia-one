@@ -40,21 +40,19 @@ export function useExploreDetailSheet() {
           d: nextDetail,
         }),
       }),
-    [navigate]
+    [navigate],
   );
 
   const prefetchTarget = useCallback(
     (nextTarget: ExploreDetailTarget) => {
       if (nextTarget.kind === "course") {
-        queryClient.prefetchQuery(courseSheetQuery(nextTarget.courseCode));
+        void queryClient.prefetchQuery(courseSheetQuery(nextTarget.courseCode));
         return;
       }
 
-      queryClient.prefetchQuery(
-        professorSheetQuery(nextTarget.professorExternalId)
-      );
+      queryClient.prefetchQuery(professorSheetQuery(nextTarget.professorExternalId));
     },
-    [queryClient]
+    [queryClient],
   );
 
   const openTarget = useCallback(
@@ -66,14 +64,14 @@ export function useExploreDetailSheet() {
 
       setDetail(nextDetail);
     },
-    [rawDetail, setDetail]
+    [rawDetail, setDetail],
   );
 
   const replaceDetail = useCallback(
     (nextDetail: string) => {
       setDetail(nextDetail, true);
     },
-    [setDetail]
+    [setDetail],
   );
 
   const close = useCallback(() => {
@@ -96,13 +94,12 @@ export function useExploreDetailSheet() {
         courseCode: normalizedCourseCode,
       });
     },
-    [openTarget]
+    [openTarget],
   );
 
   const openProfessor = useCallback(
     (professorExternalId: string) => {
-      const normalizedProfessorExternalId =
-        normalizeProfessorExternalId(professorExternalId);
+      const normalizedProfessorExternalId = normalizeProfessorExternalId(professorExternalId);
       if (!normalizedProfessorExternalId) {
         return;
       }
@@ -112,7 +109,7 @@ export function useExploreDetailSheet() {
         professorExternalId: normalizedProfessorExternalId,
       });
     },
-    [openTarget]
+    [openTarget],
   );
 
   const prefetchCourse = useCallback(
@@ -127,13 +124,12 @@ export function useExploreDetailSheet() {
         courseCode: normalizedCourseCode,
       });
     },
-    [prefetchTarget]
+    [prefetchTarget],
   );
 
   const prefetchProfessor = useCallback(
     (professorExternalId: string) => {
-      const normalizedProfessorExternalId =
-        normalizeProfessorExternalId(professorExternalId);
+      const normalizedProfessorExternalId = normalizeProfessorExternalId(professorExternalId);
       if (!normalizedProfessorExternalId) {
         return;
       }
@@ -143,7 +139,7 @@ export function useExploreDetailSheet() {
         professorExternalId: normalizedProfessorExternalId,
       });
     },
-    [prefetchTarget]
+    [prefetchTarget],
   );
 
   return {

@@ -4,9 +4,7 @@ import { scheduleQuery } from "@/queries/explore";
 import { getOrCreateSessionId } from "./use-auth";
 import { useScheduleView } from "./use-schedule-view";
 
-export type ScheduleItem = NonNullable<
-  ReturnType<typeof useScheduleItems>["items"]
->[number];
+export type ScheduleItem = NonNullable<ReturnType<typeof useScheduleItems>["items"]>[number];
 
 export function useScheduleItems() {
   const sessionId = getOrCreateSessionId();

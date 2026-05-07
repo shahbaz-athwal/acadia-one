@@ -9,7 +9,7 @@ export const list = query({
       name: v.string(),
       websiteUrl: v.optional(v.string()),
       facultyUrl: v.optional(v.string()),
-    })
+    }),
   ),
   handler: async (ctx) => {
     const departments = await ctx.db.query("departments").collect();

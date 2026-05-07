@@ -30,18 +30,13 @@ async function processCourseInternal(
     courseExternalId: string;
     sectionIds: string[];
     departmentPrefix: string;
-  }
+  },
 ) {
   const { courseId, courseExternalId, sectionIds, departmentPrefix } = args;
-  const sections = await scraper.getSectionDetails(
-    courseExternalId,
-    sectionIds
-  );
+  const sections = await scraper.getSectionDetails(courseExternalId, sectionIds);
 
   const uniqueTerms = [
-    ...new Map(
-      sections.map((section) => [section.term.code, section.term])
-    ).values(),
+    ...new Map(sections.map((section) => [section.term.code, section.term])).values(),
   ];
   await ctx.runMutation(internal.internal.existsTerms, {
     terms: uniqueTerms.map((term) => ({
@@ -57,7 +52,7 @@ async function processCourseInternal(
     ...new Map(
       sections
         .flatMap((section) => section.instructors)
-        .map((instructor) => [instructor.id, instructor])
+        .map((instructor) => [instructor.id, instructor]),
     ).values(),
   ];
   await ctx.runMutation(internal.internal.existsProfessors, {
@@ -70,19 +65,14 @@ async function processCourseInternal(
 
   const professorIds = await Promise.all(
     uniqueInstructors.map(async (instructor) => {
-      const professor = await ctx.runQuery(
-        internal.internal.getProfessorByExternalId,
-        {
-          externalId: instructor.id,
-        }
-      );
+      const professor = await ctx.runQuery(internal.internal.getProfessorByExternalId, {
+        externalId: instructor.id,
+      });
       return professor ? [instructor.id, professor._id] : null;
-    })
+    }),
   );
   const professorIdByExternalId = new Map(
-    professorIds.filter(
-      (entry): entry is [string, Id<"professors">] => entry !== null
-    )
+    professorIds.filter((entry): entry is [string, Id<"professors">] => entry !== null),
   );
 
   const courseProfessorLinks = uniqueInstructors
@@ -113,9 +103,7 @@ async function processCourseInternal(
       return [];
     }
     const instructor = section.instructors[0];
-    const professorId = instructor
-      ? professorIdByExternalId.get(instructor.id)
-      : undefined;
+    const professorId = instructor ? professorIdByExternalId.get(instructor.id) : undefined;
     return [
       {
         externalId: section.id,
@@ -169,21 +157,15 @@ export const processCourse = internalAction({
 export const triggerCourseProcessing = internalAction({
   args: {},
   handler: async (ctx): Promise<string> => {
-    const courses = await ctx.runQuery(
-      internal.internal.listCoursesForProcessing
-    );
+    const courses = await ctx.runQuery(internal.internal.listCoursesForProcessing);
 
     for (const [index, course] of courses.entries()) {
-      await ctx.scheduler.runAfter(
-        index * 500,
-        internal.workflow.processCourse.processCourse,
-        {
-          courseId: course._id,
-          courseExternalId: course.externalId,
-          sectionIds: course.matchingSectionIds,
-          departmentPrefix: course.departmentPrefix,
-        }
-      );
+      await ctx.scheduler.runAfter(index * 500, internal.workflow.processCourse.processCourse, {
+        courseId: course._id,
+        courseExternalId: course.externalId,
+        sectionIds: course.matchingSectionIds,
+        departmentPrefix: course.departmentPrefix,
+      });
     }
 
     return `Scheduled ${courses.length} course processing actions.`;

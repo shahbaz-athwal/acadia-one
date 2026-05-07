@@ -20,7 +20,7 @@ export const validateSession = query({
     }),
     v.object({
       valid: v.literal(false),
-    })
+    }),
   ),
   handler: async (ctx, args) => {
     const [user, session, userData] = await Promise.all([
@@ -79,9 +79,9 @@ export const getProgressSearchCourses = query({
         v.object({
           code: v.string(),
           title: v.optional(v.string()),
-        })
+        }),
       ),
-    })
+    }),
   ),
   handler: async (ctx, args) => {
     const [user, userData] = await Promise.all([
@@ -89,17 +89,11 @@ export const getProgressSearchCourses = query({
       getOneFrom(ctx.db, "acadiaUserData", "by_sessionId", args.sessionId),
     ]);
 
-    if (
-      !user ||
-      user.tokenHash !== args.tokenHash ||
-      !userData?.programEvaluation
-    ) {
+    if (!user || user.tokenHash !== args.tokenHash || !userData?.programEvaluation) {
       return [];
     }
 
-    const courseStatusCodeSet = new Set(
-      Object.keys(userData.coursePlanningStatuses ?? {})
-    );
+    const courseStatusCodeSet = new Set(Object.keys(userData.coursePlanningStatuses ?? {}));
     if (courseStatusCodeSet.size === 0) {
       return [];
     }
@@ -110,12 +104,9 @@ export const getProgressSearchCourses = query({
           requirement.subrequirements.flatMap((subrequirement) =>
             subrequirement.groups
               .filter((group) => group.courses.length === 0)
-              .map(
-                (group) =>
-                  `${requirement.code}:${subrequirement.id}:${group.id}`
-              )
-          )
-        )
+              .map((group) => `${requirement.code}:${subrequirement.id}:${group.id}`),
+          ),
+        ),
       ),
     ];
     if (searchGroupKeys.length === 0) {
@@ -123,7 +114,7 @@ export const getProgressSearchCourses = query({
     }
 
     const entries = await asyncMap(searchGroupKeys, (key) =>
-      getOneFrom(ctx.db, "rsg", "by_key", key)
+      getOneFrom(ctx.db, "rsg", "by_key", key),
     );
 
     const matchedCodesByKey = new Map<string, string[]>();
@@ -137,10 +128,7 @@ export const getProgressSearchCourses = query({
       const codesForKey: string[] = [];
       const seenCodesForKey = new Set<string>();
       for (const courseCode of entry.courseCodes) {
-        if (
-          !courseStatusCodeSet.has(courseCode) ||
-          seenCodesForKey.has(courseCode)
-        ) {
+        if (!courseStatusCodeSet.has(courseCode) || seenCodesForKey.has(courseCode)) {
           continue;
         }
 
@@ -158,14 +146,13 @@ export const getProgressSearchCourses = query({
       return [];
     }
 
-    const matchedCourses = await asyncMap(
-      [...matchedCourseCodes],
-      (courseCode) => getOneFrom(ctx.db, "courses", "by_code", courseCode)
+    const matchedCourses = await asyncMap([...matchedCourseCodes], (courseCode) =>
+      getOneFrom(ctx.db, "courses", "by_code", courseCode),
     );
     const courseTitleByCode = new Map(
       matchedCourses
         .filter((course): course is NonNullable<typeof course> => !!course)
-        .map((course) => [course.code, course.title])
+        .map((course) => [course.code, course.title]),
     );
 
     return searchGroupKeys.flatMap((key) => {
@@ -209,9 +196,7 @@ export const logoutSession = mutation({
         .collect(),
     ]);
 
-    const isAuthorized = users.some(
-      (user) => user.tokenHash === args.tokenHash
-    );
+    const isAuthorized = users.some((user) => user.tokenHash === args.tokenHash);
     if (!isAuthorized) {
       return { success: false };
     }

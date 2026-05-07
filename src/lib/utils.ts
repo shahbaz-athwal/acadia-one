@@ -42,19 +42,14 @@ function normalizeTermName(termName: string): string {
   const seasonMatch = termName.match(TERM_SEASON_REGEX);
   const yearMatch = termName.match(TERM_YEAR_REGEX);
   if (seasonMatch && yearMatch) {
-    const season =
-      seasonMatch[1].slice(0, 1).toUpperCase() +
-      seasonMatch[1].slice(1).toLowerCase();
+    const season = seasonMatch[1].slice(0, 1).toUpperCase() + seasonMatch[1].slice(1).toLowerCase();
     return `${season} ${yearMatch[1]}`;
   }
 
   return termName;
 }
 
-export function formatTermLabel(
-  termCode: string,
-  termNameByCode: Map<string, string>
-): string {
+export function formatTermLabel(termCode: string, termNameByCode: Map<string, string>): string {
   const mappedName = termNameByCode.get(termCode);
   if (mappedName) {
     return normalizeTermName(mappedName);
@@ -78,17 +73,12 @@ export function formatTermLabel(
 
 export function formatTermLabelWithoutYear(
   termCode: string,
-  termNameByCode: Map<string, string>
+  termNameByCode: Map<string, string>,
 ): string {
-  return formatTermLabel(termCode, termNameByCode)
-    .replace(TERM_TRAILING_YEAR_REGEX, "")
-    .trim();
+  return formatTermLabel(termCode, termNameByCode).replace(TERM_TRAILING_YEAR_REGEX, "").trim();
 }
 
-export function isCoinTerm(
-  termCode: string,
-  termNameByCode: Map<string, string>
-): boolean {
+export function isCoinTerm(termCode: string, termNameByCode: Map<string, string>): boolean {
   const upperCode = termCode.toUpperCase();
   if (upperCode.startsWith("COI") || upperCode.startsWith("COIN")) {
     return true;
@@ -101,9 +91,7 @@ export function formatDays(days: number[]): string {
   if (days.length === 0) {
     return "TBA";
   }
-  return days
-    .map((day) => DAY_LABEL_BY_VALUE.get(day) ?? String(day))
-    .join(", ");
+  return days.map((day) => DAY_LABEL_BY_VALUE.get(day) ?? String(day)).join(", ");
 }
 
 export function getInitials(name: string): string {
@@ -123,9 +111,7 @@ export function stripProfessorSalutations(name: string): string {
     return "";
   }
 
-  const strippedName = trimmedName
-    .replace(PROFESSOR_SALUTATION_PREFIX_REGEX, "")
-    .trim();
+  const strippedName = trimmedName.replace(PROFESSOR_SALUTATION_PREFIX_REGEX, "").trim();
 
   return strippedName || trimmedName;
 }

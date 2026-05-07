@@ -21,10 +21,7 @@ export function DaysFilter() {
       value={filters.days.map(String)}
     >
       {WEEKDAYS.map((day) => (
-        <Label
-          className="flex items-center gap-1 text-sm sm:text-xs"
-          key={day.value}
-        >
+        <Label className="flex items-center gap-1 text-sm sm:text-xs" key={day.value}>
           <Checkbox name={`day-${day.value}`} value={String(day.value)} />
           {day.label}
         </Label>

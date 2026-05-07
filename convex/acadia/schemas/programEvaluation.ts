@@ -86,6 +86,4 @@ export const ProgramEvaluationFilteredResponseSchema = z
     },
   }));
 
-export type ProgramEvaluationTransformed = z.infer<
-  typeof ProgramEvaluationFilteredResponseSchema
->;
+export type ProgramEvaluationTransformed = z.infer<typeof ProgramEvaluationFilteredResponseSchema>;

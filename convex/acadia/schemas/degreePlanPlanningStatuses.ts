@@ -9,8 +9,7 @@ export const CoursePlanningStatus = {
   failed: "failed",
 } as const;
 
-export type CoursePlanningStatus =
-  (typeof CoursePlanningStatus)[keyof typeof CoursePlanningStatus];
+export type CoursePlanningStatus = (typeof CoursePlanningStatus)[keyof typeof CoursePlanningStatus];
 
 export type CoursePlanningStatusByCode = Record<string, CoursePlanningStatus>;
 
@@ -33,17 +32,10 @@ const PlannedCourseSchema = z.object({
   AcademicHistory: AcademicHistorySchema.nullable(),
 });
 
-function resolveCoursePlanningStatus(
-  course: z.infer<typeof PlannedCourseSchema>
-) {
-  const gradeDisplay =
-    course.AcademicHistory?.GradeDisplay?.trim().toUpperCase();
+function resolveCoursePlanningStatus(course: z.infer<typeof PlannedCourseSchema>) {
+  const gradeDisplay = course.AcademicHistory?.GradeDisplay?.trim().toUpperCase();
 
-  if (
-    gradeDisplay === "W" ||
-    course.IsWithdrawn ||
-    course.AcademicHistory?.IsWithdrawn
-  ) {
+  if (gradeDisplay === "W" || course.IsWithdrawn || course.AcademicHistory?.IsWithdrawn) {
     return CoursePlanningStatus.withdrawn;
   }
 
@@ -73,15 +65,13 @@ export const DegreePlanPlanningStatusesFilteredResponseSchema = z
         z.object({
           Sequence: z.number(),
           PlannedCourses: z.array(PlannedCourseSchema),
-        })
+        }),
       ),
     }),
   })
   .transform((data): CoursePlanningStatusByCode => {
     const statusesByCourseCode: CoursePlanningStatusByCode = {};
-    const sortedTerms = [...data.DegreePlan.Terms].sort(
-      (a, b) => a.Sequence - b.Sequence
-    );
+    const sortedTerms = [...data.DegreePlan.Terms].sort((a, b) => a.Sequence - b.Sequence);
 
     for (const term of sortedTerms) {
       for (const course of term.PlannedCourses) {

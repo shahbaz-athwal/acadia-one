@@ -14,12 +14,7 @@ import {
   type CoursePlanningStatus,
 } from "@/components/explore/courses/course-status";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipPopup,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipPopup, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TruncatedTooltipText } from "@/components/ui/truncated-tooltip-text";
 import { useAuth } from "@/hooks/use-auth";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
@@ -122,14 +117,10 @@ function toReadableCompletionStatus(value: string): string {
     return "";
   }
 
-  return trimmed
-    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+  return trimmed.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
 }
 
-function getCompletionStatusMeta(
-  value: string | null | undefined
-): CompletionStatusMeta | null {
+function getCompletionStatusMeta(value: string | null | undefined): CompletionStatusMeta | null {
   const normalizedValue = toOptionalText(value);
   if (!normalizedValue) {
     return null;
@@ -146,10 +137,7 @@ function getCompletionStatusMeta(
   };
 }
 
-function joinNonEmpty(
-  values: Array<string | null | undefined>,
-  separator: string
-): string {
+function joinNonEmpty(values: Array<string | null | undefined>, separator: string): string {
   return values
     .map((value) => toOptionalText(value))
     .filter((value): value is string => value !== undefined)
@@ -199,7 +187,7 @@ function saveExpansionStateToStorage(state: ExpansionState) {
       JSON.stringify({
         userExpanded: [...state.userExpanded],
         userCollapsed: [...state.userCollapsed],
-      })
+      }),
     );
   } catch {
     // Ignore storage errors so tree interaction still works.
@@ -211,18 +199,12 @@ function mapCourseNode(
   subrequirementId: string,
   groupId: string,
   course: CourseData,
-  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>,
 ): ProgressTreeNode {
-  const label =
-    joinNonEmpty([course.code, course.title], " - ") || `Course ${course.id}`;
+  const label = joinNonEmpty([course.code, course.title], " - ") || `Course ${course.id}`;
   const courseCode = course.code;
   return {
-    id: buildNodeId("course", [
-      requirementId,
-      subrequirementId,
-      groupId,
-      course.id,
-    ]),
+    id: buildNodeId("course", [requirementId, subrequirementId, groupId, course.id]),
     level: "course",
     label,
     courseCode,
@@ -236,18 +218,12 @@ function mapSearchCourseNode(
   subrequirementId: string,
   groupId: string,
   course: SearchGroupCourseData,
-  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>
+  courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>,
 ): ProgressTreeNode {
   const courseCode = course.code;
-  const label =
-    joinNonEmpty([courseCode, course.title], " - ") || `Course ${courseCode}`;
+  const label = joinNonEmpty([courseCode, course.title], " - ") || `Course ${courseCode}`;
   return {
-    id: buildNodeId("course", [
-      requirementId,
-      subrequirementId,
-      groupId,
-      `search:${courseCode}`,
-    ]),
+    id: buildNodeId("course", [requirementId, subrequirementId, groupId, `search:${courseCode}`]),
     level: "course",
     label,
     courseCode,
@@ -262,15 +238,13 @@ function mapGroupNode(
   subrequirementId: string,
   group: GroupData,
   courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>,
-  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>
+  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>,
 ): ProgressTreeNode {
   const label =
-    toOptionalText(group.displayText) ??
-    toOptionalText(group.directive) ??
-    `Group ${group.id}`;
+    toOptionalText(group.displayText) ?? toOptionalText(group.directive) ?? `Group ${group.id}`;
   const rsgKey = `${requirementCode}:${subrequirementId}:${group.id}`;
-  const searchGroupCourses = (searchGroupCoursesByKey.get(rsgKey) ?? []).filter(
-    (course) => courseStatusByCode.has(course.code)
+  const searchGroupCourses = (searchGroupCoursesByKey.get(rsgKey) ?? []).filter((course) =>
+    courseStatusByCode.has(course.code),
   );
 
   return {
@@ -282,13 +256,7 @@ function mapGroupNode(
     children:
       group.courses.length > 0
         ? group.courses.map((course) =>
-            mapCourseNode(
-              requirementId,
-              subrequirementId,
-              group.id,
-              course,
-              courseStatusByCode
-            )
+            mapCourseNode(requirementId, subrequirementId, group.id, course, courseStatusByCode),
           )
         : searchGroupCourses.map((course) =>
             mapSearchCourseNode(
@@ -296,8 +264,8 @@ function mapGroupNode(
               subrequirementId,
               group.id,
               course,
-              courseStatusByCode
-            )
+              courseStatusByCode,
+            ),
           ),
   };
 }
@@ -307,7 +275,7 @@ function mapSubrequirementNode(
   requirementId: string,
   subrequirement: SubrequirementData,
   courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>,
-  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>
+  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>,
 ): ProgressTreeNode {
   const groupNodes = subrequirement.groups.map((group) =>
     mapGroupNode(
@@ -316,8 +284,8 @@ function mapSubrequirementNode(
       subrequirement.id,
       group,
       courseStatusByCode,
-      searchGroupCoursesByKey
-    )
+      searchGroupCoursesByKey,
+    ),
   );
   const isFlattened = groupNodes.length === 1;
 
@@ -330,9 +298,7 @@ function mapSubrequirementNode(
     level: "subrequirement",
     label,
     completionStatus: subrequirement.completionStatus,
-    directive: isFlattened
-      ? undefined
-      : toOptionalText(subrequirement.directive),
+    directive: isFlattened ? undefined : toOptionalText(subrequirement.directive),
     rsgKey: isFlattened ? groupNodes[0]?.rsgKey : undefined,
     children: isFlattened ? groupNodes[0].children : groupNodes,
   };
@@ -341,7 +307,7 @@ function mapSubrequirementNode(
 function mapRequirementNode(
   requirement: RequirementData,
   courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>,
-  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>
+  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>,
 ): ProgressTreeNode {
   return {
     id: buildNodeId("requirement", [requirement.id]),
@@ -356,8 +322,8 @@ function mapRequirementNode(
         requirement.id,
         subrequirement,
         courseStatusByCode,
-        searchGroupCoursesByKey
-      )
+        searchGroupCoursesByKey,
+      ),
     ),
   };
 }
@@ -365,14 +331,14 @@ function mapRequirementNode(
 function buildProgressTree(
   programEvaluation: ProgramEvaluationData | null,
   courseStatusByCode: ReadonlyMap<string, CoursePlanningStatus>,
-  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>
+  searchGroupCoursesByKey: ReadonlyMap<string, SearchGroupCourseData[]>,
 ): ProgressTreeNode[] {
   if (!programEvaluation) {
     return [];
   }
 
   return programEvaluation.requirements.map((requirement) =>
-    mapRequirementNode(requirement, courseStatusByCode, searchGroupCoursesByKey)
+    mapRequirementNode(requirement, courseStatusByCode, searchGroupCoursesByKey),
   );
 }
 
@@ -410,13 +376,9 @@ function getLeadingSlot(node: ProgressTreeNode, expanded: boolean): ReactNode {
     return <span className="size-3.5 shrink-0" />;
   }
   if (expanded) {
-    return (
-      <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground" />
-    );
+    return <ChevronDownIcon className="size-3.5 shrink-0 text-muted-foreground" />;
   }
-  return (
-    <ChevronRightIcon className="size-3.5 shrink-0 text-muted-foreground" />
-  );
+  return <ChevronRightIcon className="size-3.5 shrink-0 text-muted-foreground" />;
 }
 
 function renderLabel(node: ProgressTreeNode, className?: string): ReactNode {
@@ -432,23 +394,13 @@ function renderLabel(node: ProgressTreeNode, className?: string): ReactNode {
   return <span className={cn("truncate", className)}>{node.label}</span>;
 }
 
-function renderNodeContent(
-  node: ProgressTreeNode,
-  expanded: boolean
-): ReactNode {
+function renderNodeContent(node: ProgressTreeNode, expanded: boolean): ReactNode {
   const statusMeta =
-    node.level === "course" && node.status
-      ? COURSE_STATUS_META[node.status]
-      : null;
+    node.level === "course" && node.status ? COURSE_STATUS_META[node.status] : null;
 
   if (node.level === "course") {
     return (
-      <span
-        className={cn(
-          "flex min-w-0 flex-1 items-center gap-1",
-          statusMeta?.textClassName
-        )}
-      >
+      <span className={cn("flex min-w-0 flex-1 items-center gap-1", statusMeta?.textClassName)}>
         {getLeadingSlot(node, expanded)}
         {renderLabel(node, statusMeta?.textClassName)}
       </span>
@@ -481,10 +433,7 @@ function renderDirective(directive: string | undefined): ReactNode {
           </span>
         }
       />
-      <TooltipPopup
-        align="end"
-        className="max-w-72 whitespace-normal leading-snug"
-      >
+      <TooltipPopup align="end" className="max-w-72 whitespace-normal leading-snug">
         {directive}
       </TooltipPopup>
     </Tooltip>
@@ -494,7 +443,7 @@ function renderDirective(directive: string | undefined): ReactNode {
 function renderSearchChip(
   rsgKey: string | undefined,
   activeRsgKey: string | undefined,
-  onSearchToggle: (rsgKey: string) => void
+  onSearchToggle: (rsgKey: string) => void,
 ): ReactNode {
   if (!rsgKey) {
     return null;
@@ -570,8 +519,7 @@ function ProgressTreeBranch({
       {nodes.map((node) => {
         const hasChildren = node.children.length > 0;
         const expanded = isExpanded(node, expansionState);
-        const isCourseActive =
-          node.level === "course" && activeCourseCode === node.courseCode;
+        const isCourseActive = node.level === "course" && activeCourseCode === node.courseCode;
         const showDirective = LEVELS_WITH_DIRECTIVE.has(node.level);
         const completionStatusBadge = renderCompletionStatusBadge(node);
 
@@ -580,15 +528,13 @@ function ProgressTreeBranch({
             <div
               className={cn(
                 "flex items-center gap-1 rounded-sm py-1 hover:bg-accent/60",
-                isCourseActive && "bg-info/8 hover:bg-info/12"
+                isCourseActive && "bg-info/8 hover:bg-info/12",
               )}
               style={{ paddingLeft: depth * INDENT_PER_LEVEL_PX }}
             >
               <button
                 aria-expanded={hasChildren ? expanded : undefined}
-                aria-pressed={
-                  node.level === "course" ? isCourseActive : undefined
-                }
+                aria-pressed={node.level === "course" ? isCourseActive : undefined}
                 className="flex min-w-0 flex-1 items-center gap-1 text-left text-sm sm:text-xs"
                 onClick={() => {
                   if (!hasChildren && node.courseCode) {
@@ -634,44 +580,27 @@ function ProgressTreeBranch({
 
 function YourProgress() {
   const { sessionId, tokenHash } = useAuth();
-  const { filters, selectedCourseCode, setRsgKeys, setSelectedCourseCode } =
-    useExploreFilters();
-  const { data: userData } = useSuspenseQuery(
-    userDataQuery(sessionId, tokenHash)
-  );
+  const { filters, selectedCourseCode, setRsgKeys, setSelectedCourseCode } = useExploreFilters();
+  const { data: userData } = useSuspenseQuery(userDataQuery(sessionId, tokenHash));
   const { data: progressSearchCourses } = useSuspenseQuery(
-    progressSearchCoursesQuery(sessionId, tokenHash)
+    progressSearchCoursesQuery(sessionId, tokenHash),
   );
 
   const [expansionState, setExpansionState] = useState<ExpansionState>(
-    loadExpansionStateFromStorage
+    loadExpansionStateFromStorage,
   );
   const programEvaluation = userData?.programEvaluation ?? null;
-  const courseStatusByCode = useMemo(
-    () => buildCourseStatusByCode(userData),
-    [userData]
-  );
+  const courseStatusByCode = useMemo(() => buildCourseStatusByCode(userData), [userData]);
   const searchGroupCoursesByKey = useMemo(
-    () =>
-      new Map(
-        progressSearchCourses.map(({ key, courses }) => [key, courses] as const)
-      ),
-    [progressSearchCourses]
+    () => new Map(progressSearchCourses.map(({ key, courses }) => [key, courses] as const)),
+    [progressSearchCourses],
   );
 
   const treeNodes = useMemo(
-    () =>
-      buildProgressTree(
-        programEvaluation,
-        courseStatusByCode,
-        searchGroupCoursesByKey
-      ),
-    [courseStatusByCode, programEvaluation, searchGroupCoursesByKey]
+    () => buildProgressTree(programEvaluation, courseStatusByCode, searchGroupCoursesByKey),
+    [courseStatusByCode, programEvaluation, searchGroupCoursesByKey],
   );
-  const degreeTitle = joinNonEmpty(
-    [programEvaluation?.title, programEvaluation?.code],
-    " • "
-  );
+  const degreeTitle = joinNonEmpty([programEvaluation?.title, programEvaluation?.code], " • ");
   const activeRsgKey = filters.rsgKeys[0];
 
   const handleToggle = useCallback((node: ProgressTreeNode) => {
@@ -698,16 +627,14 @@ function YourProgress() {
     (rsgKey: string) => {
       setRsgKeys(activeRsgKey === rsgKey ? [] : [rsgKey]);
     },
-    [activeRsgKey, setRsgKeys]
+    [activeRsgKey, setRsgKeys],
   );
 
   const handleCourseToggle = useCallback(
     (courseCode: string) => {
-      setSelectedCourseCode(
-        selectedCourseCode === courseCode ? "" : courseCode
-      );
+      setSelectedCourseCode(selectedCourseCode === courseCode ? "" : courseCode);
     },
-    [selectedCourseCode, setSelectedCourseCode]
+    [selectedCourseCode, setSelectedCourseCode],
   );
 
   useEffect(() => {
@@ -726,9 +653,7 @@ function YourProgress() {
     <TooltipProvider delay={250}>
       <div className="space-y-2 p-2">
         {degreeTitle && (
-          <p className="px-1 font-medium text-foreground text-sm sm:text-xs">
-            {degreeTitle}
-          </p>
+          <p className="px-1 font-medium text-foreground text-sm sm:text-xs">{degreeTitle}</p>
         )}
         <ProgressTreeBranch
           activeCourseCode={selectedCourseCode}

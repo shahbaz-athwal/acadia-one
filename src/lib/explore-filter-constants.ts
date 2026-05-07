@@ -16,6 +16,4 @@ export const GRAD_LEVEL_OPTIONS = [
   { value: 7, label: "Third Master's 7000" },
 ] as const;
 
-export const STANDALONE_LEVEL_OPTIONS = [
-  { value: 8, label: "Post-Baccalaureate 8000" },
-] as const;
+export const STANDALONE_LEVEL_OPTIONS = [{ value: 8, label: "Post-Baccalaureate 8000" }] as const;

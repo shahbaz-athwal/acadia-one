@@ -9,8 +9,7 @@ import { useScheduleItems } from "@/hooks/use-schedule-items";
 import { useScheduleView } from "@/hooks/use-schedule-view";
 import { formatTermLabelWithoutYear } from "@/lib/utils";
 
-const ACADEMIC_SEARCH_URL =
-  "https://collss.acadiau.ca/student/Student/Courses/Search";
+const ACADEMIC_SEARCH_URL = "https://collss.acadiau.ca/student/Student/Courses/Search";
 
 function buildExportUrl(items: ReturnType<typeof useScheduleItems>["items"]) {
   if (!items || items.length === 0) {
@@ -29,7 +28,7 @@ function buildExportUrl(items: ReturnType<typeof useScheduleItems>["items"]) {
           return `${courseCode}-${sectionCode}`;
         })
         .filter((value) => value !== null)
-        .sort((a, b) => a.localeCompare(b))
+        .sort((a, b) => a.localeCompare(b)),
     ),
   ];
 
@@ -47,7 +46,7 @@ export function ScheduleHeader() {
   const { items } = useScheduleItems();
   const termNameByCode = useMemo(
     () => new Map(terms.map((term) => [term.code, term.name])),
-    [terms]
+    [terms],
   );
   const exportUrl = useMemo(() => buildExportUrl(items), [items]);
 

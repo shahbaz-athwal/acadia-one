@@ -12,9 +12,7 @@ export const getRouter = (queryClient: QueryClient) => {
     context: { queryClient },
     parseSearch: parseSearchWith((value) => value),
     stringifySearch: (search) => {
-      const entries = Object.entries(search).filter(
-        ([, value]) => value !== undefined
-      );
+      const entries = Object.entries(search).filter(([, value]) => value !== undefined);
       if (entries.length === 0) {
         return "";
       }
@@ -22,9 +20,7 @@ export const getRouter = (queryClient: QueryClient) => {
         .map(([key, value]) => {
           const encodedKey = encodeURIComponent(key);
           if (Array.isArray(value)) {
-            const encodedArray = value
-              .map((item) => encodeURIComponent(String(item)))
-              .join(",");
+            const encodedArray = value.map((item) => encodeURIComponent(String(item))).join(",");
             return `${encodedKey}=${encodedArray}`;
           }
           return `${encodedKey}=${encodeURIComponent(String(value))}`;

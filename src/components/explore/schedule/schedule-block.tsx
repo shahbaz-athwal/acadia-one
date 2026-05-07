@@ -1,9 +1,5 @@
 import { Button } from "@/components/ui/button";
-import {
-  PreviewCard,
-  PreviewCardPopup,
-  PreviewCardTrigger,
-} from "@/components/ui/preview-card";
+import { PreviewCard, PreviewCardPopup, PreviewCardTrigger } from "@/components/ui/preview-card";
 import type { ScheduleItem } from "@/hooks/use-schedule-items";
 import { getBlockPosition } from "@/lib/schedule-time";
 import { cn, formatDays, stripProfessorSalutations } from "@/lib/utils";
@@ -16,9 +12,7 @@ interface ScheduleBlockProps {
   onOpenProfessor?: (professorExternalId: string) => void;
   onPrefetchCourse?: (courseCode: string) => void;
   onPrefetchProfessor?: (professorExternalId: string) => void;
-  onRemove?: (
-    scheduleItemId: ScheduleItem["scheduleItemId"]
-  ) => void | Promise<void>;
+  onRemove?: (scheduleItemId: ScheduleItem["scheduleItemId"]) => void | Promise<void>;
   slotHeight?: number;
 }
 
@@ -47,11 +41,10 @@ export function ScheduleBlock({
   const { top, height } = getBlockPosition(
     item.section.classStartTime,
     item.section.classEndTime,
-    slotHeight
+    slotHeight,
   );
   const timeLabel = `${item.section.classStartTime} - ${item.section.classEndTime}`;
-  const professorName =
-    stripProfessorSalutations(item.section.professorName) || "TBA";
+  const professorName = stripProfessorSalutations(item.section.professorName) || "TBA";
   const professorExternalId = item.section.professorExternalId;
   return (
     <PreviewCard>
@@ -62,7 +55,7 @@ export function ScheduleBlock({
             className={cn(
               "absolute inset-x-0.5 cursor-pointer overflow-hidden rounded-md border px-2 py-1.5 text-xs leading-tight transition-opacity",
               dimmed && "opacity-20",
-              className
+              className,
             )}
             data-section-id={item.section.id}
             style={{
@@ -115,9 +108,7 @@ export function ScheduleBlock({
             {timeLabel} ({formatDays(item.section.days)})
           </dd>
           <dt className="font-medium">Location</dt>
-          <dd className="text-muted-foreground leading-snug">
-            {getLocation(item)}
-          </dd>
+          <dd className="text-muted-foreground leading-snug">{getLocation(item)}</dd>
           <dt className="font-medium">Professor</dt>
           <dd className="text-muted-foreground leading-snug">
             {professorExternalId ? (

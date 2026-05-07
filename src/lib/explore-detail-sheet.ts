@@ -8,9 +8,7 @@ export type ExploreDetailTarget =
       professorExternalId: string;
     };
 
-export function parseDetailTarget(
-  value: string | null | undefined
-): ExploreDetailTarget | null {
+export function parseDetailTarget(value: string | null | undefined): ExploreDetailTarget | null {
   const trimmed = value?.trim();
   if (!trimmed) {
     return null;

@@ -50,5 +50,5 @@ createRoot(rootElement).render(
         </QueryClientProvider>
       </ConvexProvider>
     </ThemeProvider>
-  </StrictMode>
+  </StrictMode>,
 );

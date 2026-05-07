@@ -1,8 +1,5 @@
 import { convexQuery } from "@convex-dev/react-query";
-import {
-  TIME_RANGE_MAX_MINUTES,
-  TIME_RANGE_MINUTES,
-} from "@/lib/explore-filter-constants";
+import { TIME_RANGE_MAX_MINUTES, TIME_RANGE_MINUTES } from "@/lib/explore-filter-constants";
 import { api } from "../../convex/_generated/api";
 
 export const PAGE_SIZE = 10;
@@ -45,11 +42,9 @@ export function buildConvexFilters(search: {
   return Object.keys(f).length > 0 ? f : undefined;
 }
 
-export const filterOptionsQuery = () =>
-  convexQuery(api.explore.filterOptions, {});
+export const filterOptionsQuery = () => convexQuery(api.explore.filterOptions, {});
 
-export const scheduleQuery = (sessionId: string) =>
-  convexQuery(api.schedule.get, { sessionId });
+export const scheduleQuery = (sessionId: string) => convexQuery(api.schedule.get, { sessionId });
 
 export const coursesQuery = (params: {
   page: number;
@@ -62,8 +57,7 @@ export const coursesQuery = (params: {
     pageSize: PAGE_SIZE,
   });
 
-export const courseSheetQuery = (code: string) =>
-  convexQuery(api.courses.getSheetByCode, { code });
+export const courseSheetQuery = (code: string) => convexQuery(api.courses.getSheetByCode, { code });
 
 export const professorSheetQuery = (externalId: string) =>
   convexQuery(api.professors.getSheetByExternalId, { externalId });
@@ -74,8 +68,5 @@ export const validateSessionQuery = (sessionId: string, tokenHash: string) =>
 export const userDataQuery = (sessionId: string, tokenHash: string) =>
   convexQuery(api.sessions.getUserData, { sessionId, tokenHash });
 
-export const progressSearchCoursesQuery = (
-  sessionId: string,
-  tokenHash: string
-) =>
+export const progressSearchCoursesQuery = (sessionId: string, tokenHash: string) =>
   convexQuery(api.sessions.getProgressSearchCourses, { sessionId, tokenHash });

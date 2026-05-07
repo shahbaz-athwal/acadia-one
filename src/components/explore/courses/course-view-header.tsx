@@ -17,9 +17,7 @@ function toOptionalText(value: string | null | undefined): string | undefined {
   return trimmed && trimmed.length > 0 ? trimmed : undefined;
 }
 
-function buildRsgLabelByKey(
-  programEvaluation: ProgramEvaluationData | null
-): Map<string, string> {
+function buildRsgLabelByKey(programEvaluation: ProgramEvaluationData | null): Map<string, string> {
   const labels = new Map<string, string>();
 
   if (!programEvaluation) {
@@ -36,10 +34,7 @@ function buildRsgLabelByKey(
 
       if (groups.length === 1) {
         const group = groups[0];
-        labels.set(
-          `${requirement.code}:${subrequirement.id}:${group.id}`,
-          subrequirementLabel
-        );
+        labels.set(`${requirement.code}:${subrequirement.id}:${group.id}`, subrequirementLabel);
         continue;
       }
 
@@ -48,10 +43,7 @@ function buildRsgLabelByKey(
           toOptionalText(group.displayText) ??
           toOptionalText(group.directive) ??
           `Group ${group.id}`;
-        labels.set(
-          `${requirement.code}:${subrequirement.id}:${group.id}`,
-          groupLabel
-        );
+        labels.set(`${requirement.code}:${subrequirement.id}:${group.id}`, groupLabel);
       }
     }
   }
@@ -69,22 +61,15 @@ export function CourseViewHeader() {
     setSearchQuery,
     setSelectedCourseCode,
   } = useExploreFilters();
-  const { data: userData } = useSuspenseQuery(
-    userDataQuery(sessionId, tokenHash)
-  );
+  const { data: userData } = useSuspenseQuery(userDataQuery(sessionId, tokenHash));
   const [localQuery, setLocalQuery] = useState(searchQuery);
   const inputRef = useRef<HTMLInputElement>(null);
   const activeRsgKey = filters.rsgKeys[0];
   const rsgLabelByKey = useMemo(
-    () =>
-      buildRsgLabelByKey(
-        isAuthenticated ? (userData?.programEvaluation ?? null) : null
-      ),
-    [isAuthenticated, userData?.programEvaluation]
+    () => buildRsgLabelByKey(isAuthenticated ? (userData?.programEvaluation ?? null) : null),
+    [isAuthenticated, userData?.programEvaluation],
   );
-  const activeRsgLabel = activeRsgKey
-    ? (rsgLabelByKey.get(activeRsgKey) ?? "Group filter")
-    : null;
+  const activeRsgLabel = activeRsgKey ? (rsgLabelByKey.get(activeRsgKey) ?? "Group filter") : null;
 
   const debouncedSetSearch = useDebounceCallback(setSearchQuery, 500);
 

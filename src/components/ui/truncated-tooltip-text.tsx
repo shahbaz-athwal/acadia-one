@@ -77,14 +77,8 @@ function TruncatedTooltipText({
   }, [checkTruncation, text]);
 
   const trigger = (
-    <span
-      className={cn("min-w-0 flex-1", containerClassName)}
-      onPointerEnter={checkTruncation}
-    >
-      <span
-        className={cn("block truncate", className)}
-        ref={textRef}
-      >
+    <span className={cn("min-w-0 flex-1", containerClassName)} onPointerEnter={checkTruncation}>
+      <span className={cn("block truncate", className)} ref={textRef}>
         {text}
       </span>
     </span>

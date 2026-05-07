@@ -6,9 +6,7 @@ function resolveTheme(theme: string) {
   if (theme !== "system") {
     return theme;
   }
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function ThemeToggle() {

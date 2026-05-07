@@ -27,7 +27,7 @@ export function useExploreCourses() {
       courseCode: search.cc || undefined,
       filters: buildConvexFilters(search),
       searchQuery: search.q,
-    })
+    }),
   );
 
   return {

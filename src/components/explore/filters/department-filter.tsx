@@ -24,9 +24,7 @@ export function DepartmentFilter() {
     label: `${d.prefix} - ${d.name}`,
   }));
 
-  const selected = items.filter((i) =>
-    filters.departmentPrefixes.includes(i.value)
-  );
+  const selected = items.filter((i) => filters.departmentPrefixes.includes(i.value));
 
   return (
     <Combobox<FilterOption, true>

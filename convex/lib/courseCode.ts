@@ -4,16 +4,14 @@ const COMPACT_NUMBER_PATTERN = "[0-9]{3,4}[A-Za-z]?";
 const CONTAINS_DIGIT_REGEX = /\d/;
 const SINGLE_COURSE_CODE_REGEX = new RegExp(
   `\\b(${SUBJECT_PATTERN})(?:\\s*(?:-\\s*|\\s+)(${SEPARATED_NUMBER_PATTERN})|(${COMPACT_NUMBER_PATTERN}))\\b`,
-  "i"
+  "i",
 );
 
 function buildCanonicalCourseCode(subject: string, number: string): string {
   return `${subject.trim().toUpperCase()}-${number.trim().toUpperCase()}`;
 }
 
-export function parseCanonicalCourseCode(
-  raw: string | null | undefined
-): string | null {
+export function parseCanonicalCourseCode(raw: string | null | undefined): string | null {
   const trimmed = raw?.trim();
   if (!trimmed) {
     return null;

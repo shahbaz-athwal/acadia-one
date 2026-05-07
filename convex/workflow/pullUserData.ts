@@ -5,10 +5,7 @@ import { type ActionCtx, internalAction } from "../_generated/server";
 import { getAcadiaImpersonator } from "../acadia/impersonator";
 
 export const pullUserData = internalAction(
-  async (
-    ctx: ActionCtx,
-    { sessionId, token }: { sessionId: string; token: string }
-  ) => {
+  async (ctx: ActionCtx, { sessionId, token }: { sessionId: string; token: string }) => {
     await ctx.runMutation(internal.internal.setAcadiaUserDataStatus, {
       sessionId,
       status: "pending",
@@ -16,16 +13,14 @@ export const pullUserData = internalAction(
 
     try {
       const impersonator = await getAcadiaImpersonator(ctx, sessionId, token);
-      const [programDetails, grades, coursePlanningStatuses] =
-        await Promise.all([
-          impersonator.getStudentProgramDetails(),
-          impersonator.getStudentGrades(),
-          impersonator.getCoursePlanningStatuses(),
-        ]);
+      const [programDetails, grades, coursePlanningStatuses] = await Promise.all([
+        impersonator.getStudentProgramDetails(),
+        impersonator.getStudentGrades(),
+        impersonator.getCoursePlanningStatuses(),
+      ]);
 
       const primaryProgramCode = programDetails.programs[0]?.programCode;
-      const programEvaluation =
-        await impersonator.getProgramEvaluation(primaryProgramCode);
+      const programEvaluation = await impersonator.getProgramEvaluation(primaryProgramCode);
 
       await ctx.runMutation(internal.internal.setAcadiaUserData, {
         sessionId,
@@ -35,33 +30,29 @@ export const pullUserData = internalAction(
         coursePlanningStatuses,
       });
 
-      const allCombinations = programEvaluation.requirements.flatMap(
-        (requirement) =>
-          requirement.subrequirements.flatMap((subrequirement) =>
-            subrequirement.groups.map((group) => ({
-              requirementCode: requirement.code,
-              subrequirementId: subrequirement.id,
-              groupId: group.id,
-              groupCourseCodes: group.courses.map((course) => course.code),
-              key: `${requirement.code}:${subrequirement.id}:${group.id}`,
-            }))
-          )
+      const allCombinations = programEvaluation.requirements.flatMap((requirement) =>
+        requirement.subrequirements.flatMap((subrequirement) =>
+          subrequirement.groups.map((group) => ({
+            requirementCode: requirement.code,
+            subrequirementId: subrequirement.id,
+            groupId: group.id,
+            groupCourseCodes: group.courses.map((course) => course.code),
+            key: `${requirement.code}:${subrequirement.id}:${group.id}`,
+          })),
+        ),
       );
 
       const uniqueCombinationMap = new Map(
-        allCombinations.map((combination) => [combination.key, combination])
+        allCombinations.map((combination) => [combination.key, combination]),
       );
       const uniqueCombinations = [...uniqueCombinationMap.values()];
       if (uniqueCombinations.length > 0) {
-        const existingKeys = await ctx.runQuery(
-          internal.internal.getExistingRsgKeys,
-          {
-            keys: uniqueCombinations.map((combination) => combination.key),
-          }
-        );
+        const existingKeys = await ctx.runQuery(internal.internal.getExistingRsgKeys, {
+          keys: uniqueCombinations.map((combination) => combination.key),
+        });
         const existingKeySet = new Set(existingKeys);
         const missingCombinations = uniqueCombinations.filter(
-          (combination) => !existingKeySet.has(combination.key)
+          (combination) => !existingKeySet.has(combination.key),
         );
 
         if (missingCombinations.length > 0) {
@@ -74,7 +65,7 @@ export const pullUserData = internalAction(
             }));
 
           const searchCombinations = missingCombinations.filter(
-            (combination) => combination.groupCourseCodes.length === 0
+            (combination) => combination.groupCourseCodes.length === 0,
           );
 
           const searchEntries = await Promise.all(
@@ -82,7 +73,7 @@ export const pullUserData = internalAction(
               const courses = await impersonator.getRequiredCourses(
                 combination.groupId,
                 combination.requirementCode,
-                combination.subrequirementId
+                combination.subrequirementId,
               );
 
               return {
@@ -90,7 +81,7 @@ export const pullUserData = internalAction(
                 courseCodes: courses.map((course) => course.code),
                 type: "search" as const,
               };
-            })
+            }),
           );
 
           const entries = [...exactEntries, ...searchEntries];
@@ -107,5 +98,5 @@ export const pullUserData = internalAction(
         error: JSON.stringify(error),
       });
     }
-  }
+  },
 );

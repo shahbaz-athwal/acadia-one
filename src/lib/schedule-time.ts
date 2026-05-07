@@ -27,10 +27,7 @@ export const HEADER_HEIGHT = 32;
  * Convert total minutes since midnight to a Y-pixel offset relative to
  * the top of the grid body (where GRID_START_MINUTES begins).
  */
-export function minutesToPixelOffset(
-  minutes: number,
-  slotHeight: number = SLOT_HEIGHT
-): number {
+export function minutesToPixelOffset(minutes: number, slotHeight: number = SLOT_HEIGHT): number {
   const elapsed = minutes - GRID_START_MINUTES;
   return (elapsed / 30) * slotHeight;
 }
@@ -41,7 +38,7 @@ export function minutesToPixelOffset(
 export function getBlockPosition(
   startTime: string,
   endTime: string,
-  slotHeight: number = SLOT_HEIGHT
+  slotHeight: number = SLOT_HEIGHT,
 ): { top: number; height: number } {
   const startMinutes = parseTimeToMinutes(startTime) ?? 0;
   const endMinutes = parseTimeToMinutes(endTime) ?? 0;

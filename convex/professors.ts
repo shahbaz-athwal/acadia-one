@@ -41,17 +41,17 @@ export const getSheetByExternalId = query({
           thumbsDownTotal: v.number(),
           tags: v.array(v.string()),
           postedAt: v.number(),
-        })
+        }),
       ),
     }),
-    v.null()
+    v.null(),
   ),
   handler: async (ctx, args) => {
     const professor = await getOneFrom(
       ctx.db,
       "professors",
       "by_externalId",
-      args.externalId.trim()
+      args.externalId.trim(),
     );
 
     if (!professor) {
@@ -62,7 +62,7 @@ export const getSheetByExternalId = query({
       ctx.db,
       "departments",
       "by_prefix",
-      professor.departmentPrefix
+      professor.departmentPrefix,
     );
     const ratings = await ctx.db
       .query("ratings")
@@ -71,16 +71,12 @@ export const getSheetByExternalId = query({
     const approvedRatings = ratings
       .filter((rating) => rating.status === "APPROVED")
       .sort((a, b) => b.postedAt - a.postedAt);
-    const courseIds = [
-      ...new Set(approvedRatings.map((rating) => rating.courseId)),
-    ];
-    const courses = await Promise.all(
-      courseIds.map((courseId) => ctx.db.get(courseId))
-    );
+    const courseIds = [...new Set(approvedRatings.map((rating) => rating.courseId))];
+    const courses = await Promise.all(courseIds.map((courseId) => ctx.db.get(courseId)));
     const courseById = new Map(
       courses
         .filter((course): course is NonNullable<typeof course> => !!course)
-        .map((course) => [course._id, course])
+        .map((course) => [course._id, course]),
     );
 
     return {

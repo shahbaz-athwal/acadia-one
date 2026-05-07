@@ -46,19 +46,13 @@ export function useAuth() {
   const refreshUserDataAction = useAction(api.auth.refreshUserData);
   const logoutSession = useMutation(api.sessions.logoutSession);
 
-  const { data: validation } = useSuspenseQuery(
-    validateSessionQuery(sessionId, tokenHash)
-  );
+  const { data: validation } = useSuspenseQuery(validateSessionQuery(sessionId, tokenHash));
 
   const isAuthenticated = validation.valid === true;
   const studentId = validation.valid ? validation.studentId : null;
   const userDataStatus = validation.valid ? validation.userDataStatus : null;
-  const profileFirstName = validation.valid
-    ? (validation.profileFirstName ?? null)
-    : null;
-  const profileLastName = validation.valid
-    ? (validation.profileLastName ?? null)
-    : null;
+  const profileFirstName = validation.valid ? (validation.profileFirstName ?? null) : null;
+  const profileLastName = validation.valid ? (validation.profileLastName ?? null) : null;
 
   async function login(username: string, password: string) {
     setIsLoading(true);
@@ -69,9 +63,7 @@ export function useAuth() {
 
       if (result.success) {
         try {
-          await queryClient.ensureQueryData(
-            validateSessionQuery(sessionId, result.tokenHash)
-          );
+          await queryClient.ensureQueryData(validateSessionQuery(sessionId, result.tokenHash));
         } catch {
           // Fall back to regular suspense fetch path if preloading fails.
         }

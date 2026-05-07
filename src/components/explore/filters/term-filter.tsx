@@ -15,11 +15,7 @@ export function TermFilter() {
   const terms = options.terms ?? [];
 
   return (
-    <Combobox<string, true>
-      multiple
-      onValueChange={setTermCodes}
-      value={filters.termCodes}
-    >
+    <Combobox<string, true> multiple onValueChange={setTermCodes} value={filters.termCodes}>
       <ComboboxChips>
         <ComboboxValue>
           {(values: string[]) => (

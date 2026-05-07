@@ -68,9 +68,7 @@ export function ProgressTab() {
           <EmptyTitle className="font-medium font-sans text-sm sm:text-xs">
             Importing your degree progress
           </EmptyTitle>
-          <EmptyDescription className="text-xs">
-            This may take a few seconds...
-          </EmptyDescription>
+          <EmptyDescription className="text-xs">This may take a few seconds...</EmptyDescription>
         </EmptyHeader>
       </Empty>
     );

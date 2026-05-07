@@ -4,11 +4,7 @@ import type { AxiosInstance } from "axios";
 import type { z } from "zod";
 import { internal } from "../_generated/api";
 import type { ActionCtx } from "../_generated/server";
-import {
-  authenticateWithAxios,
-  createClient,
-  DEFAULT_AUTH_TIMEOUT_MS,
-} from "./auth";
+import { authenticateWithAxios, createClient, DEFAULT_AUTH_TIMEOUT_MS } from "./auth";
 import {
   PostSearchCriteriaFilteredResponseSchema,
   PostSearchCriteriaRequestSchema,
@@ -34,7 +30,7 @@ export class AcadiaScraper {
   }
 
   private async postSearchCriteria(
-    searchCriteria?: Partial<z.infer<typeof PostSearchCriteriaRequestSchema>>
+    searchCriteria?: Partial<z.infer<typeof PostSearchCriteriaRequestSchema>>,
   ) {
     const defaultCriteria = {
       keyword: null,
@@ -54,7 +50,7 @@ export class AcadiaScraper {
 
     const response = await this.client.post(
       "/student/Student/Courses/PostSearchCriteria",
-      validatedCriteria
+      validatedCriteria,
     );
 
     return PostSearchCriteriaFilteredResponseSchema.parse(response.data);
@@ -78,34 +74,24 @@ export class AcadiaScraper {
   }
 
   async getSectionDetails(courseId: string, sectionIds: string[]) {
-    const response = await this.client.post(
-      "/student/Student/Courses/Sections",
-      {
-        courseId,
-        sectionIds,
-      }
-    );
+    const response = await this.client.post("/student/Student/Courses/Sections", {
+      courseId,
+      sectionIds,
+    });
     return SectionDetailsFilteredResponseSchema.parse(response.data);
   }
 
   async getProgramEvaluation(studentId: string, programCode: string) {
-    const response = await this.client.post(
-      "/student/Planning/Programs/ProgramEvaluation",
-      {
-        program: programCode,
-        isWhatIfEvaluation: true,
-        studentId,
-      }
-    );
+    const response = await this.client.post("/student/Planning/Programs/ProgramEvaluation", {
+      program: programCode,
+      isWhatIfEvaluation: true,
+      studentId,
+    });
 
     return ProgramEvaluationFilteredResponseSchema.parse(response.data).program;
   }
 
-  async getRequiredCourses(
-    group: string,
-    requirement: string,
-    subrequirement: string
-  ) {
+  async getRequiredCourses(group: string, requirement: string, subrequirement: string) {
     const data = await this.postSearchCriteria({
       group,
       requirement,

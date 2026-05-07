@@ -192,10 +192,7 @@
           "phone": "902-585-1195",
           "profile_url": "",
           "profile_image_url": "https://biology.acadiau.ca/files/sites/biology/pics/gallen.png",
-          "research_areas": [
-            "physiology of aquatic organisms",
-            "marine invertebrates"
-          ],
+          "research_areas": ["physiology of aquatic organisms", "marine invertebrates"],
           "office": "Room 100",
           "description": "Research focuses on how environmental challenges influence the physiology of aquatic organisms, especially marine invertebrates."
         },
@@ -246,10 +243,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "https://biology.acadiau.ca/files/sites/biology/pics/hdentremont4.png",
-          "research_areas": [
-            "microbial biodiversity",
-            "cell & molecular biology lab instruction"
-          ],
+          "research_areas": ["microbial biodiversity", "cell & molecular biology lab instruction"],
           "office": "Room 333",
           "description": "Develops and runs labs for Microbial Biodiversity, Cell & Molecular Biology, and Applied & Environmental Microbiology."
         },
@@ -282,11 +276,7 @@
           "phone": "",
           "profile_url": "https://www.fergusonlab.ca/",
           "profile_image_url": "https://biology.acadiau.ca/files/sites/biology/pics/LauraFerguson.png",
-          "research_areas": [
-            "host-microbe interactions",
-            "insect microbiomes",
-            "disease ecology"
-          ],
+          "research_areas": ["host-microbe interactions", "insect microbiomes", "disease ecology"],
           "office": "Room 335",
           "description": "Integrative biologist studying how host-microbe interactions shape insect resilience, focusing on mosquitoes and ticks and climate effects."
         },
@@ -300,11 +290,7 @@
           "phone": "902-585-1821",
           "profile_url": "",
           "profile_image_url": "https://biology.acadiau.ca/files/sites/biology/pics/wfernando.png",
-          "research_areas": [
-            "cancer biology",
-            "anticancer therapeutics",
-            "pharmacokinetics"
-          ],
+          "research_areas": ["cancer biology", "anticancer therapeutics", "pharmacokinetics"],
           "office": "Room 310",
           "description": "Cancer biologist investigating anticancer potential of novel targeted agents and mechanisms of cancer progression and chemo-resistance."
         },
@@ -370,11 +356,7 @@
           "phone": "902-585-1314",
           "profile_url": "http://www.acadiau.ca/~khillier",
           "profile_image_url": "https://biology.acadiau.ca/files/sites/biology/pics/khillier3.png",
-          "research_areas": [
-            "olfactory processing",
-            "insect neurobiology",
-            "chemical ecology"
-          ],
+          "research_areas": ["olfactory processing", "insect neurobiology", "chemical ecology"],
           "office": "Room 104",
           "description": "Research focused on olfactory processing, insect pheromone perception, neuroanatomy, learning and memory in insects."
         },
@@ -407,11 +389,7 @@
           "phone": "902-585-1328",
           "profile_url": "",
           "profile_image_url": "https://biology.acadiau.ca/files/sites/biology/pics/jclopez2.png",
-          "research_areas": [
-            "soil microbial ecology",
-            "teaching and learning",
-            "EDI initiatives"
-          ],
+          "research_areas": ["soil microbial ecology", "teaching and learning", "EDI initiatives"],
           "office": "Room 408",
           "description": "Soil microbial ecologist studying microorganisms around plant roots and leader in equity, diversity and inclusion and teaching initiatives."
         },
@@ -641,11 +619,7 @@
           "phone": "",
           "profile_url": "http://www.bondrup.com/",
           "profile_image_url": "https://biology.acadiau.ca/files/sites/biology/pics/sbondrupnielsen.png",
-          "research_areas": [
-            "natural history",
-            "beetles and birds ecology",
-            "population studies"
-          ],
+          "research_areas": ["natural history", "beetles and birds ecology", "population studies"],
           "office": "Wolfville, NS, Canada B4P 2R6",
           "description": "Research interests include natural history of beetles and birds and population studies; emphasizes active learning."
         },
@@ -677,11 +651,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "https://biology.acadiau.ca/files/sites/biology/pics/therman.png",
-          "research_areas": [
-            "conservation biology",
-            "population dynamics",
-            "species recovery"
-          ],
+          "research_areas": ["conservation biology", "population dynamics", "species recovery"],
           "office": "",
           "description": "Explores interface between humans and biodiversity with recent work on endangered turtles and snakes."
         },
@@ -695,11 +665,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "https://biology.acadiau.ca/files/sites/biology/pics/ereekie.png",
-          "research_areas": [
-            "plant ecology",
-            "population biology",
-            "eco-physiology"
-          ],
+          "research_areas": ["plant ecology", "population biology", "eco-physiology"],
           "office": "",
           "description": "Plant ecologist studying population biology, eco-physiology, and factors limiting distribution and abundance of species."
         },
@@ -728,9 +694,7 @@
       "department": "Business Administration",
       "input_url": "https://business.acadiau.ca/about-us/faculty-directory.html",
       "status": "success",
-      "visited_urls": [
-        "https://business.acadiau.ca/about-us/faculty-directory.html"
-      ],
+      "visited_urls": ["https://business.acadiau.ca/about-us/faculty-directory.html"],
       "warnings": [],
       "professors": [
         {
@@ -1075,11 +1039,7 @@
           "phone": "902-670-2689",
           "profile_url": "https://chemistry.acadiau.ca/jbanks.html",
           "profile_image_url": "https://chemistry.acadiau.ca/files/sites/chemistry/resources/images/Faculty/Thumbnails/jbanks-sm.jpg",
-          "research_areas": [
-            "Physical Organic Chemistry",
-            "Organic Chemistry",
-            "Photochemistry"
-          ],
+          "research_areas": ["Physical Organic Chemistry", "Organic Chemistry", "Photochemistry"],
           "office": "308 Elliott Hall",
           "description": "Department Head: Jeffrey BanksPhysical Organic Chemistryjbanks@acadiau.caOffice: 308 Elliott Hall"
         },
@@ -1165,10 +1125,7 @@
           "phone": "",
           "profile_url": "https://chemistry.acadiau.ca/mlukeman.html",
           "profile_image_url": "https://chemistry.acadiau.ca/files/sites/chemistry/resources/images/Faculty/Thumbnails/no-image-available-sm.png",
-          "research_areas": [
-            "Physical & Computational Chemistry",
-            "Physical Organic Chemistry"
-          ],
+          "research_areas": ["Physical & Computational Chemistry", "Physical Organic Chemistry"],
           "office": "211 Elliott Hall",
           "description": "Dale KeefePhysical & Computational Chemistrydale.keefe@acadiau.caOffice: 211 Elliott Hall Matthew LukemanPhysical Organic Chemistrymlukeman@acadiau.caOffice: 114 Elliott Hall"
         },
@@ -1393,11 +1350,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "https://history.acadiau.ca/Faculty/files/sites/history/Faculty/Jennifer%20MacDonald.jpg",
-          "research_areas": [
-            "Medieval History",
-            "Material Culture",
-            "Medieval England"
-          ],
+          "research_areas": ["Medieval History", "Material Culture", "Medieval England"],
           "office": "",
           "description": ""
         },
@@ -1480,12 +1433,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "https://history.acadiau.ca/Faculty/files/sites/history/Faculty/Whidden.png",
-          "research_areas": [
-            "Egypt",
-            "Colonial and Modern History",
-            "Middle East",
-            "North Africa"
-          ],
+          "research_areas": ["Egypt", "Colonial and Modern History", "Middle East", "North Africa"],
           "office": "",
           "description": ""
         },
@@ -1499,11 +1447,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "https://history.acadiau.ca/Faculty/files/sites/history/Faculty/Sachs.png",
-          "research_areas": [
-            "Islamic Thought",
-            "Egypt and Sudan",
-            "Legal History"
-          ],
+          "research_areas": ["Islamic Thought", "Egypt and Sudan", "Legal History"],
           "office": "",
           "description": ""
         },
@@ -1882,11 +1826,7 @@
           "phone": "902-585-1390",
           "profile_url": "https://cs.acadiau.ca/faculty/dbenoit.html",
           "profile_image_url": "https://cs.acadiau.ca/tl_files/sites/cs/resources/images/faculty/dbenoit2.jpg",
-          "research_areas": [
-            "Autonomic computing",
-            "DBMS performance",
-            "Distributed systems"
-          ],
+          "research_areas": ["Autonomic computing", "DBMS performance", "Distributed systems"],
           "office": "CAR 311",
           "description": "Director / Professor. Degrees: B.Sc. (St. F.X.), M.Sc. (Queen's), Ph.D. (Queen's). Research in autonomic computing, DBMS performance, and distributed systems. Mailing address: Jodrey School of Computer Science, 27 University Ave., Acadia University, Wolfville, NS B4P 2R6."
         },
@@ -2214,11 +2154,7 @@
           "phone": "902-585-1390",
           "profile_url": "https://cs.acadiau.ca/faculty/faculty/dbenoit.html",
           "profile_image_url": "https://cs.acadiau.ca/faculty/assets/images/3/dbenoit2-4a8cd85e.jpg",
-          "research_areas": [
-            "Autonomic computing",
-            "DBMS performance",
-            "Distributed systems"
-          ],
+          "research_areas": ["Autonomic computing", "DBMS performance", "Distributed systems"],
           "office": "CAR 311",
           "description": "Degrees: B.Sc. - St. F.X. University; M.Sc. - Queen's University; Ph.D. - Queen's University",
           "prefix": "COMP"
@@ -2280,11 +2216,7 @@
           "phone": "(902) 585-1240",
           "profile_url": "https://economics.acadiau.ca/andrew-davis.html",
           "profile_image_url": "https://economics.acadiau.ca/assets/images/6/Andrew%20Davis%20041%20copy-c5a8d8e4.jpg",
-          "research_areas": [
-            "Macroeconomics",
-            "Personal Finance",
-            "Job Search and Matching"
-          ],
+          "research_areas": ["Macroeconomics", "Personal Finance", "Job Search and Matching"],
           "office": "BAC 344",
           "description": "Office Location:BAC 344 Phone:(902) 585-1240 E-mail:andrew.davis@acadiau.ca Undergraduate:Memorial University, 2008 Master’s:University of Rochester, 2011 PhD:University of Rochester, 2014"
         },
@@ -2312,11 +2244,7 @@
           "phone": "(902) 585-1137",
           "profile_url": "https://economics.acadiau.ca/brian-vanBlarcom.html",
           "profile_image_url": "https://economics.acadiau.ca/assets/images/5/Brian%20VanBlarcom-9b0bd3a7.jpg",
-          "research_areas": [
-            "Tourism",
-            "Sports and Recreation",
-            "Financial Markets"
-          ],
+          "research_areas": ["Tourism", "Sports and Recreation", "Financial Markets"],
           "office": "BAC 342",
           "description": "Office Location:BAC 342 Phone:(902) 585-1137 E-mail:brian.vanblarcom@acadiau.ca Undergraduate:Acadia University, 1983 Master’s:Acadia University, 1985 PhD:Clemson University, 2001"
         },
@@ -2592,11 +2520,7 @@
           "phone": "902) 585-1268",
           "profile_url": "https://english.acadiau.ca/dr-wanda-campbell.html",
           "profile_image_url": "https://english.acadiau.ca/assets/images/4/Wanda%202014-88cd256e.jpg",
-          "research_areas": [
-            "Creative Writing",
-            "Writing by Women",
-            "Canadian Poetry"
-          ],
+          "research_areas": ["Creative Writing", "Writing by Women", "Canadian Poetry"],
           "office": "Beveridge Arts Centre 428",
           "description": "Professor and Creative Writing Coordinator. Author of the novel Hat Girl and five poetry collections (Kalamkari and Cordillera; Daedalus Had a Daughter; Grace; Looking for Lucy; Sky Fishing); editor of Bronwen Wallace: Essays on Her Work, Literature: A Pocket Anthology, and Hidden Rooms: Early Canadian Women Poets. Teaches and supervises creative writing; publications and articles in Canadian journals and anthologies."
         },
@@ -2893,9 +2817,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "",
-          "research_areas": [
-            "Composition: Collaborative Nursing Program (Yarmouth)"
-          ],
+          "research_areas": ["Composition: Collaborative Nursing Program (Yarmouth)"],
           "office": "",
           "description": ""
         },
@@ -3046,11 +2968,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "",
-          "research_areas": [
-            "Nineteenth-Century Poetry",
-            "Gender Studies",
-            "British Aestheticism"
-          ],
+          "research_areas": ["Nineteenth-Century Poetry", "Gender Studies", "British Aestheticism"],
           "office": "",
           "description": ""
         },
@@ -4264,9 +4182,7 @@
         "https://nutrition.acadiau.ca/faculty-and-staff/jennifer-brady.html",
         "https://nutrition.acadiau.ca/Liesel_Carlsson.html"
       ],
-      "warnings": [
-        "Name conflict kept as separate records: Dr. Jennifer Brady"
-      ],
+      "warnings": ["Name conflict kept as separate records: Dr. Jennifer Brady"],
       "professors": [
         {
           "prefix": "NUTR",
@@ -5707,12 +5623,7 @@
           "phone": "",
           "profile_url": "https://sociology.acadiau.ca/People/Department_of_Sociology_Faculty/jesse-carlson.html",
           "profile_image_url": "",
-          "research_areas": [
-            "Sociological Theory",
-            "Cultural Sociology",
-            "Morality",
-            "Friendship"
-          ],
+          "research_areas": ["Sociological Theory", "Cultural Sociology", "Morality", "Friendship"],
           "office": "",
           "description": "Jesse Carlson is an Assistant Professor in the Department of Sociology and faculty member of the Social & Political Thought graduate program at Acadia University. Areas of research and supervision interest include cultural sociology, sociology of morality, critical theory, practice theory, theories of friendship and solidarity, the sociology of music."
         },
@@ -5959,11 +5870,7 @@
           "phone": "902) 585-1102",
           "profile_url": "https://theatre.acadiau.ca/susan-barratt.html",
           "profile_image_url": "https://theatre.acadiau.ca/files/sites/english/2024-2025/Susan%20Barratt%203_2024.jpg",
-          "research_areas": [
-            "Somatics",
-            "Experiential Anatomy",
-            "Movement Design"
-          ],
+          "research_areas": ["Somatics", "Experiential Anatomy", "Movement Design"],
           "office": "BAC 438",
           "description": "Trained as a dancer (BA in English, BFA in Dance) and certified movement analyst (Laban-Bartenieff). Teaches Theatre Movement at Acadia since 2005; choreographer/movement consultant and practitioner/teacher in somatic methods."
         },
@@ -6212,10 +6119,7 @@
           "phone": "",
           "profile_url": "",
           "profile_image_url": "",
-          "research_areas": [
-            "reading and speech perception mechanisms",
-            "cognitive neuroscience"
-          ],
+          "research_areas": ["reading and speech perception mechanisms", "cognitive neuroscience"],
           "office": "",
           "description": "Randy Lynn Newman has research interests in the area of reading and speech perception mechanisms, cognitive neuroscience. Reading involves the coordination of several processes including the encoding of an orthographic representation, the assignment of phonology to written text, and the integration of these processes with semantic representations."
         },

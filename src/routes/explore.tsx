@@ -6,18 +6,11 @@ import { CourseView } from "@/components/explore/courses/course-view";
 import { ExploreDetailSheetHost } from "@/components/explore/details/explore-detail-sheet-host";
 import { FilterPanel } from "@/components/explore/filters/filter-panel";
 import { ScheduleView } from "@/components/explore/schedule/schedule-view";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { getOrCreateSessionId, getStoredTokenHash } from "@/hooks/use-auth";
 import { SchedulePreviewProvider } from "@/hooks/use-schedule-preview";
 import { parseDetailTarget } from "@/lib/explore-detail-sheet";
-import {
-  TIME_RANGE_MAX_MINUTES,
-  TIME_RANGE_MINUTES,
-} from "@/lib/explore-filter-constants";
+import { TIME_RANGE_MAX_MINUTES, TIME_RANGE_MINUTES } from "@/lib/explore-filter-constants";
 import {
   buildConvexFilters,
   courseSheetQuery,
@@ -123,9 +116,7 @@ export const SEARCH_DEFAULTS: ExploreSearchParams = {
   d: "",
 };
 
-export function withSearchDefaults(
-  prev: Partial<ExploreSearchParams>
-): ExploreSearchParams {
+export function withSearchDefaults(prev: Partial<ExploreSearchParams>): ExploreSearchParams {
   return { ...SEARCH_DEFAULTS, ...prev };
 }
 
@@ -164,30 +155,22 @@ export const Route = createFileRoute("/explore")({
           filters,
           courseCode: deps.cc || undefined,
           searchQuery: deps.q,
-        })
+        }),
       ),
-      context.queryClient.ensureQueryData(
-        validateSessionQuery(sessionId, tokenHash)
-      ),
+      context.queryClient.ensureQueryData(validateSessionQuery(sessionId, tokenHash)),
       context.queryClient.ensureQueryData(userDataQuery(sessionId, tokenHash)),
-      context.queryClient.ensureQueryData(
-        progressSearchCoursesQuery(sessionId, tokenHash)
-      ),
+      context.queryClient.ensureQueryData(progressSearchCoursesQuery(sessionId, tokenHash)),
     ];
 
     if (detailTarget?.kind === "course") {
       preloaders.push(
-        context.queryClient.ensureQueryData(
-          courseSheetQuery(detailTarget.courseCode)
-        )
+        context.queryClient.ensureQueryData(courseSheetQuery(detailTarget.courseCode)),
       );
     }
 
     if (detailTarget?.kind === "professor") {
       preloaders.push(
-        context.queryClient.ensureQueryData(
-          professorSheetQuery(detailTarget.professorExternalId)
-        )
+        context.queryClient.ensureQueryData(professorSheetQuery(detailTarget.professorExternalId)),
       );
     }
 

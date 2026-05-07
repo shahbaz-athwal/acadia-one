@@ -32,41 +32,41 @@ query TeacherSearchPaginationQuery(
 `;
 
 const TEACHER_RATINGS_PAGE_QUERY = gql`
-query TeacherRatingsPageQuery($id: ID!, $cursor: String) {
-  node(id: $id) {
-    __typename
-    ... on Teacher {
-      id
-      legacyId
-      ratings(first: 30, after: $cursor) {
-        edges {
-          node {
-            id
-            legacyId
-            date
-            class
-            helpfulRating
-            clarityRating
-            difficultyRating
-            comment
-            attendanceMandatory
-            wouldTakeAgain
-            grade
-            textbookUse
-            isForCredit
-            thumbsUpTotal
-            thumbsDownTotal
-            ratingTags
+  query TeacherRatingsPageQuery($id: ID!, $cursor: String) {
+    node(id: $id) {
+      __typename
+      ... on Teacher {
+        id
+        legacyId
+        ratings(first: 30, after: $cursor) {
+          edges {
+            node {
+              id
+              legacyId
+              date
+              class
+              helpfulRating
+              clarityRating
+              difficultyRating
+              comment
+              attendanceMandatory
+              wouldTakeAgain
+              grade
+              textbookUse
+              isForCredit
+              thumbsUpTotal
+              thumbsDownTotal
+              ratingTags
+            }
           }
-        }
-        pageInfo {
-          hasNextPage
-          endCursor
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
         }
       }
     }
   }
-}
 `;
 
 const SEARCH_SCHOOL_QUERY = gql`
@@ -97,22 +97,19 @@ const SEARCH_SCHOOL_QUERY = gql`
 `;
 
 const SCHOOL_DEPARTMENTS_QUERY = gql`
- query SchoolDepartments($schoolId: ID!) {
-  search: newSearch {
-    teachers(
-      query: { schoolID: $schoolId, fallback: false }
-      first: 1
-    ) {
-      filters {
-        field
-        options {
-          id
-          value
+  query SchoolDepartments($schoolId: ID!) {
+    search: newSearch {
+      teachers(query: { schoolID: $schoolId, fallback: false }, first: 1) {
+        filters {
+          field
+          options {
+            id
+            value
+          }
         }
       }
     }
   }
-}
 `;
 
 const TeacherNodeSchema = z.object({
@@ -129,7 +126,7 @@ const TeacherSearchResponseSchema = z.object({
       edges: z.array(
         z.object({
           node: TeacherNodeSchema,
-        })
+        }),
       ),
     }),
   }),
@@ -164,8 +161,7 @@ const RatingNodeSchema = z
     textBookRequired: raw.textbookUse === null ? null : raw.textbookUse === 1,
     attendanceRequired: raw.attendanceMandatory === "mandatory",
     gradeReceived: raw.grade,
-    wouldTakeAgain:
-      raw.wouldTakeAgain === null ? null : raw.wouldTakeAgain === 1,
+    wouldTakeAgain: raw.wouldTakeAgain === null ? null : raw.wouldTakeAgain === 1,
     thumbsUpTotal: raw.thumbsUpTotal,
     thumbsDownTotal: raw.thumbsDownTotal,
     tags: raw.ratingTags ? raw.ratingTags.split("--") : [],
@@ -187,7 +183,7 @@ const TeacherRatingsResponseSchema = z.object({
       edges: z.array(
         z.object({
           node: RatingNodeSchema,
-        })
+        }),
       ),
       pageInfo: PageInfoSchema,
     }),
@@ -210,9 +206,9 @@ const SchoolDepartmentsResponseSchema = z.object({
             z.object({
               id: z.string(),
               value: z.string(),
-            })
+            }),
           ),
-        })
+        }),
       ),
     }),
   }),
@@ -234,10 +230,10 @@ const SchoolSearchResponseSchema = z.object({
               z.object({
                 id: z.string(),
                 name: z.string(),
-              })
+              }),
             ),
           }),
-        })
+        }),
       ),
       pageInfo: z.object({
         hasNextPage: z.boolean(),
@@ -250,7 +246,7 @@ const SchoolSearchResponseSchema = z.object({
 export type TeacherNode = z.infer<typeof TeacherNodeSchema>;
 
 export async function collectPaginatedRatings<TRating>(
-  fetchPage: (cursor?: string) => Promise<TeacherRatingsPage<TRating>>
+  fetchPage: (cursor?: string) => Promise<TeacherRatingsPage<TRating>>,
 ) {
   const ratings: TRating[] = [];
   let cursor: string | undefined;
@@ -282,10 +278,7 @@ export class RateMyProfScraper {
     return RateMyProfScraper.instance;
   }
 
-  private async executeQuery(
-    query: string,
-    variables: Record<string, unknown>
-  ) {
+  private async executeQuery(query: string, variables: Record<string, unknown>) {
     const response = await this.client.request(query, variables);
     return response;
   }
@@ -327,12 +320,8 @@ export class RateMyProfScraper {
 
   async getDepartmentbySchoolId(schoolId: string) {
     const variables = { schoolId };
-    const response = await this.executeQuery(
-      SCHOOL_DEPARTMENTS_QUERY,
-      variables
-    );
-    return SchoolDepartmentsResponseSchema.parse(response).search.teachers
-      .filters[0]?.options;
+    const response = await this.executeQuery(SCHOOL_DEPARTMENTS_QUERY, variables);
+    return SchoolDepartmentsResponseSchema.parse(response).search.teachers.filters[0]?.options;
   }
 
   async searchTeachersBySchoolId(schoolId: string) {
@@ -349,18 +338,9 @@ export class RateMyProfScraper {
     return parsed.search.teachers.edges.map((edge) => edge.node);
   }
 
-  async getTeacherRatings({
-    teacherId,
-    cursor,
-  }: {
-    teacherId: string;
-    cursor?: string;
-  }) {
+  async getTeacherRatings({ teacherId, cursor }: { teacherId: string; cursor?: string }) {
     const variables = { id: teacherId, cursor };
-    const response = await this.executeQuery(
-      TEACHER_RATINGS_PAGE_QUERY,
-      variables
-    );
+    const response = await this.executeQuery(TEACHER_RATINGS_PAGE_QUERY, variables);
     const parsed = TeacherRatingsResponseSchema.parse(response);
     return {
       ratings: parsed.node.ratings.edges.map((edge) => edge.node),
@@ -369,9 +349,7 @@ export class RateMyProfScraper {
   }
 
   getAllTeacherRatings({ teacherId }: { teacherId: string }) {
-    return collectPaginatedRatings((cursor) =>
-      this.getTeacherRatings({ teacherId, cursor })
-    );
+    return collectPaginatedRatings((cursor) => this.getTeacherRatings({ teacherId, cursor }));
   }
 }
 

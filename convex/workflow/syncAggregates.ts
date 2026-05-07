@@ -26,9 +26,7 @@ export const syncAggregateDocuments = internalAction({
       });
     }
 
-    const professorIds = await ctx.runQuery(
-      internal.internal.listAllProfessorIds
-    );
+    const professorIds = await ctx.runQuery(internal.internal.listAllProfessorIds);
     for (const professorId of professorIds) {
       await ctx.runMutation(internal.internal.recomputeProfessorAggregates, {
         professorId,

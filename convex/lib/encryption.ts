@@ -11,11 +11,7 @@ import crypto from "node:crypto";
  * @returns Encrypted string in format: ${iv}:${authTag}:${encryptedData} (hex encoded)
  * @throws Error if encryption fails
  */
-export function encryptCredentials(
-  username: string,
-  password: string,
-  token: string
-): string {
+export function encryptCredentials(username: string, password: string, token: string): string {
   try {
     // Create the plaintext JSON object
     const plaintext = JSON.stringify({ username, password });
@@ -40,7 +36,7 @@ export function encryptCredentials(
     return `${iv.toString("hex")}:${authTag.toString("hex")}:${encrypted}`;
   } catch (error) {
     throw new Error(
-      `Encryption failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Encryption failed: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }
@@ -55,7 +51,7 @@ export function encryptCredentials(
  */
 export function decryptCredentials(
   encryptedString: string,
-  token: string
+  token: string,
 ): { username: string; password: string } {
   try {
     // Split the encrypted string to extract components
@@ -90,7 +86,7 @@ export function decryptCredentials(
     return credentials;
   } catch (error) {
     throw new Error(
-      `Decryption failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      `Decryption failed: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
   }
 }

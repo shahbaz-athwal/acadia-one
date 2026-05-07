@@ -92,7 +92,7 @@ const TrendingUpIcon = forwardRef<TrendingUpIconHandle, TrendingUpIconProps>(
           controls.start("animate");
         }
       },
-      [controls, onMouseEnter]
+      [controls, onMouseEnter],
     );
 
     const handleMouseLeave = useCallback(
@@ -103,7 +103,7 @@ const TrendingUpIcon = forwardRef<TrendingUpIconHandle, TrendingUpIconProps>(
           controls.start("normal");
         }
       },
-      [controls, onMouseLeave]
+      [controls, onMouseLeave],
     );
 
     return (
@@ -142,7 +142,7 @@ const TrendingUpIcon = forwardRef<TrendingUpIconHandle, TrendingUpIconProps>(
         </motion.svg>
       </div>
     );
-  }
+  },
 );
 
 TrendingUpIcon.displayName = "TrendingUpIcon";

@@ -1,10 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { asyncMap } from "convex-helpers";
-import {
-  getManyFrom,
-  getManyVia,
-  getOneFrom,
-} from "convex-helpers/server/relationships";
+import { getManyFrom, getManyVia, getOneFrom } from "convex-helpers/server/relationships";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
 import { query } from "./_generated/server";
@@ -40,10 +36,7 @@ function combineRequisiteText(base: string, extension?: string): string {
   return extensionText ? `${baseText} ${extensionText}`.trim() : baseText;
 }
 
-function normalizeTimeRange(
-  startRaw?: number,
-  endRaw?: number
-): TimeRange | null {
+function normalizeTimeRange(startRaw?: number, endRaw?: number): TimeRange | null {
   if (
     typeof startRaw !== "number" ||
     Number.isNaN(startRaw) ||
@@ -73,7 +66,7 @@ async function resolveFilters(
       timeEnd?: number;
     };
     searchQuery?: string;
-  }
+  },
 ): Promise<ResolvedFilters> {
   const raw = args.filters;
   const rsgKeys = raw?.rsgKeys ?? [];
@@ -82,7 +75,7 @@ async function resolveFilters(
   const professorExternalIds = raw?.professorExternalIds;
   if (professorExternalIds && professorExternalIds.length > 0) {
     const resolved = await asyncMap(professorExternalIds, (extId) =>
-      getOneFrom(ctx.db, "professors", "by_externalId", extId)
+      getOneFrom(ctx.db, "professors", "by_externalId", extId),
     );
     professorIds = resolved
       .filter((prof): prof is NonNullable<typeof prof> => !!prof)
@@ -91,9 +84,7 @@ async function resolveFilters(
 
   const rsgCourseCodeSet = new Set<string>();
   if (rsgKeys.length > 0) {
-    const entries = await asyncMap(rsgKeys, (key) =>
-      getOneFrom(ctx.db, "rsg", "by_key", key)
-    );
+    const entries = await asyncMap(rsgKeys, (key) => getOneFrom(ctx.db, "rsg", "by_key", key));
     for (const entry of entries) {
       if (!entry) {
         continue;
@@ -112,9 +103,7 @@ async function resolveFilters(
     termCodes: raw?.termCodes ?? [],
     professorIds,
     days: raw?.days ?? [],
-    academicLevels: [...new Set(raw?.academicLevels ?? [])].sort(
-      (a, b) => a - b
-    ),
+    academicLevels: [...new Set(raw?.academicLevels ?? [])].sort((a, b) => a - b),
     timeRange: normalizeTimeRange(raw?.timeStart, raw?.timeEnd),
   };
 }
@@ -133,10 +122,7 @@ function hasAnyActiveFilter(filters: ResolvedFilters): boolean {
   );
 }
 
-async function collectCourses(
-  ctx: QueryCtx,
-  filters: ResolvedFilters
-): Promise<CourseDoc[]> {
+async function collectCourses(ctx: QueryCtx, filters: ResolvedFilters): Promise<CourseDoc[]> {
   if (filters.courseCode) {
     return await collectByCourseCodes(ctx, [filters.courseCode]);
   }
@@ -170,25 +156,16 @@ async function collectCourses(
   return await ctx.db.query("courses").withIndex("by_code").collect();
 }
 
-async function collectByCourseCodes(
-  ctx: QueryCtx,
-  courseCodes: string[]
-): Promise<CourseDoc[]> {
+async function collectByCourseCodes(ctx: QueryCtx, courseCodes: string[]): Promise<CourseDoc[]> {
   const courses = await asyncMap(courseCodes, (courseCode) =>
-    getOneFrom(ctx.db, "courses", "by_code", courseCode)
+    getOneFrom(ctx.db, "courses", "by_code", courseCode),
   );
-  return courses.filter(
-    (course): course is NonNullable<typeof course> => !!course
-  );
+  return courses.filter((course): course is NonNullable<typeof course> => !!course);
 }
 
-async function collectViaSearch(
-  ctx: QueryCtx,
-  filters: ResolvedFilters
-): Promise<CourseDoc[]> {
+async function collectViaSearch(ctx: QueryCtx, filters: ResolvedFilters): Promise<CourseDoc[]> {
   const { searchQuery, departmentPrefixes } = filters;
-  const singleDept =
-    departmentPrefixes.length === 1 ? departmentPrefixes[0] : undefined;
+  const singleDept = departmentPrefixes.length === 1 ? departmentPrefixes[0] : undefined;
 
   let results = await ctx.db
     .query("courses")
@@ -209,7 +186,7 @@ async function collectViaSearch(
 
 async function collectUnfiltered(
   ctx: QueryCtx,
-  pagination: { page: number; pageSize: number }
+  pagination: { page: number; pageSize: number },
 ): Promise<{ courses: CourseDoc[]; totalCount: number }> {
   const start = (pagination.page - 1) * pagination.pageSize;
 
@@ -236,10 +213,10 @@ async function collectUnfiltered(
 
 async function collectByDepartment(
   ctx: QueryCtx,
-  departmentPrefixes: string[]
+  departmentPrefixes: string[],
 ): Promise<CourseDoc[]> {
   const perDept = await asyncMap(departmentPrefixes, (prefix) =>
-    getManyFrom(ctx.db, "courses", "by_departmentPrefix", prefix)
+    getManyFrom(ctx.db, "courses", "by_departmentPrefix", prefix),
   );
 
   return perDept.flat().sort((a, b) => a.code.localeCompare(b.code));
@@ -247,17 +224,17 @@ async function collectByDepartment(
 
 async function collectByAcademicLevel(
   ctx: QueryCtx,
-  academicLevels: number[]
+  academicLevels: number[],
 ): Promise<CourseDoc[]> {
   const perLevel = await asyncMap(academicLevels, (academicLevel) =>
-    getManyFrom(ctx.db, "courses", "by_academicLevel", academicLevel)
+    getManyFrom(ctx.db, "courses", "by_academicLevel", academicLevel),
   );
   return perLevel.flat().sort((a, b) => a.code.localeCompare(b.code));
 }
 
 async function collectByProfessor(
   ctx: QueryCtx,
-  professorIds: Id<"professors">[]
+  professorIds: Id<"professors">[],
 ): Promise<CourseDoc[]> {
   const courseIdSet = new Set<string>();
   const courseDocs: CourseDoc[] = [];
@@ -268,7 +245,7 @@ async function collectByProfessor(
       "courseProfessors",
       "courseId",
       "by_professorId",
-      profId
+      profId,
     );
 
     for (const course of courses) {
@@ -294,7 +271,7 @@ function hasActiveSectionFilters(filters: ResolvedFilters): boolean {
 
 async function collectCourseIdsByTimeRange(
   ctx: QueryCtx,
-  filters: ResolvedFilters
+  filters: ResolvedFilters,
 ): Promise<Set<Id<"courses">> | null> {
   const timeRange = filters.timeRange;
   if (!timeRange) {
@@ -308,29 +285,22 @@ async function collectCourseIdsByTimeRange(
             ctx.db
               .query("sections")
               .withIndex("by_termCode_and_classStartMin", (q) =>
-                q.eq("termCode", termCode).lt("classStartMin", timeRange.end)
+                q.eq("termCode", termCode).lt("classStartMin", timeRange.end),
               )
-              .collect()
+              .collect(),
           )
         ).flat()
       : await ctx.db
           .query("sections")
-          .withIndex("by_classStartMin", (q) =>
-            q.lt("classStartMin", timeRange.end)
-          )
+          .withIndex("by_classStartMin", (q) => q.lt("classStartMin", timeRange.end))
           .collect();
 
   const courseIdSet = new Set<Id<"courses">>();
   for (const section of sectionDocs) {
-    if (
-      typeof section.classStartMin !== "number" ||
-      typeof section.classEndMin !== "number"
-    ) {
+    if (typeof section.classStartMin !== "number" || typeof section.classEndMin !== "number") {
       continue;
     }
-    const overlaps =
-      section.classStartMin < timeRange.end &&
-      section.classEndMin > timeRange.start;
+    const overlaps = section.classStartMin < timeRange.end && section.classEndMin > timeRange.start;
     if (overlaps) {
       courseIdSet.add(section.courseId);
     }
@@ -342,7 +312,7 @@ async function collectCourseIdsByTimeRange(
 async function applyCourseFilters(
   ctx: QueryCtx,
   courses: CourseDoc[],
-  filters: ResolvedFilters
+  filters: ResolvedFilters,
 ): Promise<CourseDoc[]> {
   if (courses.length === 0) {
     return courses;
@@ -351,39 +321,26 @@ async function applyCourseFilters(
   const academicLevelSet =
     filters.academicLevels.length > 0 ? new Set(filters.academicLevels) : null;
   const departmentPrefixSet =
-    filters.departmentPrefixes.length > 0
-      ? new Set(filters.departmentPrefixes)
-      : null;
+    filters.departmentPrefixes.length > 0 ? new Set(filters.departmentPrefixes) : null;
   const hasSectionFilters = hasActiveSectionFilters(filters);
   const termSet =
-    hasSectionFilters && filters.termCodes.length > 0
-      ? new Set(filters.termCodes)
-      : null;
+    hasSectionFilters && filters.termCodes.length > 0 ? new Set(filters.termCodes) : null;
   const profSet =
-    hasSectionFilters && filters.professorIds.length > 0
-      ? new Set(filters.professorIds)
-      : null;
-  const daySet =
-    hasSectionFilters && filters.days.length > 0 ? new Set(filters.days) : null;
+    hasSectionFilters && filters.professorIds.length > 0 ? new Set(filters.professorIds) : null;
+  const daySet = hasSectionFilters && filters.days.length > 0 ? new Set(filters.days) : null;
   const timeCourseIdSet = hasSectionFilters
     ? await collectCourseIdsByTimeRange(ctx, filters)
     : null;
 
   return courses
     .filter((course) => {
-      if (
-        departmentPrefixSet &&
-        !departmentPrefixSet.has(course.departmentPrefix)
-      ) {
+      if (departmentPrefixSet && !departmentPrefixSet.has(course.departmentPrefix)) {
         return false;
       }
       if (termSet && !course.sectionTermCodes?.some((tc) => termSet.has(tc))) {
         return false;
       }
-      if (
-        profSet &&
-        !course.sectionProfessorIds?.some((pid) => profSet.has(pid))
-      ) {
+      if (profSet && !course.sectionProfessorIds?.some((pid) => profSet.has(pid))) {
         return false;
       }
       if (daySet && !course.sectionDays?.some((d) => daySet.has(d))) {
@@ -407,16 +364,13 @@ function sectionMatchesFilters(
     termSet: Set<string> | null;
     profSet: Set<Id<"professors">> | null;
     daySet: Set<number> | null;
-  }
+  },
 ) {
   if (sets.termSet && !sets.termSet.has(section.termCode)) {
     return false;
   }
 
-  if (
-    sets.profSet &&
-    !(section.professorId && sets.profSet.has(section.professorId))
-  ) {
+  if (sets.profSet && !(section.professorId && sets.profSet.has(section.professorId))) {
     return false;
   }
 
@@ -426,10 +380,7 @@ function sectionMatchesFilters(
   }
 
   if (filters.timeRange) {
-    if (
-      typeof section.classStartMin !== "number" ||
-      typeof section.classEndMin !== "number"
-    ) {
+    if (typeof section.classStartMin !== "number" || typeof section.classEndMin !== "number") {
       return false;
     }
 
@@ -448,16 +399,14 @@ function sectionMatchesFilters(
 async function attachMatchingSections(
   ctx: QueryCtx,
   courses: CourseDoc[],
-  filters: ResolvedFilters
+  filters: ResolvedFilters,
 ): Promise<CourseWithSections[]> {
   if (courses.length === 0) {
     return [];
   }
 
-  const termSet =
-    filters.termCodes.length > 0 ? new Set(filters.termCodes) : null;
-  const profSet =
-    filters.professorIds.length > 0 ? new Set(filters.professorIds) : null;
+  const termSet = filters.termCodes.length > 0 ? new Set(filters.termCodes) : null;
+  const profSet = filters.professorIds.length > 0 ? new Set(filters.professorIds) : null;
   const daySet = filters.days.length > 0 ? new Set(filters.days) : null;
   const hasSectionFilters = hasActiveSectionFilters(filters);
 
@@ -469,7 +418,7 @@ async function attachMatchingSections(
 
     const matchingSections = hasSectionFilters
       ? sections.filter((section) =>
-          sectionMatchesFilters(section, filters, { termSet, profSet, daySet })
+          sectionMatchesFilters(section, filters, { termSet, profSet, daySet }),
         )
       : sections;
 
@@ -479,27 +428,19 @@ async function attachMatchingSections(
 
     return {
       course,
-      sections: matchingSections.sort((a, b) =>
-        a.sectionCode.localeCompare(b.sectionCode)
-      ),
+      sections: matchingSections.sort((a, b) => a.sectionCode.localeCompare(b.sectionCode)),
     };
   });
 
   return matches.filter((match): match is NonNullable<typeof match> => !!match);
 }
 
-function paginate<T>(
-  items: T[],
-  pagination: { page: number; pageSize: number }
-): T[] {
+function paginate<T>(items: T[], pagination: { page: number; pageSize: number }): T[] {
   const start = (pagination.page - 1) * pagination.pageSize;
   return items.slice(start, start + pagination.pageSize);
 }
 
-async function enrichWithSections(
-  ctx: QueryCtx,
-  courses: CourseWithSections[]
-) {
+async function enrichWithSections(ctx: QueryCtx, courses: CourseWithSections[]) {
   const requisiteCodes = new Set<string>();
   for (const { course } of courses) {
     for (const requisite of course.requisites ?? []) {
@@ -514,43 +455,35 @@ async function enrichWithSections(
     async (code): Promise<[string, Doc<"courses"> | null]> => [
       code,
       await getOneFrom(ctx.db, "courses", "by_code", code),
-    ]
+    ],
   );
-  const requisiteCourseByCode = new Map<string, Doc<"courses"> | null>(
-    requisiteCourseEntries
-  );
+  const requisiteCourseByCode = new Map<string, Doc<"courses"> | null>(requisiteCourseEntries);
 
   return await asyncMap(courses, async ({ course, sections }) => {
     const sectionProfessorIds = Array.from(
       new Set(
         sections
           .map((section) => section.professorId)
-          .filter((id): id is NonNullable<typeof id> => !!id)
-      )
+          .filter((id): id is NonNullable<typeof id> => !!id),
+      ),
     );
 
     const professors = await asyncMap(sectionProfessorIds, (professorId) =>
-      ctx.db.get(professorId)
+      ctx.db.get(professorId),
     );
 
     const professorById = new Map(
       professors
-        .filter(
-          (professor): professor is NonNullable<typeof professor> => !!professor
-        )
-        .map((professor) => [professor._id, professor])
+        .filter((professor): professor is NonNullable<typeof professor> => !!professor)
+        .map((professor) => [professor._id, professor]),
     );
 
     const requisites = (course.requisites ?? [])
       .map((requisite) => {
-        const text = combineRequisiteText(
-          requisite.displayText,
-          requisite.displayTextExtension
-        );
+        const text = combineRequisiteText(requisite.displayText, requisite.displayTextExtension);
         const annotatedText = combineRequisiteText(
           requisite.displayTextAnnotated,
-          requisite.displayTextExtensionAnnotated ??
-            requisite.displayTextExtension
+          requisite.displayTextExtensionAnnotated ?? requisite.displayTextExtension,
         );
 
         return {
@@ -582,17 +515,14 @@ async function enrichWithSections(
       requisites,
       sections: sections
         .map((section) => {
-          const professor = section.professorId
-            ? professorById.get(section.professorId)
-            : null;
+          const professor = section.professorId ? professorById.get(section.professorId) : null;
           return {
             _id: section._id,
             id: section.externalId,
             termCode: section.termCode,
             sectionCode: section.sectionCode,
             professorName:
-              professor?.name ??
-              (section.instructorTBD ? "TBD" : "Unknown Instructor"),
+              professor?.name ?? (section.instructorTBD ? "TBD" : "Unknown Instructor"),
             professorExternalId: professor?.externalId,
             professorImageUrl: professor?.imageUrl,
             professorAvgQuality: professor?.avgQuality ?? null,
@@ -626,7 +556,7 @@ export const listForExplore = query({
         academicLevels: v.optional(v.array(v.number())),
         timeStart: v.optional(v.number()),
         timeEnd: v.optional(v.number()),
-      })
+      }),
     ),
     searchQuery: v.optional(v.string()),
   },
@@ -638,24 +568,17 @@ export const listForExplore = query({
     const filters = await resolveFilters(ctx, args);
 
     if (!hasAnyActiveFilter(filters)) {
-      const { courses, totalCount } = await collectUnfiltered(
-        ctx,
-        paginationOptions
-      );
+      const { courses, totalCount } = await collectUnfiltered(ctx, paginationOptions);
       const page = await enrichWithSections(
         ctx,
-        await attachMatchingSections(ctx, courses, filters)
+        await attachMatchingSections(ctx, courses, filters),
       );
       return { page, totalCount };
     }
 
     const courses = await collectCourses(ctx, filters);
     const filteredCourses = await applyCourseFilters(ctx, courses, filters);
-    const coursesWithSections = await attachMatchingSections(
-      ctx,
-      filteredCourses,
-      filters
-    );
+    const coursesWithSections = await attachMatchingSections(ctx, filteredCourses, filters);
     const totalCount = coursesWithSections.length;
     const pageCourses = paginate(coursesWithSections, paginationOptions);
     const page = await enrichWithSections(ctx, pageCourses);
@@ -682,15 +605,10 @@ export const getSheetByCode = query({
       avgDifficulty: v.union(v.number(), v.null()),
       avgQuality: v.union(v.number(), v.null()),
     }),
-    v.null()
+    v.null(),
   ),
   handler: async (ctx, args) => {
-    const course = await getOneFrom(
-      ctx.db,
-      "courses",
-      "by_code",
-      args.code.trim().toUpperCase()
-    );
+    const course = await getOneFrom(ctx.db, "courses", "by_code", args.code.trim().toUpperCase());
 
     if (!course) {
       return null;

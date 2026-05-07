@@ -1,5 +1,5 @@
 export function getExistingRatingLookup(
-  rating: { rmpId?: string; rmpLegacyId?: number } | null | undefined
+  rating: { rmpId?: string; rmpLegacyId?: number } | null | undefined,
 ) {
   if (rating?.rmpId) {
     return {

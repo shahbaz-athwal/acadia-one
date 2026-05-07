@@ -23,10 +23,7 @@ export interface CourseStatusMeta {
   variant: BadgeVariant;
 }
 
-export const COURSE_STATUS_META: Record<
-  CoursePlanningStatus,
-  CourseStatusMeta
-> = {
+export const COURSE_STATUS_META: Record<CoursePlanningStatus, CourseStatusMeta> = {
   completed: {
     icon: CheckIcon,
     label: "Completed",
@@ -67,7 +64,7 @@ export const NOT_COMPLETED_STATUS_META: CourseStatusMeta = {
 };
 
 export function buildCourseStatusByCode(
-  userData: Doc<"acadiaUserData"> | null | undefined
+  userData: Doc<"acadiaUserData"> | null | undefined,
 ): Map<string, CoursePlanningStatus> {
   return new Map(Object.entries(userData?.coursePlanningStatuses ?? {}));
 }

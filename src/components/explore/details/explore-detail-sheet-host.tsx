@@ -76,16 +76,13 @@ function formatPostedAt(value: number) {
 }
 
 export function ExploreDetailSheetHost() {
-  const { close, isOpen, rawDetail, replaceDetail, target } =
-    useExploreDetailSheet();
+  const { close, isOpen, rawDetail, replaceDetail, target } = useExploreDetailSheet();
   const courseQuery = useQuery({
     ...courseSheetQuery(target?.kind === "course" ? target.courseCode : ""),
     enabled: target?.kind === "course",
   });
   const professorQuery = useQuery({
-    ...professorSheetQuery(
-      target?.kind === "professor" ? target.professorExternalId : ""
-    ),
+    ...professorSheetQuery(target?.kind === "professor" ? target.professorExternalId : ""),
     enabled: target?.kind === "professor",
   });
 
@@ -115,10 +112,7 @@ export function ExploreDetailSheetHost() {
       open={isOpen}
     >
       {target ? (
-        <SheetPopup
-          className="w-[min(36rem,calc(100%-3rem))] max-w-none"
-          side="right"
-        >
+        <SheetPopup className="w-[min(36rem,calc(100%-3rem))] max-w-none" side="right">
           {target.kind === "course" ? (
             <CourseDetailSheetBody
               courseCode={target.courseCode}
@@ -154,17 +148,12 @@ function CourseDetailSheetBody({
       <SheetHeader>
         <SheetTitle>{title}</SheetTitle>
         <SheetDescription>
-          {isLoading
-            ? "Loading course details."
-            : "Course details are coming soon."}
+          {isLoading ? "Loading course details." : "Course details are coming soon."}
         </SheetDescription>
       </SheetHeader>
       <SheetPanel className="space-y-3">
         {isLoading || data ? (
-          <SheetStateMessage
-            description="Course details coming soon."
-            title="Placeholder"
-          />
+          <SheetStateMessage description="Course details coming soon." title="Placeholder" />
         ) : (
           <SheetStateMessage
             description="We couldn't find a course for this URL."
@@ -189,12 +178,7 @@ function ProfessorDetailSheetBody({
   let body: React.ReactNode;
 
   if (isLoading) {
-    body = (
-      <SheetStateMessage
-        description="Professor details are loading."
-        title="Loading"
-      />
-    );
+    body = <SheetStateMessage description="Professor details are loading." title="Loading" />;
   } else if (data) {
     body = <ProfessorProfileContent data={data} />;
   } else {
@@ -233,21 +217,15 @@ function ProfessorDetailSheetBody({
 }
 
 function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
-  const visibleRatings = data.ratings.filter(
-    (rating) => !!rating.comment?.trim()
-  );
+  const visibleRatings = data.ratings.filter((rating) => !!rating.comment?.trim());
 
   return (
     <>
       <section className="space-y-2">
         <div className="flex items-start gap-3">
           <Avatar className="size-28 shrink-0 rounded-xl bg-muted/40 text-base">
-            {data.imageUrl ? (
-              <AvatarImage alt={data.name} src={data.imageUrl} />
-            ) : null}
-            <AvatarFallback className="rounded-xl">
-              {getInitials(data.name)}
-            </AvatarFallback>
+            {data.imageUrl ? <AvatarImage alt={data.name} src={data.imageUrl} /> : null}
+            <AvatarFallback className="rounded-xl">{getInitials(data.name)}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1 space-y-1 pt-0.5">
             <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
@@ -256,15 +234,11 @@ function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
             </div>
             <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
               <GraduationCapIcon className="size-4 shrink-0" />
-              <span className="truncate leading-tight">
-                {data.designation ?? "-"}
-              </span>
+              <span className="truncate leading-tight">{data.designation ?? "-"}</span>
             </div>
             <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
               <MapPinIcon className="size-4 shrink-0" />
-              <span className="truncate leading-tight">
-                {data.officeLocation ?? "-"}
-              </span>
+              <span className="truncate leading-tight">{data.officeLocation ?? "-"}</span>
             </div>
             <ProfessorInfoItem
               href={data.email ? `mailto:${data.email}` : undefined}
@@ -298,18 +272,9 @@ function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
           <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3 pb-1">
             <h3 className="font-semibold text-xl leading-none">Ratings</h3>
             <div className="flex flex-wrap items-baseline justify-end gap-x-4 gap-y-1 text-sm">
-              <AggregateMetric
-                label="Quality"
-                value={formatAverageScore(data.avgQuality)}
-              />
-              <AggregateMetric
-                label="Difficulty"
-                value={formatAverageScore(data.avgDifficulty)}
-              />
-              <AggregateMetric
-                label="Reviews"
-                value={String(data.ratingCount)}
-              />
+              <AggregateMetric label="Quality" value={formatAverageScore(data.avgQuality)} />
+              <AggregateMetric label="Difficulty" value={formatAverageScore(data.avgDifficulty)} />
+              <AggregateMetric label="Reviews" value={String(data.ratingCount)} />
             </div>
           </div>
 
@@ -323,9 +288,7 @@ function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
               ))}
             </div>
           ) : (
-            <p className="text-muted-foreground text-sm">
-              No written comments yet.
-            </p>
+            <p className="text-muted-foreground text-sm">No written comments yet.</p>
           )}
         </section>
       ) : null}
@@ -336,19 +299,13 @@ function ProfessorProfileContent({ data }: { data: ProfessorSheetData }) {
 function AggregateMetric({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline gap-1.5 text-right">
-      <span className="text-[11px] text-muted-foreground uppercase tracking-[0.08em]">
-        {label}
-      </span>
+      <span className="text-[11px] text-muted-foreground uppercase tracking-[0.08em]">{label}</span>
       <span className="font-semibold text-base leading-none">{value}</span>
     </div>
   );
 }
 
-function ProfessorRatingCard({
-  rating,
-}: {
-  rating: ProfessorSheetData["ratings"][number];
-}) {
+function ProfessorRatingCard({ rating }: { rating: ProfessorSheetData["ratings"][number] }) {
   return (
     <article className="space-y-1.5 rounded-xl border bg-muted/20 p-3">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-muted-foreground text-xs">
@@ -395,13 +352,7 @@ function ProfessorInfoItem({
   return <div className="flex min-w-0 items-start gap-1.5">{content}</div>;
 }
 
-function SheetStateMessage({
-  description,
-  title,
-}: {
-  description: string;
-  title: string;
-}) {
+function SheetStateMessage({ description, title }: { description: string; title: string }) {
   return (
     <div className="rounded-xl border bg-muted/30 p-4">
       <div className="font-medium text-sm">{title}</div>

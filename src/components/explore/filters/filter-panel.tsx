@@ -15,10 +15,7 @@ export function FilterPanel() {
     filters.professorExternalIds.length +
     filters.days.length +
     filters.academicLevels.length +
-    (filters.timeStart !== SEARCH_DEFAULTS.ts ||
-    filters.timeEnd !== SEARCH_DEFAULTS.te
-      ? 1
-      : 0);
+    (filters.timeStart !== SEARCH_DEFAULTS.ts || filters.timeEnd !== SEARCH_DEFAULTS.te ? 1 : 0);
 
   const panelTabs: TabItem[] = [
     {

@@ -87,11 +87,7 @@ export function SignInDialog({ open, onOpenChange }: SignInDialogProps) {
           </DialogPanel>
 
           <DialogFooter>
-            <Button
-              onClick={() => handleOpenChange(false)}
-              type="button"
-              variant="outline"
-            >
+            <Button onClick={() => handleOpenChange(false)} type="button" variant="outline">
               Cancel
             </Button>
             <Button disabled={isLoading} type="submit">

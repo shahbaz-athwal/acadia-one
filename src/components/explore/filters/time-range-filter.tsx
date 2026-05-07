@@ -15,10 +15,7 @@ function formatTimeWithHourPadding(minutes: number): string {
 
 export function TimeRangeFilter() {
   const { filters, setTimeRange } = useExploreFilters();
-  const [range, setRange] = useState<[number, number]>([
-    filters.timeStart,
-    filters.timeEnd,
-  ]);
+  const [range, setRange] = useState<[number, number]>([filters.timeStart, filters.timeEnd]);
 
   useEffect(() => {
     setRange([filters.timeStart, filters.timeEnd]);
@@ -27,8 +24,7 @@ export function TimeRangeFilter() {
   return (
     <div className="flex flex-col gap-2">
       <div className="text-muted-foreground text-xs">
-        {formatTimeWithHourPadding(range[0])} -{" "}
-        {formatTimeWithHourPadding(range[1])}
+        {formatTimeWithHourPadding(range[0])} - {formatTimeWithHourPadding(range[1])}
       </div>
       <Slider
         max={TIME_RANGE_MAX_MINUTES}
@@ -37,19 +33,13 @@ export function TimeRangeFilter() {
           if (!Array.isArray(next) || next.length !== 2) {
             return;
           }
-          setRange([
-            next[0] ?? TIME_RANGE_MINUTES,
-            next[1] ?? TIME_RANGE_MAX_MINUTES,
-          ]);
+          setRange([next[0] ?? TIME_RANGE_MINUTES, next[1] ?? TIME_RANGE_MAX_MINUTES]);
         }}
         onValueCommitted={(next) => {
           if (!Array.isArray(next) || next.length !== 2) {
             return;
           }
-          setTimeRange([
-            next[0] ?? TIME_RANGE_MINUTES,
-            next[1] ?? TIME_RANGE_MAX_MINUTES,
-          ]);
+          setTimeRange([next[0] ?? TIME_RANGE_MINUTES, next[1] ?? TIME_RANGE_MAX_MINUTES]);
         }}
         step={TIME_RANGE_STEP_MINUTES}
         value={range}

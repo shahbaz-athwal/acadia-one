@@ -6,11 +6,7 @@ import {
   NOT_COMPLETED_STATUS_META,
 } from "@/components/explore/courses/course-status";
 import { Badge } from "@/components/ui/badge";
-import {
-  PreviewCard,
-  PreviewCardPopup,
-  PreviewCardTrigger,
-} from "@/components/ui/preview-card";
+import { PreviewCard, PreviewCardPopup, PreviewCardTrigger } from "@/components/ui/preview-card";
 import { cn } from "@/lib/utils";
 
 const COURSE_TOKEN_REGEX = /\[\[course:([^|\]]+)\|([^\]]+)\]\]/g;
@@ -70,9 +66,7 @@ function parseAnnotatedText(annotatedText: string): AnnotatedSegment[] {
     });
   }
 
-  return segments.length > 0
-    ? segments
-    : [{ type: "text", value: annotatedText }];
+  return segments.length > 0 ? segments : [{ type: "text", value: annotatedText }];
 }
 
 function RequisiteCoursePreview(props: {
@@ -83,9 +77,7 @@ function RequisiteCoursePreview(props: {
 }) {
   let statusMeta: CourseStatusMeta | null = null;
   if (props.showStatuses) {
-    statusMeta = props.status
-      ? COURSE_STATUS_META[props.status]
-      : NOT_COMPLETED_STATUS_META;
+    statusMeta = props.status ? COURSE_STATUS_META[props.status] : NOT_COMPLETED_STATUS_META;
   }
   const StatusIcon = statusMeta?.icon;
 
@@ -96,7 +88,7 @@ function RequisiteCoursePreview(props: {
         render={
           <span
             className={cn(
-              "inline rounded-sm underline decoration-dotted underline-offset-2 transition-colors hover:text-foreground"
+              "inline rounded-sm underline decoration-dotted underline-offset-2 transition-colors hover:text-foreground",
             )}
           >
             {props.triggerLabel}
@@ -106,9 +98,7 @@ function RequisiteCoursePreview(props: {
       <PreviewCardPopup className="w-80 flex-col gap-3 text-wrap p-3 text-left">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="font-semibold text-sm leading-tight">
-              {props.course.code}
-            </div>
+            <div className="font-semibold text-sm leading-tight">{props.course.code}</div>
             {props.course.title ? (
               <div className="mt-1 text-muted-foreground text-xs leading-snug">
                 {props.course.title}
@@ -136,12 +126,9 @@ export function CourseRequisites({
   const lookupByRequisiteIndex = useMemo(
     () =>
       requisites.map(
-        (requisite) =>
-          new Map(
-            requisite.linkedCourses.map((course) => [course.code, course])
-          )
+        (requisite) => new Map(requisite.linkedCourses.map((course) => [course.code, course])),
       ),
-    [requisites]
+    [requisites],
   );
 
   if (requisites.length === 0) {
@@ -149,9 +136,7 @@ export function CourseRequisites({
   }
 
   return (
-    <div
-      className={cn("mt-1 min-w-0 gap-1.5 text-muted-foreground", className)}
-    >
+    <div className={cn("mt-1 min-w-0 gap-1.5 text-muted-foreground", className)}>
       <div className="font-medium">Requisites:</div>
       <div className="min-w-0 space-y-1">
         {requisites.map((requisite, requisiteIndex) => {

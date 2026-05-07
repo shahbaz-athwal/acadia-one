@@ -22,7 +22,7 @@ export const addSection = mutation({
     const existing = await ctx.db
       .query("scheduleItems")
       .withIndex("by_sessionId_and_sectionId", (q) =>
-        q.eq("sessionId", args.sessionId).eq("sectionId", args.sectionId)
+        q.eq("sessionId", args.sessionId).eq("sectionId", args.sectionId),
       )
       .first();
 
@@ -51,7 +51,7 @@ export const removeSection = mutation({
     const item = await ctx.db
       .query("scheduleItems")
       .withIndex("by_sessionId_and_sectionId", (q) =>
-        q.eq("sessionId", args.sessionId).eq("sectionId", args.sectionId)
+        q.eq("sessionId", args.sessionId).eq("sectionId", args.sectionId),
       )
       .first();
 
@@ -102,9 +102,7 @@ export const get = query({
           return null;
         }
 
-        const professor = section.professorId
-          ? await ctx.db.get(section.professorId)
-          : null;
+        const professor = section.professorId ? await ctx.db.get(section.professorId) : null;
 
         return {
           scheduleItemId: item._id,
@@ -122,8 +120,7 @@ export const get = query({
             isOnline: section.isOnline,
             professorExternalId: professor?.externalId,
             professorName:
-              professor?.name ??
-              (section.instructorTBD ? "TBD" : "Unknown Instructor"),
+              professor?.name ?? (section.instructorTBD ? "TBD" : "Unknown Instructor"),
           },
           course: {
             code: course.code,
@@ -131,11 +128,9 @@ export const get = query({
             credits: course.credits,
           },
         };
-      })
+      }),
     );
 
-    return enriched.filter(
-      (item): item is NonNullable<typeof item> => item !== null
-    );
+    return enriched.filter((item): item is NonNullable<typeof item> => item !== null);
   },
 });

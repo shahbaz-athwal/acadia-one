@@ -11,7 +11,7 @@ export const filterOptions = query({
         isActive: v.boolean(),
         startDate: v.number(),
         endDate: v.number(),
-      })
+      }),
     ),
     departments: v.array(
       v.object({
@@ -19,7 +19,7 @@ export const filterOptions = query({
         name: v.string(),
         websiteUrl: v.optional(v.string()),
         facultyUrl: v.optional(v.string()),
-      })
+      }),
     ),
     professors: v.array(
       v.object({
@@ -27,7 +27,7 @@ export const filterOptions = query({
         name: v.string(),
         departmentPrefix: v.string(),
         imageUrl: v.optional(v.string()),
-      })
+      }),
     ),
   }),
   handler: async (ctx) => {

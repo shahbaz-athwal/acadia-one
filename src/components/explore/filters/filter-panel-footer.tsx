@@ -87,32 +87,20 @@ export function FilterPanelFooter() {
             >
               <Avatar>
                 <AvatarFallback>
-                  {avatarFallbackLabel ? (
-                    avatarFallbackLabel
-                  ) : (
-                    <UserIcon className="size-4" />
-                  )}
+                  {avatarFallbackLabel ? avatarFallbackLabel : <UserIcon className="size-4" />}
                 </AvatarFallback>
               </Avatar>
             </MenuTrigger>
             <MenuPopup align="start">
               {isAuthenticated ? (
                 <>
-                  <MenuItem
-                    disabled={isRefreshingData || isLoggingOut}
-                    onClick={handleRefreshData}
-                  >
+                  <MenuItem disabled={isRefreshingData || isLoggingOut} onClick={handleRefreshData}>
                     <RefreshCwIcon
-                      className={
-                        isRefreshingData ? "size-4 animate-spin" : "size-4"
-                      }
+                      className={isRefreshingData ? "size-4 animate-spin" : "size-4"}
                     />
                     {isRefreshingData ? "Refreshing..." : "Refresh data"}
                   </MenuItem>
-                  <MenuItem
-                    disabled={isLoggingOut || isRefreshingData}
-                    onClick={handleLogout}
-                  >
+                  <MenuItem disabled={isLoggingOut || isRefreshingData} onClick={handleLogout}>
                     <LogOutIcon className="size-4" />
                     {isLoggingOut ? "Logging out..." : "Logout"}
                   </MenuItem>
