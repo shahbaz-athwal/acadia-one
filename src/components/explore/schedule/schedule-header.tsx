@@ -1,9 +1,8 @@
 import { CalendarIcon, ExternalLinkIcon } from "lucide-react";
 import { useMemo } from "react";
-import type { TabItem } from "@/components/kokonutui/smooth-tab";
-import SmoothTab from "@/components/kokonutui/smooth-tab";
 import { Button } from "@/components/ui/button";
 import { CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
 import { useScheduleItems } from "@/hooks/use-schedule-items";
 import { useScheduleView } from "@/hooks/use-schedule-view";
@@ -50,12 +49,18 @@ export function ScheduleHeader() {
   );
   const exportUrl = useMemo(() => buildExportUrl(items), [items]);
 
-  const termTabs: TabItem[] = terms
+  const termTabs = terms
     .filter((t) => !t.code.endsWith("COI"))
     .map((term) => ({
       id: term.code,
       title: formatTermLabelWithoutYear(term.code, termNameByCode),
     }));
+
+  const handleTermChange = (value: string) => {
+    if (typeof value === "string") {
+      setTermCode(value);
+    }
+  };
 
   return (
     <div className="flex items-center gap-2 px-3 py-2">
@@ -64,36 +69,49 @@ export function ScheduleHeader() {
         Schedule
       </CardTitle>
       {termTabs.length > 0 && (
-        <SmoothTab
-          activeColor="bg-primary"
-          className="mx-0 mt-0 ml-auto w-56"
-          compact
-          defaultTabId={termTabs[0].id}
-          items={termTabs}
-          onChange={setTermCode}
-          value={termCode}
-        />
+        <Tabs className="ml-auto" onValueChange={handleTermChange} value={termCode}>
+          <TabsList
+            className="grid w-56"
+            style={{ gridTemplateColumns: `repeat(${termTabs.length}, minmax(0, 1fr))` }}
+          >
+            {termTabs.map((tab) => (
+              <TabsTrigger
+                className="h-7 px-2 text-xs sm:h-7 sm:text-xs"
+                key={tab.id}
+                value={tab.id}
+              >
+                {tab.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       )}
       <Tooltip>
         <TooltipTrigger
           render={
-            <Button
-              disabled={!exportUrl}
-              onClick={() => {
-                if (!exportUrl) {
-                  return;
-                }
-                window.open(exportUrl, "_blank", "noopener,noreferrer");
-              }}
-              size="xs"
-              variant="outline"
-            >
-              <ExternalLinkIcon />
-              Export
-            </Button>
+            <span className="inline-flex">
+              <Button
+                disabled={!exportUrl}
+                onClick={() => {
+                  if (!exportUrl) {
+                    return;
+                  }
+                  window.open(exportUrl, "_blank", "noopener,noreferrer");
+                }}
+                size="xs"
+                variant="outline"
+              >
+                <ExternalLinkIcon />
+                Export
+              </Button>
+            </span>
           }
         />
-        <TooltipPopup>Redirect to Acadia&apos;s course catalog</TooltipPopup>
+        <TooltipPopup side="left">
+          {exportUrl
+            ? "Redirect to Acadia's course catalog"
+            : "Add courses to schedule before exporting"}
+        </TooltipPopup>
       </Tooltip>
     </div>
   );

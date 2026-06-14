@@ -1,8 +1,8 @@
 import { FilterPanelFooter } from "@/components/explore/filters/filter-panel-footer";
 import { FiltersTab } from "@/components/explore/filters/filters-tab";
 import { ProgressTab } from "@/components/explore/filters/progress-tab";
-import type { TabItem } from "@/components/kokonutui/smooth-tab";
-import SmoothTab from "@/components/kokonutui/smooth-tab";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
 import { SEARCH_DEFAULTS } from "@/routes/explore";
 
@@ -17,35 +17,37 @@ export function FilterPanel() {
     filters.academicLevels.length +
     (filters.timeStart !== SEARCH_DEFAULTS.ts || filters.timeEnd !== SEARCH_DEFAULTS.te ? 1 : 0);
 
-  const panelTabs: TabItem[] = [
-    {
-      id: "filters",
-      title: "Filters",
-      badge: filterCount,
-      content: <FiltersTab />,
-    },
-    {
-      id: "progress",
-      title: "Progress",
-      content: <ProgressTab />,
-    },
-  ];
-
-  const handleTabChange = (value: string) => {
+  const handleTabChange = (value: string | number | null) => {
     if (value === "filters" || value === "progress") {
       setPanelTab(value);
     }
   };
 
   return (
-    <div className="flex h-full flex-col">
-      <SmoothTab
-        activeColor="bg-primary"
-        defaultTabId={panelTabs[0].id}
-        items={panelTabs}
-        onChange={handleTabChange}
-        value={panelTab}
-      />
+    <div className="flex h-full min-h-0 flex-col">
+      <Tabs className="min-h-0 flex-1" onValueChange={handleTabChange} value={panelTab}>
+        <TabsList className="mx-3 mt-2 grid w-auto max-w-[90%] grid-cols-2 self-center">
+          <TabsTrigger value="filters">
+            Filters
+            {filterCount !== 0 && (
+              <span className="ml-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] text-primary leading-none">
+                {filterCount}
+              </span>
+            )}
+          </TabsTrigger>
+          <TabsTrigger value="progress">Progress</TabsTrigger>
+        </TabsList>
+        <TabsContent className="min-h-0" value="filters">
+          <ScrollArea hideVerticalScrollbar className="h-full" scrollFade>
+            <FiltersTab />
+          </ScrollArea>
+        </TabsContent>
+        <TabsContent className="min-h-0" value="progress">
+          <ScrollArea hideVerticalScrollbar className="h-full" scrollFade>
+            <ProgressTab />
+          </ScrollArea>
+        </TabsContent>
+      </Tabs>
       <FilterPanelFooter />
     </div>
   );
