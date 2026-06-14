@@ -1,6 +1,6 @@
 "use node";
 
-import crypto from "node:crypto";
+import crypto from "crypto";
 import type { AxiosInstance } from "axios";
 import type { z } from "zod";
 import { internal } from "../_generated/api";

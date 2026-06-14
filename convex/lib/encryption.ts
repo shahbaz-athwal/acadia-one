@@ -1,6 +1,6 @@
 "use node";
 
-import crypto from "node:crypto";
+import crypto from "crypto";
 
 /**
  * Encrypts user credentials using AES-256-GCM with the provided token as the encryption key.

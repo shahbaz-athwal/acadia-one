@@ -1,6 +1,6 @@
 "use node";
 
-import crypto from "node:crypto";
+import crypto from "crypto";
 import { internal } from "./_generated/api";
 import type { ActionCtx } from "./_generated/server";
 import { action } from "./_generated/server";
