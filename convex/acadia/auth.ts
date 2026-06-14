@@ -1,12 +1,11 @@
 "use node";
 
 import https from "node:https";
-
 import axios, { type AxiosInstance } from "axios";
 
-export const BASE_URL = "https://collss.acadiau.ca";
+const BASE_URL = "https://collss.acadiau.ca";
 
-export const clientConfig = {
+const clientConfig = {
   baseURL: BASE_URL,
   validateStatus: (status: number) => status >= 200 && status < 500,
   httpsAgent: new https.Agent({ rejectUnauthorized: false }),
