@@ -28,7 +28,6 @@
     "convex-helpers": "^0.1.119",
     "graphql-request": "^7.4.0",
     "lucide-react": "^1.17.0",
-    "motion": "^12.40.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-resizable-panels": "^4.7.5",
