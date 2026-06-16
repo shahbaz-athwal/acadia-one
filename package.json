@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n \"VITE,CONVEX\" -c \"cyan,magenta\" \"pnpm run dev:vite\" \"pnpm run dev:convex\"",
+    "dev": "concurrently -n \"VITE,CONVEX\" -c \"cyan,magenta\" \"op run --env-file=.env -- pnpm run dev:vite\" \"op run --env-file --pnpm run dev:convex\"",
     "dev:vite": "portless acadia-one vp dev",
     "dev:convex": "convex dev",
     "dev:setup": "convex dev --configure --until-success",
