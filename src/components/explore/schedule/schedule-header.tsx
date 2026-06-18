@@ -69,17 +69,14 @@ export function ScheduleHeader() {
         Schedule
       </CardTitle>
       {termTabs.length > 0 && (
-        <Tabs className="ml-auto" onValueChange={handleTermChange} value={termCode}>
+        <Tabs className="min-w-0 flex-1" onValueChange={handleTermChange} value={termCode}>
           <TabsList
-            className="grid w-56"
+            className="grid"
+            variant="thin"
             style={{ gridTemplateColumns: `repeat(${termTabs.length}, minmax(0, 1fr))` }}
           >
             {termTabs.map((tab) => (
-              <TabsTrigger
-                className="h-7 px-2 text-xs sm:h-7 sm:text-xs"
-                key={tab.id}
-                value={tab.id}
-              >
+              <TabsTrigger key={tab.id} value={tab.id}>
                 {tab.title}
               </TabsTrigger>
             ))}

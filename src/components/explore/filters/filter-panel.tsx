@@ -26,7 +26,7 @@ export function FilterPanel() {
   return (
     <div className="flex h-full min-h-0 flex-col">
       <Tabs className="min-h-0 flex-1" onValueChange={handleTabChange} value={panelTab}>
-        <TabsList className="mx-3 mt-2 grid w-auto max-w-[90%] grid-cols-2 self-center">
+        <TabsList className="mx-3 mt-2 grid w-auto grid-cols-2" variant="thin">
           <TabsTrigger value="filters">
             Filters
             {filterCount !== 0 && (
