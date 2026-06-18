@@ -125,21 +125,7 @@ export const Route = createFileRoute("/explore")({
   search: {
     middlewares: [stripSearchParams(SEARCH_DEFAULTS)],
   },
-  loaderDeps: ({ search }) => ({
-    term: search.term,
-    dept: search.dept,
-    prof: search.prof,
-    day: search.day,
-    lvl: search.lvl,
-    rsg: search.rsg,
-    cc: search.cc,
-    ts: search.ts,
-    te: search.te,
-    ft: search.ft,
-    q: search.q,
-    page: search.page,
-    d: search.d,
-  }),
+  loaderDeps: ({ search }) => search,
   loader: async ({ context, deps }) => {
     const sessionId = getOrCreateSessionId();
     const tokenHash = getStoredTokenHash() ?? "";
