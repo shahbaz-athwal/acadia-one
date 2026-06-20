@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource-variable/inter";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -35,6 +36,8 @@
       background-position: -200% 0;
     }
   }
+  --font-heading: var(--font-sans);
+  --font-sans: 'Inter Variable', sans-serif
 }
 
 :root {
@@ -100,4 +103,6 @@
   body {
     @apply bg-background font-sans text-foreground;
   }
+  html {
+    @apply font-sans;}
 }
