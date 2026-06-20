@@ -4,6 +4,7 @@ import { ProgressTab } from "@/components/explore/filters/progress-tab";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useExploreFilters } from "@/hooks/use-explore-filters";
+import { cn } from "@/lib/utils";
 import { SEARCH_DEFAULTS } from "@/routes/explore";
 
 export function FilterPanel() {
@@ -30,7 +31,14 @@ export function FilterPanel() {
           <TabsTrigger value="filters">
             Filters
             {filterCount !== 0 && (
-              <span className="ml-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full bg-primary/15 text-[10px] text-primary leading-none">
+              <span
+                className={cn(
+                  "ml-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] leading-none",
+                  panelTab === "filters"
+                    ? "bg-primary-foreground text-primary"
+                    : "bg-primary/15 text-primary",
+                )}
+              >
                 {filterCount}
               </span>
             )}
