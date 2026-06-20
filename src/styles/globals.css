@@ -3,37 +3,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@font-face {
-  font-family: "Dryft Sans";
-  src: url("../fonts/fontSans-300_700.ttf") format("truetype");
-  font-weight: 300 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Dryft Heading";
-  src: url("../fonts/fontHeading-SemiBold.ttf") format("truetype");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Dryft Mono";
-  src: url("../fonts/fontMono.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 @theme inline {
   --animate-skeleton: skeleton 2s -1s infinite linear;
-  --font-sans: "Dryft Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-heading: "Dryft Heading", var(--font-sans);
-  --font-mono:
-    "Dryft Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
   --color-warning-foreground: var(--warning-foreground);
   --color-warning: var(--warning);
   --color-success-foreground: var(--success-foreground);
