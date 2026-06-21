@@ -1,4 +1,4 @@
-import type { QueryClient } from "@tanstack/react-query";
+import { QueryClient } from "@tanstack/react-query";
 import { createRouter, parseSearchWith } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
@@ -6,7 +6,8 @@ export interface RouterContext {
   queryClient: QueryClient;
 }
 
-export const getRouter = (queryClient: QueryClient) => {
+export const getRouter = () => {
+  const queryClient = new QueryClient();
   const router = createRouter({
     routeTree,
     context: { queryClient },
@@ -30,6 +31,16 @@ export const getRouter = (queryClient: QueryClient) => {
     },
     scrollRestoration: true,
   });
+  // setupRouterSsrQueryIntegration({
+  //   router,
+  //   queryClient,
+  // });
 
   return router;
 };
+
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof getRouter;
+  }
+}

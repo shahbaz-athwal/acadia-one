@@ -29,13 +29,6 @@ convexQueryClient.connect(queryClient);
 
 const router = getRouter(queryClient);
 
-// Register the router instance for type safety
-declare module "@tanstack/react-router" {
-  interface Register {
-    router: typeof router;
-  }
-}
-
 const rootElement = document.getElementById("root");
 if (!rootElement) {
   throw new Error("Root element not found");
