@@ -1,0 +1,290 @@
+[
+  {
+    "name": "Kinesiology",
+    "prefix": "KINE",
+    "websiteUrl": "https://kinesiology.acadiau.ca",
+    "facultyUrl": "https://kinesiology.acadiau.ca/faculty-staff.html"
+  },
+  {
+    "name": "Education",
+    "prefix": "EDUC",
+    "websiteUrl": "https://education.acadiau.ca",
+    "facultyUrl": "https://education.acadiau.ca/faculty-staff.html"
+  },
+  {
+    "name": "Biology",
+    "prefix": "BIOL",
+    "websiteUrl": "https://biology.acadiau.ca",
+    "facultyUrl": "https://biology.acadiau.ca/faculty-staff.html"
+  },
+  {
+    "name": "Mathematics and Statistics",
+    "prefix": "MATH",
+    "websiteUrl": "https://math.acadiau.ca",
+    "facultyUrl": "https://math.acadiau.ca/faculty.html"
+  },
+  {
+    "name": "History",
+    "prefix": "HIST"
+  },
+  {
+    "name": "English",
+    "prefix": "ENGL",
+    "websiteUrl": "https://english.acadiau.ca",
+    "facultyUrl": "https://english.acadiau.ca/faculty-staff.html"
+  },
+  {
+    "name": "Political Science",
+    "prefix": "POLS",
+    "websiteUrl": "https://polisci.acadiau.ca",
+    "facultyUrl": "https://polisci.acadiau.ca/faculty-and-staff.html"
+  },
+  {
+    "name": "Music",
+    "prefix": "MUSI",
+    "websiteUrl": "https://music.acadiau.ca",
+    "facultyUrl": "https://music.acadiau.ca/faculty.html"
+  },
+  {
+    "name": "Business Administration",
+    "prefix": "BUSI",
+    "websiteUrl": "https://business.acadiau.ca",
+    "facultyUrl": "https://business.acadiau.ca/about-us/faculty-directory.html"
+  },
+  {
+    "name": "Chemistry",
+    "prefix": "CHEM",
+    "websiteUrl": "https://chemistry.acadiau.ca",
+    "facultyUrl": "https://chemistry.acadiau.ca/faculty-staff.html"
+  },
+  {
+    "name": "Sociology",
+    "prefix": "SOCI",
+    "websiteUrl": "https://sociology.acadiau.ca",
+    "facultyUrl": "https://sociology.acadiau.ca/People.html"
+  },
+  {
+    "name": "Computer Science",
+    "prefix": "COMP",
+    "websiteUrl": "https://cs.acadiau.ca",
+    "facultyUrl": "https://cs.acadiau.ca/faculty-staff.html"
+  },
+  {
+    "name": "Geology",
+    "prefix": "GEOL"
+  },
+  {
+    "name": "Biblical Studies",
+    "prefix": "BIBL"
+  },
+  {
+    "name": "Psychology",
+    "prefix": "PSYC",
+    "websiteUrl": "https://psychology.acadiau.ca",
+    "facultyUrl": "https://psychology.acadiau.ca/Faculty_and_Staff.html"
+  },
+  {
+    "name": "Pastoral Care and Counselling",
+    "prefix": "PACC"
+  },
+  {
+    "name": "Next Generation Ministry",
+    "prefix": "NXGN"
+  },
+  {
+    "name": "Evangelism and Mission",
+    "prefix": "EVAN"
+  },
+  {
+    "name": "Pastoral Ministry",
+    "prefix": "PAST"
+  },
+  {
+    "name": "Theology",
+    "prefix": "THEO"
+  },
+  {
+    "name": "Economics",
+    "prefix": "ECON",
+    "websiteUrl": "https://economics.acadiau.ca",
+    "facultyUrl": "https://economics.acadiau.ca/our-people.html"
+  },
+  {
+    "name": "French",
+    "prefix": "FRAN"
+  },
+  {
+    "name": "Leadership",
+    "prefix": "LEDR"
+  },
+  {
+    "name": "Nutrition",
+    "prefix": "NUTR",
+    "websiteUrl": "https://nutrition.acadiau.ca",
+    "facultyUrl": "https://nutrition.acadiau.ca/faculty-and-staff.html"
+  },
+  {
+    "name": "Community Development",
+    "prefix": "CODE",
+    "websiteUrl": "https://commdev.acadiau.ca",
+    "facultyUrl": "https://commdev.acadiau.ca/faculty-staff.html"
+  },
+  {
+    "name": "Church History",
+    "prefix": "CHUR"
+  },
+  {
+    "name": "Discipleship",
+    "prefix": "DISP"
+  },
+  {
+    "name": "Applied Science",
+    "prefix": "APSC",
+    "websiteUrl": "https://engineering.acadiau.ca",
+    "facultyUrl": "https://engineering.acadiau.ca/faculty-and-staff.html"
+  },
+  {
+    "name": "Ministry",
+    "prefix": "DMIN"
+  },
+  {
+    "name": "Physics",
+    "prefix": "PHYS",
+    "websiteUrl": "https://physics.acadiau.ca",
+    "facultyUrl": "https://physics.acadiau.ca/people.html"
+  },
+  {
+    "name": "Philosophy",
+    "prefix": "PHIL",
+    "websiteUrl": "https://philosophy.acadiau.ca",
+    "facultyUrl": "https://philosophy.acadiau.ca/facstaff.html"
+  },
+  {
+    "name": "Interdisciplinary Studies",
+    "prefix": "IDST"
+  },
+  {
+    "name": "Spiritual Formation",
+    "prefix": "SPFM"
+  },
+  {
+    "name": "Classics",
+    "prefix": "CLAS",
+    "websiteUrl": "https://history.acadiau.ca",
+    "facultyUrl": "https://history.acadiau.ca/Faculty/Staff.html"
+  },
+  {
+    "name": "Theatre",
+    "prefix": "THEA",
+    "websiteUrl": "https://theatre.acadiau.ca",
+    "facultyUrl": "https://theatre.acadiau.ca/faculty-staff.html"
+  },
+  {
+    "name": "Greek",
+    "prefix": "GREE"
+  },
+  {
+    "name": "Nursing",
+    "prefix": "NURS",
+    "websiteUrl": "https://nursing.acadiau.ca",
+    "facultyUrl": "https://nursing.acadiau.ca/faculty-staff.html"
+  },
+  {
+    "name": "Art",
+    "prefix": "ART"
+  },
+  {
+    "name": "German",
+    "prefix": "GERM"
+  },
+  {
+    "name": "Chaplaincy",
+    "prefix": "CHAP"
+  },
+  {
+    "name": "Environmental Science",
+    "prefix": "ENVS",
+    "websiteUrl": "https://ees.acadiau.ca",
+    "facultyUrl": "https://ees.acadiau.ca/faculty-staff.html"
+  },
+  {
+    "name": "Indigenous Community Develop.",
+    "prefix": "INCD"
+  },
+  {
+    "name": "Women's and Gender Studies",
+    "prefix": "WGST",
+    "websiteUrl": "https://womenstudies.acadiau.ca",
+    "facultyUrl": "https://womenstudies.acadiau.ca/Faculty_Members.html"
+  },
+  {
+    "name": "Environ. and Sustain. Studies",
+    "prefix": "ESST",
+    "websiteUrl": "https://environment.acadiau.ca",
+    "facultyUrl": "https://environment.acadiau.ca/faculty_staff.html"
+  },
+  {
+    "name": "Hebrew",
+    "prefix": "HEBR"
+  },
+  {
+    "name": "Spanish",
+    "prefix": "SPAN"
+  },
+  {
+    "name": "Comparative Religion",
+    "prefix": "CREL"
+  },
+  {
+    "name": "Latin",
+    "prefix": "LATI"
+  },
+  {
+    "name": "Cooperative Education",
+    "prefix": "COOP",
+    "websiteUrl": "https://co-op.acadiau.ca",
+    "facultyUrl": "https://co-op.acadiau.ca/Contact.html"
+  },
+  {
+    "name": "Biotechnology",
+    "prefix": "BIOT"
+  },
+  {
+    "name": "Communications",
+    "prefix": "COMM"
+  },
+  {
+    "name": "Law and Society",
+    "prefix": "LAWS",
+    "websiteUrl": "https://laws.acadiau.ca",
+    "facultyUrl": "https://laws.acadiau.ca/faculty.html"
+  },
+  {
+    "name": "Aramaic",
+    "prefix": "ARAM"
+  },
+  {
+    "name": "Applied Geomatics",
+    "prefix": "GEOM"
+  },
+  {
+    "name": "Social and Political Thought",
+    "prefix": "SOPT",
+    "websiteUrl": "https://spt.acadiau.ca",
+    "facultyUrl": "https://spt.acadiau.ca/spt-faculty.html"
+  },
+  {
+    "name": "Interdisciplinary Studies Theo",
+    "prefix": "IDTH"
+  },
+  {
+    "name": "Languages and Literatures",
+    "prefix": "LANG",
+    "websiteUrl": "https://languages.acadiau.ca",
+    "facultyUrl": "https://languages.acadiau.ca/faculty-and-staff.html"
+  },
+  {
+    "name": "Mi'kmaw",
+    "prefix": "MIKM"
+  }
+]
