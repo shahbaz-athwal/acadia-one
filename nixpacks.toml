@@ -1,28 +1,22 @@
 # Nixpacks configuration for the Vite + React frontend.
-# If CONVEX_DEPLOY_KEY is set, the Convex backend is deployed before building
-# and Convex provides VITE_CONVEX_URL to the build command.
-# Otherwise, set VITE_CONVEX_URL in your deployment environment.
 
-providers = ["node"]
+providers = ["bun"]
 
 [variables]
 NODE_ENV = "production"
-NPM_CONFIG_UPDATE_NOTIFIER = "false"
 
 [phases.setup]
-nixPkgs = ["nodejs_24", "pnpm"]
+nixPkgs = ["bun"]
 
 [phases.install]
 cmds = [
-  "corepack enable",
-  "corepack prepare pnpm@10.33.0 --activate",
-  "pnpm install --frozen-lockfile"
+  "bun install --frozen-lockfile"
 ]
 
 [phases.build]
 cmds = [
-  "if [ -n \"$CONVEX_DEPLOY_KEY\" ]; then pnpm exec convex deploy --cmd 'pnpm run build'; else pnpm run build; fi"
+  "bun run build"
 ]
 
 [start]
-cmd = "pnpm exec serve dist --single --listen tcp://0.0.0.0:${PORT:-3000}"
+cmd = "bunx --bun serve dist --single --listen tcp://0.0.0.0:${PORT:-3000}"
