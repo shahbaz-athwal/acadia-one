@@ -6,5 +6,9 @@ import vitest from "ultracite/oxlint/vitest";
 
 export default defineConfig({
   extends: [core, react, tanstack, vitest],
-  ignorePatterns: core.ignorePatterns,
+  ignorePatterns: [...(core.ignorePatterns ?? []), "src/components/ui/**/*"],
+  options: {
+    typeAware: true,
+    typeCheck: true,
+  },
 });

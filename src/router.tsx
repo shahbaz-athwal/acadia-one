@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter, parseSearchWith } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+
 import { routeTree } from "./routeTree.gen";
 
 export interface RouterContext {
@@ -10,11 +11,14 @@ export interface RouterContext {
 export const getRouter = () => {
   const queryClient = new QueryClient();
   const router = createRouter({
-    routeTree,
     context: { queryClient },
     parseSearch: parseSearchWith((value) => value),
+    routeTree,
+    scrollRestoration: true,
     stringifySearch: (search) => {
-      const entries = Object.entries(search).filter(([, value]) => value !== undefined);
+      const entries = Object.entries(search).filter(
+        ([, value]) => value !== undefined
+      );
       if (entries.length === 0) {
         return "";
       }
@@ -22,7 +26,9 @@ export const getRouter = () => {
         .map(([key, value]) => {
           const encodedKey = encodeURIComponent(key);
           if (Array.isArray(value)) {
-            const encodedArray = value.map((item) => encodeURIComponent(String(item))).join(",");
+            const encodedArray = value
+              .map((item) => encodeURIComponent(String(item)))
+              .join(",");
             return `${encodedKey}=${encodedArray}`;
           }
           return `${encodedKey}=${encodeURIComponent(String(value))}`;
@@ -30,11 +36,10 @@ export const getRouter = () => {
         .join("&");
       return `?${query}`;
     },
-    scrollRestoration: true,
   });
   setupRouterSsrQueryIntegration({
-    router,
     queryClient,
+    router,
   });
 
   return router;

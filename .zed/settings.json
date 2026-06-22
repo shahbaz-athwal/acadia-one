@@ -3,7 +3,6 @@
     "oxlint": {
       "initialization_options": {
         "settings": {
-          "configPath": "./.oxlint.config.json",
           "run": "onType",
           "disableNestedConfig": false,
           "fixKind": "safe_fix",
@@ -15,7 +14,6 @@
     "oxfmt": {
       "initialization_options": {
         "settings": {
-          "configPath": "./.oxfmt.config.json",
           "run": "onSave",
           "flags": {},
           "fmt.configPath": null,
@@ -62,19 +60,7 @@
         }
       ]
     },
-    "Handlebars": {
-      "format_on_save": "on",
-      "prettier": {
-        "allowed": false
-      },
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
-        }
-      ]
-    },
+
     "HTML": {
       "format_on_save": "on",
       "prettier": {
@@ -98,25 +84,12 @@
           "name": "oxfmt"
         }
       },
-      "code_action": "source.fixAll.oxc",
       "code_actions_on_format": {
         "source.fixAll.oxc": true,
         "source.organizeImports.oxc": true
       }
     },
-    "JSX": {
-      "format_on_save": "on",
-      "prettier": {
-        "allowed": false
-      },
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
-        }
-      ]
-    },
+
     "JSON": {
       "format_on_save": "on",
       "prettier": {
@@ -130,19 +103,7 @@
         }
       ]
     },
-    "JSON5": {
-      "format_on_save": "on",
-      "prettier": {
-        "allowed": false
-      },
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
-        }
-      ]
-    },
+
     "JSONC": {
       "format_on_save": "on",
       "prettier": {
@@ -156,45 +117,7 @@
         }
       ]
     },
-    "Less": {
-      "format_on_save": "on",
-      "prettier": {
-        "allowed": false
-      },
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
-        }
-      ]
-    },
-    "Markdown": {
-      "format_on_save": "on",
-      "prettier": {
-        "allowed": false
-      },
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
-        }
-      ]
-    },
-    "MDX": {
-      "format_on_save": "on",
-      "prettier": {
-        "allowed": false
-      },
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
-        }
-      ]
-    },
+
     "TypeScript": {
       "format_on_save": "on",
       "prettier": {
@@ -225,19 +148,7 @@
         "source.organizeImports.oxc": true
       }
     },
-    "Vue.js": {
-      "format_on_save": "on",
-      "prettier": {
-        "allowed": false
-      },
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
-        }
-      ]
-    },
+
     "YAML": {
       "format_on_save": "on",
       "prettier": {

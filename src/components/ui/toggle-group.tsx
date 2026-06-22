@@ -5,11 +5,14 @@ import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group
 import type { VariantProps } from "class-variance-authority";
 import * as React from "react";
 
-import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-import { Toggle as ToggleComponent, type toggleVariants } from "@/components/ui/toggle";
+import { Toggle as ToggleComponent } from "@/components/ui/toggle";
+import type { toggleVariants } from "@/components/ui/toggle";
+import { cn } from "@/lib/utils";
 
-const ToggleGroupContext = React.createContext<VariantProps<typeof toggleVariants>>({
+const ToggleGroupContext = React.createContext<
+  VariantProps<typeof toggleVariants>
+>({
   size: "default",
   variant: "default",
 });
@@ -34,7 +37,7 @@ function ToggleGroup({
           : orientation === "horizontal"
             ? "*:not-first:not-data-[slot=separator]:before:-start-[0.5px] *:not-last:not-data-[slot=separator]:before:-end-[0.5px] *:not-first:rounded-s-none *:not-last:rounded-e-none *:not-first:border-s-0 *:not-last:border-e-0 *:not-first:before:rounded-s-none *:not-last:before:rounded-e-none"
             : "*:not-first:not-data-[slot=separator]:before:-top-[0.5px] *:not-last:not-data-[slot=separator]:before:-bottom-[0.5px] flex-col *:not-first:rounded-t-none *:not-last:rounded-b-none *:not-first:border-t-0 *:not-last:border-b-0 *:not-first:before:rounded-t-none *:not-last:before:rounded-b-none *:data-[slot=toggle]:not-last:before:hidden dark:*:last:before:hidden dark:*:first:before:block",
-        className,
+        className
       )}
       data-size={size}
       data-slot="toggle-group"
@@ -86,7 +89,7 @@ function ToggleGroupSeparator({
     <Separator
       className={cn(
         "pointer-events-none relative before:absolute before:inset-0 dark:before:bg-input/32",
-        className,
+        className
       )}
       orientation={orientation}
       {...props}

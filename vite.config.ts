@@ -1,5 +1,3 @@
-import { fileURLToPath, URL } from "node:url";
-
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -15,9 +13,6 @@ export default defineConfig({
     // babel({ presets: [reactCompilerPreset()] }),
   ],
   resolve: {
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
-    },
     tsconfigPaths: true,
   },
   server: { port: 3000 },

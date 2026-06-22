@@ -1,8 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
+
 import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 interface TruncatedTooltipTextProps {
   text: string;
@@ -77,7 +78,10 @@ function TruncatedTooltipText({
   }, [checkTruncation, text]);
 
   const trigger = (
-    <span className={cn("min-w-0 flex-1", containerClassName)} onPointerEnter={checkTruncation}>
+    <span
+      className={cn("min-w-0 flex-1", containerClassName)}
+      onPointerEnter={checkTruncation}
+    >
       <span className={cn("block truncate", className)} ref={textRef}>
         {text}
       </span>
@@ -89,7 +93,10 @@ function TruncatedTooltipText({
       <TooltipTrigger disabled={!isTruncated} render={trigger} />
       <TooltipPopup
         align={tooltipAlign}
-        className={cn("max-w-72 whitespace-normal leading-snug", tooltipClassName)}
+        className={cn(
+          "max-w-72 whitespace-normal leading-snug",
+          tooltipClassName
+        )}
         side={tooltipSide}
         sideOffset={tooltipSideOffset}
       >

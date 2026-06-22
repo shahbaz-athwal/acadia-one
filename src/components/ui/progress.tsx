@@ -4,7 +4,11 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress";
 
 import { cn } from "@/lib/utils";
 
-function Progress({ className, children, ...props }: ProgressPrimitive.Root.Props) {
+function Progress({
+  className,
+  children,
+  ...props
+}: ProgressPrimitive.Root.Props) {
   return (
     <ProgressPrimitive.Root
       className={cn("flex w-full flex-col gap-2", className)}
@@ -35,14 +39,20 @@ function ProgressLabel({ className, ...props }: ProgressPrimitive.Label.Props) {
 function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
   return (
     <ProgressPrimitive.Track
-      className={cn("block h-1.5 w-full overflow-hidden rounded-full bg-input", className)}
+      className={cn(
+        "block h-1.5 w-full overflow-hidden rounded-full bg-input",
+        className
+      )}
       data-slot="progress-track"
       {...props}
     />
   );
 }
 
-function ProgressIndicator({ className, ...props }: ProgressPrimitive.Indicator.Props) {
+function ProgressIndicator({
+  className,
+  ...props
+}: ProgressPrimitive.Indicator.Props) {
   return (
     <ProgressPrimitive.Indicator
       className={cn("bg-primary transition-all duration-500", className)}
@@ -62,4 +72,10 @@ function ProgressValue({ className, ...props }: ProgressPrimitive.Value.Props) {
   );
 }
 
-export { Progress, ProgressLabel, ProgressTrack, ProgressIndicator, ProgressValue };
+export {
+  Progress,
+  ProgressLabel,
+  ProgressTrack,
+  ProgressIndicator,
+  ProgressValue,
+};
