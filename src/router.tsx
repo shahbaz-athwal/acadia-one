@@ -1,5 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter, parseSearchWith } from "@tanstack/react-router";
+import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import { routeTree } from "./routeTree.gen";
 
 export interface RouterContext {
@@ -31,10 +32,10 @@ export const getRouter = () => {
     },
     scrollRestoration: true,
   });
-  // setupRouterSsrQueryIntegration({
-  //   router,
-  //   queryClient,
-  // });
+  setupRouterSsrQueryIntegration({
+    router,
+    queryClient,
+  });
 
   return router;
 };
