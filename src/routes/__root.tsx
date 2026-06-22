@@ -8,6 +8,8 @@ import type { ReactNode } from "react";
 
 import type { RouterContext } from "@/router";
 
+import css from "@/styles/globals.css?url";
+
 const RootDocument = ({ children }: Readonly<{ children: ReactNode }>) => (
   <html lang="en">
     <head>
@@ -29,6 +31,7 @@ const RootComponent = () => (
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootComponent,
   head: () => ({
+    links: [{ href: css, rel: "stylesheet" }],
     meta: [
       {
         charSet: "utf-8",
