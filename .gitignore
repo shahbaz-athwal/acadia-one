@@ -16,6 +16,10 @@ build
 
 # other
 dist/
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
 .npmrc
 # misc
 .DS_Store
