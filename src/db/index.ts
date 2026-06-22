@@ -1,4 +1,4 @@
-import { drizzle } from "drizzle-orm/libsql";
+import { drizzle } from "drizzle-orm/bun-sqlite";
 
 const databaseUrl = process.env.DATABASE_URL ?? "file:./local.db";
 
