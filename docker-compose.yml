@@ -1,0 +1,18 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: file:/app/data/local.db
+    volumes:
+      - type: bind
+        source: /var/lib/dryft/sqlite
+        target: /app/data
+        bind:
+          create_host_path: true
+    expose:
+      - "3000"

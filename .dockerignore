@@ -1,0 +1,15 @@
+.git
+.DS_Store
+.env*
+node_modules
+dist
+coverage
+.turbo
+*.tsbuildinfo
+
+# SQLite databases should live in the mounted data directory, not the image.
+data
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
