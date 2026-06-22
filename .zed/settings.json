@@ -3,7 +3,7 @@
     "oxlint": {
       "initialization_options": {
         "settings": {
-          "configPath": "./.oxlintrc.json",
+          "configPath": "./.oxlint.config.json",
           "run": "onType",
           "disableNestedConfig": false,
           "fixKind": "safe_fix",
@@ -15,8 +15,22 @@
     "oxfmt": {
       "initialization_options": {
         "settings": {
-          "configPath": "./vite.config.ts",
-          "run": "onSave"
+          "configPath": "./.oxfmt.config.json",
+          "run": "onSave",
+          "flags": {},
+          "fmt.configPath": null,
+          "fmt.experimental": true,
+          "typeAware": false,
+          "unusedDisableDirectives": false
+        }
+      }
+    },
+    "typescript-language-server": {
+      "settings": {
+        "typescript": {
+          "preferences": {
+            "includePackageJsonAutoImports": "on"
+          }
         }
       }
     }
@@ -79,14 +93,16 @@
       "prettier": {
         "allowed": false
       },
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
         }
-      ],
-      "code_action": "source.fixAll.oxc"
+      },
+      "code_action": "source.fixAll.oxc",
+      "code_actions_on_format": {
+        "source.fixAll.oxc": true,
+        "source.organizeImports.oxc": true
+      }
     },
     "JSX": {
       "format_on_save": "on",
@@ -184,26 +200,30 @@
       "prettier": {
         "allowed": false
       },
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
         }
-      ]
+      },
+      "code_actions_on_format": {
+        "source.fixAll.oxc": true,
+        "source.organizeImports.oxc": true
+      }
     },
     "TSX": {
       "format_on_save": "on",
       "prettier": {
         "allowed": false
       },
-      "formatter": [
-        {
-          "language_server": {
-            "name": "oxfmt"
-          }
+      "formatter": {
+        "language_server": {
+          "name": "oxfmt"
         }
-      ]
+      },
+      "code_actions_on_format": {
+        "source.fixAll.oxc": true,
+        "source.organizeImports.oxc": true
+      }
     },
     "Vue.js": {
       "format_on_save": "on",
@@ -231,5 +251,7 @@
         }
       ]
     }
-  }
+  },
+  "format_on_save": "on",
+  "formatter": "language_server"
 }

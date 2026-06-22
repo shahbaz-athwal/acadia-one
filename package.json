@@ -10,7 +10,9 @@
     "db:push": "bunx --bun drizzle-kit push",
     "db:studio": "bunx --bun drizzle-kit studio",
     "build": "bunx --bun vite build",
-    "start": "portless acadia-one bunx --bun vite preview"
+    "start": "portless acadia-one bunx --bun vite preview",
+    "check": "bunx --bun ultracite check",
+    "fix": "bunx --bun ultracite fix"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.53",
@@ -48,11 +50,15 @@
     "@types/node": "^25.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.0.2",
     "babel-plugin-react-compiler": "^1.0.0",
     "drizzle-kit": "1.0.0-beta.22",
+    "oxfmt": "^0.56.0",
+    "oxlint": "^1.71.0",
+    "oxlint-tsgolint": "^0.23.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.2",
+    "ultracite": "7.8.3",
     "vite": "latest"
   },
   "engines": {

@@ -9,14 +9,10 @@ NODE_ENV = "production"
 nixPkgs = ["bun"]
 
 [phases.install]
-cmds = [
-  "bun install --frozen-lockfile"
-]
+cmds = ["bun install --frozen-lockfile"]
 
 [phases.build]
-cmds = [
-  "bun run build"
-]
+cmds = ["bun run build"]
 
 [start]
 cmd = "bunx --bun serve dist --single --listen tcp://0.0.0.0:${PORT:-3000}"
