@@ -1,0 +1,88 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "181a3ec1-28ed-4007-b34c-a4614004432e",
+  "prevIds": [
+    "10bf3ba0-9c33-4520-a81a-bb00094e5b5f"
+  ],
+  "ddl": [
+    {
+      "name": "terms",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "termCode",
+      "entityType": "columns",
+      "table": "terms"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "terms"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "endDate",
+      "entityType": "columns",
+      "table": "terms"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "startDate",
+      "entityType": "columns",
+      "table": "terms"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "isArchived",
+      "entityType": "columns",
+      "table": "terms"
+    },
+    {
+      "columns": [
+        "termCode"
+      ],
+      "nameExplicit": false,
+      "name": "terms_pk",
+      "table": "terms",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        {
+          "value": "isArchived",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "terms_by_is_archived",
+      "entityType": "indexes",
+      "table": "terms"
+    }
+  ],
+  "renames": []
+}

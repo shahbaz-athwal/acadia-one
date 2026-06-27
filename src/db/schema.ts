@@ -1,8 +1,14 @@
-import { int, sqliteTable, text } from "drizzle-orm/sqlite-core";
+// oxlint-disable sort-keys
+import { index, int, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const usersTable = sqliteTable("users_table", {
-  age: int().notNull(),
-  email: text().notNull().unique(),
-  id: int().primaryKey({ autoIncrement: true }),
-  name: text().notNull(),
-});
+export const terms = sqliteTable(
+  "terms",
+  {
+    termCode: text().notNull().primaryKey(),
+    name: text().notNull(),
+    endDate: int({ mode: "timestamp" }).notNull(),
+    startDate: int({ mode: "timestamp" }).notNull(),
+    isArchived: int({ mode: "boolean" }).notNull(),
+  },
+  (table) => [index("terms_by_is_archived").on(table.isArchived)]
+);
