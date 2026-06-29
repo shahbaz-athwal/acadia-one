@@ -11,4 +11,7 @@ export default defineConfig({
     typeAware: true,
     typeCheck: true,
   },
+  rules: {
+    "func-style": "off",
+  },
 });
