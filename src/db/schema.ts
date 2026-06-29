@@ -22,25 +22,32 @@ export const departments = sqliteTable("departments", {
 export type CourseId = string & { __brand: "courseId" };
 export type SectionId = string & { __brand: "sectionId" };
 
-export const courses = sqliteTable("courses", {
-  id: text().$type<CourseId>().primaryKey(),
-  code: text().notNull(), // Eg: ABCD-1234, XYZ-4567
-  title: text().notNull(),
-  description: text(),
-  departmentPrefix: text()
-    .notNull()
-    .references(() => departments.prefix),
-  credits: real().notNull(),
-  isLab: int({ mode: "boolean" }).notNull(),
-  academicLevel: int().notNull(),
-  requisites: text({ mode: "json" }).$type<
-    {
-      codes: string[]; // displayText split by space " "
-      displayText: string;
-      displayTextExtension: string;
-    }[]
-  >(),
-});
+export const courses = sqliteTable(
+  "courses",
+  {
+    id: text().$type<CourseId>().primaryKey(),
+    code: text().notNull(), // Eg: ABCD-1234, XYZ-4567
+    title: text().notNull(),
+    description: text(),
+    departmentPrefix: text()
+      .notNull()
+      .references(() => departments.prefix),
+    credits: real().notNull(),
+    isLab: int({ mode: "boolean" }).notNull(),
+    academicLevel: int().notNull(),
+    requisites: text({ mode: "json" }).$type<
+      {
+        codes: string[]; // displayText split by space " "
+        displayText: string;
+        displayTextExtension: string;
+      }[]
+    >(),
+  },
+  (table) => [
+    index("courses_by_code").on(table.code),
+    index("courses_by_department_prefix").on(table.departmentPrefix),
+  ]
+);
 
 export const courseMatchingSections = sqliteTable(
   "course_matching_sections",
