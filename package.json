@@ -11,6 +11,7 @@
     "db:studio": "bunx --bun drizzle-kit studio",
     "build": "bunx --bun vite build",
     "start": "portless acadia-one bunx --bun vite preview",
+    "test": "op run --env-file=.env -- bun test",
     "check": "bunx --bun ultracite check",
     "fix": "bunx --bun ultracite fix"
   },
