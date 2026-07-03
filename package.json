@@ -32,6 +32,7 @@
     "drizzle-orm": "^1.0.0-rc.4",
     "graphql-request": "^7.4.0",
     "lucide-react": "^1.17.0",
+    "neverthrow": "^8.2.0",
     "ofetch": "^1.5.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
