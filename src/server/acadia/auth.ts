@@ -11,6 +11,13 @@ function extractCookieValues(headers: Headers) {
     );
 }
 
+function extractHtmlTitle(html: string | undefined) {
+  const title = html?.match(/<title(?:\s[^>]*)?>(?<title>[\s\S]*?)<\/title>/iu)
+    ?.groups?.title;
+
+  return title?.replaceAll(/\s+/gu, " ").trim() ?? null;
+}
+
 export async function authenticateAcadiaStudent(
   username: string,
   password: string
@@ -20,7 +27,7 @@ export async function authenticateAcadiaStudent(
     UserName: username,
   });
 
-  const loginResponse = await acadiaAuthFetch.raw("", {
+  const loginResponse = await acadiaAuthFetch.raw<string, "text">("", {
     body: formData.toString(),
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -32,24 +39,40 @@ export async function authenticateAcadiaStudent(
   const redirectLocation = loginResponse.headers.get("location");
 
   if (
-    loginResponse.status === 302 &&
-    redirectLocation !== null &&
-    redirectLocation.length > 0
+    extractHtmlTitle(loginResponse._data) ===
+    "Sign In - Acadia University Self-Service"
   ) {
-    const redirectResponse = await acadiaAuthFetch.raw(
-      new URL(redirectLocation, loginResponse.url).toString(),
-      {
-        headers: {
-          Cookie: cookies.join("; "),
-        },
-        method: "GET",
-      }
-    );
-
-    const redirectCookies = extractCookieValues(redirectResponse.headers);
-
-    cookies = [...cookies, ...redirectCookies];
+    throw new Error("Acadia authentication failed.");
   }
+
+  if (
+    loginResponse.status !== 302 ||
+    redirectLocation === null ||
+    redirectLocation.length === 0
+  ) {
+    throw new Error("Acadia authentication did not return a redirect.");
+  }
+
+  const redirectResponse = await acadiaAuthFetch.raw<string, "text">(
+    new URL(redirectLocation, loginResponse.url).toString(),
+    {
+      headers: {
+        Cookie: cookies.join("; "),
+      },
+      method: "GET",
+    }
+  );
+
+  if (
+    extractHtmlTitle(redirectResponse._data) !==
+    "Acadia University Self-Service"
+  ) {
+    throw new Error("Acadia authentication did not reach self-service.");
+  }
+
+  const redirectCookies = extractCookieValues(redirectResponse.headers);
+
+  cookies = [...cookies, ...redirectCookies];
 
   return cookies.join("; ");
 }
