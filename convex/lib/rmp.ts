@@ -9,26 +9,22 @@ const gqlClient = new GraphQLClient(RMP_GRAPHQL_URL, {
   },
 });
 
-const TEACHER_SEARCH_QUERY = `
-query TeacherSearchPaginationQuery(
-  $count: Int!
-  $cursor: String
-  $query: TeacherSearchQuery!
-) {
-  search: newSearch {
-    teachers(query: $query, first: $count, after: $cursor) {
-      edges {
-        node {
-          id
-          legacyId
-          firstName
-          lastName
-          department
+const TEACHER_SEARCH_QUERY = gql`
+  query TeacherSearchPaginationQuery($count: Int!, $cursor: String, $query: TeacherSearchQuery!) {
+    search: newSearch {
+      teachers(query: $query, first: $count, after: $cursor) {
+        edges {
+          node {
+            id
+            legacyId
+            firstName
+            lastName
+            department
+          }
         }
       }
     }
   }
-}
 `;
 
 const TEACHER_RATINGS_PAGE_QUERY = gql`
@@ -69,50 +65,7 @@ const TEACHER_RATINGS_PAGE_QUERY = gql`
   }
 `;
 
-const SEARCH_SCHOOL_QUERY = gql`
-  query NewSearchSchoolsQuery($query: SchoolSearchQuery!) {
-    newSearch {
-      schools(query: $query) {
-        edges {
-          cursor
-          node {
-            id
-            legacyId
-            name
-            city
-            state
-            departments {
-              id
-              name
-            }
-          }
-        }
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-      }
-    }
-  }
-`;
-
-const SCHOOL_DEPARTMENTS_QUERY = gql`
-  query SchoolDepartments($schoolId: ID!) {
-    search: newSearch {
-      teachers(query: { schoolID: $schoolId, fallback: false }, first: 1) {
-        filters {
-          field
-          options {
-            id
-            value
-          }
-        }
-      }
-    }
-  }
-`;
-
-const TeacherNodeSchema = z.object({
+const _TeacherNodeSchema = z.object({
   id: z.string(),
   legacyId: z.number(),
   firstName: z.string(),
@@ -125,7 +78,7 @@ const TeacherSearchResponseSchema = z.object({
     teachers: z.object({
       edges: z.array(
         z.object({
-          node: TeacherNodeSchema,
+          node: _TeacherNodeSchema,
         }),
       ),
     }),
@@ -196,54 +149,7 @@ export interface TeacherRatingsPage<TRating = TeacherRating> {
   ratings: TRating[];
 }
 
-const SchoolDepartmentsResponseSchema = z.object({
-  search: z.object({
-    teachers: z.object({
-      filters: z.array(
-        z.object({
-          field: z.string(),
-          options: z.array(
-            z.object({
-              id: z.string(),
-              value: z.string(),
-            }),
-          ),
-        }),
-      ),
-    }),
-  }),
-});
-
-const SchoolSearchResponseSchema = z.object({
-  newSearch: z.object({
-    schools: z.object({
-      edges: z.array(
-        z.object({
-          cursor: z.string(),
-          node: z.object({
-            id: z.string(),
-            legacyId: z.number(),
-            name: z.string(),
-            city: z.string(),
-            state: z.string(),
-            departments: z.array(
-              z.object({
-                id: z.string(),
-                name: z.string(),
-              }),
-            ),
-          }),
-        }),
-      ),
-      pageInfo: z.object({
-        hasNextPage: z.boolean(),
-        endCursor: z.string().nullable(),
-      }),
-    }),
-  }),
-});
-
-export type TeacherNode = z.infer<typeof TeacherNodeSchema>;
+export type TeacherNode = z.infer<typeof _TeacherNodeSchema>;
 
 export async function collectPaginatedRatings<TRating>(
   fetchPage: (cursor?: string) => Promise<TeacherRatingsPage<TRating>>,
@@ -281,47 +187,6 @@ export class RateMyProfScraper {
   private async executeQuery(query: string, variables: Record<string, unknown>) {
     const response = await this.client.request(query, variables);
     return response;
-  }
-
-  async coursesByProfessorId(professorId: string) {
-    const query = gql`
-      query CoursesByProfessorId($professorId: ID!) {
-        node(id: $professorId) {
-          __typename
-          ... on Teacher {
-            id
-            legacyId
-            firstName
-            lastName
-            school {
-              name
-              id
-              legacyId
-            }
-            department
-            courseCodes {
-              courseName
-              courseCount
-            }
-          }
-        }
-      }
-    `;
-    const variables = { professorId };
-    const response = await this.executeQuery(query, variables);
-    return response;
-  }
-
-  async searchSchools(keyword: string) {
-    const variables = { query: { text: keyword } };
-    const response = await this.executeQuery(SEARCH_SCHOOL_QUERY, variables);
-    return SchoolSearchResponseSchema.parse(response);
-  }
-
-  async getDepartmentbySchoolId(schoolId: string) {
-    const variables = { schoolId };
-    const response = await this.executeQuery(SCHOOL_DEPARTMENTS_QUERY, variables);
-    return SchoolDepartmentsResponseSchema.parse(response).search.teachers.filters[0]?.options;
   }
 
   async searchTeachersBySchoolId(schoolId: string) {
