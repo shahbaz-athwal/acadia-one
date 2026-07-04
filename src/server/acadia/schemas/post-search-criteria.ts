@@ -1,5 +1,10 @@
-// oxlint-disable sort-keys
+// oxlint-disable sort-keys typescript/no-unsafe-type-assertion
 import { z } from "zod";
+
+import type { CourseId, SectionId } from "../../../db/schema";
+
+const CourseIdSchema = z.string().transform((id) => id as CourseId);
+const SectionIdSchema = z.string().transform((id) => id as SectionId);
 
 function getAcademicLevel(courseNumber: string) {
   const parsed = Number.parseInt(courseNumber.trim().charAt(0), 10);
@@ -24,8 +29,8 @@ export const PostSearchCriteriaFilteredResponseSchema = z
   .object({
     CourseFullModels: z.array(
       z.object({
-        MatchingSectionIds: z.array(z.string()),
-        Id: z.string(),
+        MatchingSectionIds: z.array(SectionIdSchema),
+        Id: CourseIdSchema,
         SubjectCode: z.string(),
         Number: z.string(),
         MinimumCredits: z.number(),
