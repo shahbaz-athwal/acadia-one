@@ -37,9 +37,8 @@ export const courses = sqliteTable(
     academicLevel: int().notNull(),
     requisites: text({ mode: "json" }).$type<
       {
-        codes: string[]; // displayText split by space " "
-        displayText: string;
-        displayTextExtension: string;
+        codes: string[];
+        textExtension: string;
       }[]
     >(),
   },
