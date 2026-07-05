@@ -1,5 +1,12 @@
 // oxlint-disable sort-keys no-inline-comments
-import { index, int, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  index,
+  int,
+  primaryKey,
+  real,
+  sqliteTable,
+  text,
+} from "drizzle-orm/sqlite-core";
 
 export const terms = sqliteTable(
   "terms",
@@ -110,7 +117,6 @@ export const sections = sqliteTable(
       .$type<CourseId>()
       .notNull()
       .references(() => courses.id),
-    professorIds: text({ mode: "json" }).$type<ProfessorId[]>().notNull(),
     sectionCode: text().notNull(),
     sectionSearchName: text().notNull(),
     classStart: int(), // in minutes
@@ -121,4 +127,17 @@ export const sections = sqliteTable(
     days: text({ mode: "json" }).$type<number[]>().notNull(),
     isOnline: int({ mode: "boolean" }).notNull(),
   }
+  //Todo: do indexing
+);
+
+export const sectionProfessors = sqliteTable(
+  "section_professors",
+  {
+    sectionId: text().$type<SectionId>().notNull(),
+    professorId: text().$type<ProfessorId>().notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.sectionId, table.professorId] }),
+    index("section_professors_by_professor_id").on(table.professorId),
+  ]
 );
