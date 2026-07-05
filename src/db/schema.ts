@@ -23,6 +23,36 @@ export type CourseId = string & { __brand: "courseId" };
 export type ProfessorId = string & { __brand: "professorId" };
 export type SectionId = string & { __brand: "sectionId" };
 
+export interface ProfessorDetails {
+  designation?: string | null;
+  officeLocation?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  linkedinUrl?: string | null;
+  websiteUrl?: string | null;
+  description?: string | null;
+  researchAreas?: string[] | null;
+  sourceUrl?: string | null;
+}
+
+export const professors = sqliteTable(
+  "professors",
+  {
+    id: text().$type<ProfessorId>().primaryKey(),
+    rmpId: text(),
+    rmpLegacyId: int(),
+    departmentPrefix: text()
+      .notNull()
+      .references(() => departments.prefix),
+    name: text().notNull(),
+    imageUrl: text(),
+    details: text({ mode: "json" }).$type<ProfessorDetails>(),
+  },
+  (table) => [
+    index("professors_by_department_prefix").on(table.departmentPrefix),
+  ]
+);
+
 export const courses = sqliteTable(
   "courses",
   {
