@@ -20,6 +20,7 @@ export const departments = sqliteTable("departments", {
 });
 
 export type CourseId = string & { __brand: "courseId" };
+export type ProfessorId = string & { __brand: "professorId" };
 export type SectionId = string & { __brand: "sectionId" };
 
 export const courses = sqliteTable(
@@ -66,4 +67,28 @@ export const courseMatchingSections = sqliteTable(
     index("course_matching_sections_by_course_id").on(table.courseId),
     index("course_matching_sections_by_is_archived").on(table.isArchived),
   ]
+);
+
+export const sections = sqliteTable(
+  "sections",
+  {
+    id: text().$type<SectionId>().notNull(),
+    termCode: text()
+      .notNull()
+      .references(() => terms.termCode),
+    courseId: text()
+      .$type<CourseId>()
+      .notNull()
+      .references(() => courses.id),
+    professorIds: text({ mode: "json" }).$type<ProfessorId[]>().notNull(),
+    sectionCode: text().notNull(),
+    sectionSearchName: text().notNull(),
+    classStart: int(), // in minutes
+    classEnd: int(), // in minutes
+    buildingName: text(),
+    roomNumber: text(),
+    showTBD: int({ mode: "boolean" }).notNull(),
+    days: text({ mode: "json" }).$type<number[]>().notNull(),
+    isOnline: int({ mode: "boolean" }).notNull(),
+  }
 );
