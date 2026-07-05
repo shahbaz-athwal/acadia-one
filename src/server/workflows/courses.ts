@@ -8,7 +8,6 @@ import type { AcadiaCourse } from "@/server/acadia/schemas/post-search-criteria"
 interface FillCoursesDatabaseOptions {
   readonly database?: Database;
   readonly extractor: AcadiaExtractor;
-  readonly timestamp?: Date;
 }
 
 async function upsertCourse(database: Database, course: AcadiaCourse) {
@@ -49,15 +48,13 @@ async function archiveMatchingSections(database: Database) {
 
 async function insertMatchingSections(
   database: Database,
-  acadiaCourses: AcadiaCourse[],
-  timestamp: Date
+  acadiaCourses: AcadiaCourse[]
 ) {
   const matchingSectionRows = acadiaCourses.map((course) => ({
     courseId: course.id,
+    importedAt: null,
     isArchived: false,
-    isImported: false,
     sectionIds: course.matchingSectionIds,
-    timestamp,
   }));
 
   if (matchingSectionRows.length === 0) {
@@ -71,7 +68,6 @@ async function insertMatchingSections(
 export async function importCourses({
   database = db,
   extractor,
-  timestamp = new Date(),
 }: FillCoursesDatabaseOptions) {
   const acadiaCourses = await extractor.getAllCourses();
 
@@ -82,11 +78,7 @@ export async function importCourses({
   );
 
   await archiveMatchingSections(database);
-  const matchingSections = await insertMatchingSections(
-    database,
-    acadiaCourses,
-    timestamp
-  );
+  const matchingSections = await insertMatchingSections(database, acadiaCourses);
 
   return {
     courses: acadiaCourses.length,

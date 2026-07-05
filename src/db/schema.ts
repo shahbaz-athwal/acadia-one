@@ -59,9 +59,8 @@ export const courseMatchingSections = sqliteTable(
       .notNull()
       .references(() => courses.id),
     sectionIds: text({ mode: "json" }).$type<SectionId[]>().notNull(),
-    timestamp: int({ mode: "timestamp" }).notNull(),
+    importedAt: int({ mode: "timestamp" }),
     isArchived: int({ mode: "boolean" }).notNull(),
-    isImported: int({ mode: "boolean" }).notNull(),
   },
   (table) => [
     index("course_matching_sections_by_course_id").on(table.courseId),
