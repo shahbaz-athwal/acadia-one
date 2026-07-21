@@ -1,6 +1,8 @@
 import { createAcadiaPortalFetch } from "./fetch-client";
 import { PostSearchCriteriaFilteredResponseSchema } from "./schemas/post-search-criteria";
 import type { PostSearchCriteriaRequest } from "./schemas/post-search-criteria";
+import { SectionDetailsFilteredResponseSchema } from "./schemas/section";
+import type { CourseId, SectionId } from "@/db/schema";
 
 const DEFAULT_SEARCH_CRITERIA = {
   courseIds: null,
@@ -42,5 +44,20 @@ export class AcadiaExtractor {
   async getAllCourses() {
     const data = await this.postSearchCriteria({ quantityPerPage: 3000 });
     return data.courses;
+  }
+
+  async getSectionDetails(courseId: CourseId, sectionIds: SectionId[]) {
+    const response = await this.portalFetch<unknown>(
+      "/student/Student/Courses/Sections",
+      {
+        body: {
+          courseId,
+          sectionIds,
+        },
+        method: "POST",
+      }
+    );
+
+    return SectionDetailsFilteredResponseSchema.parse(response);
   }
 }
