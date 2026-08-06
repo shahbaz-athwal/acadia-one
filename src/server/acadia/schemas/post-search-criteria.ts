@@ -1,9 +1,14 @@
 // oxlint-disable sort-keys typescript/no-unsafe-type-assertion
 import { z } from "zod";
 
-import type { CourseId, SectionId } from "../../../db/schema";
+import type { CourseId, ProfessorId, SectionId } from "../../../db/schema";
 
 const CourseIdSchema = z.string().transform((id) => id as CourseId);
+const ProfessorIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .transform((id) => id as ProfessorId);
 const SectionIdSchema = z.string().transform((id) => id as SectionId);
 
 function getAcademicLevel(courseNumber: string) {
@@ -48,6 +53,14 @@ export const PostSearchCriteriaFilteredResponseSchema = z
     TotalPages: z.number(),
     PageSize: z.number(),
     CurrentPageIndex: z.number(),
+    Faculty: z
+      .array(
+        z.object({
+          Description: z.string().trim(),
+          Value: ProfessorIdSchema,
+        })
+      )
+      .default([]),
   })
   .transform((data) => ({
     courses: data.CourseFullModels.map((course) => ({
@@ -65,6 +78,10 @@ export const PostSearchCriteriaFilteredResponseSchema = z
         textExtension: requisite.DisplayTextExtension,
       })),
     })),
+    professors: data.Faculty.map((professor) => ({
+      id: professor.Value,
+      name: professor.Description,
+    })),
     paging: {
       currentPageIndex: data.CurrentPageIndex,
       totalItems: data.TotalItems,
@@ -78,3 +95,4 @@ export type PostSearchCriteriaResponse = z.infer<
 >;
 
 export type AcadiaCourse = PostSearchCriteriaResponse["courses"][number];
+export type AcadiaProfessor = PostSearchCriteriaResponse["professors"][number];
