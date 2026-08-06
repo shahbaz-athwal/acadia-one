@@ -15,9 +15,9 @@ export const terms = sqliteTable(
     name: text().notNull(),
     endDate: int({ mode: "timestamp" }).notNull(),
     startDate: int({ mode: "timestamp" }).notNull(),
-    isArchived: int({ mode: "boolean" }).notNull(),
+    archivedAt: int({ mode: "timestamp" }),
   },
-  (table) => [index("terms_by_is_archived").on(table.isArchived)]
+  (table) => [index("terms_by_archived_at").on(table.archivedAt)]
 );
 
 export const departments = sqliteTable("departments", {
@@ -42,21 +42,32 @@ export interface ProfessorDetails {
   sourceUrl?: string | null;
 }
 
-export const professors = sqliteTable(
-  "professors",
+export const professors = sqliteTable("professors", {
+  id: text().$type<ProfessorId>().primaryKey(),
+  rmpId: text(),
+  rmpLegacyId: int(),
+  name: text().notNull(),
+  imageUrl: text(),
+  details: text({ mode: "json" }).$type<ProfessorDetails>(),
+});
+
+export const professorDepartments = sqliteTable(
+  "professor_departments",
   {
-    id: text().$type<ProfessorId>().primaryKey(),
-    rmpId: text(),
-    rmpLegacyId: int(),
+    professorId: text()
+      .$type<ProfessorId>()
+      .notNull()
+      .references(() => professors.id, { onDelete: "cascade" }),
     departmentPrefix: text()
       .notNull()
-      .references(() => departments.prefix),
-    name: text().notNull(),
-    imageUrl: text(),
-    details: text({ mode: "json" }).$type<ProfessorDetails>(),
+      .references(() => departments.prefix, { onDelete: "restrict" }),
   },
   (table) => [
-    index("professors_by_department_prefix").on(table.departmentPrefix),
+    primaryKey({ columns: [table.professorId, table.departmentPrefix] }),
+    index("professor_departments_by_department_prefix").on(
+      table.departmentPrefix,
+      table.professorId
+    ),
   ]
 );
 
@@ -66,6 +77,7 @@ export const courses = sqliteTable(
     id: text().$type<CourseId>().primaryKey(),
     code: text().notNull(), // Eg: ABCD-1234, XYZ-4567
     title: text().notNull(),
+    // Add normalized course-code and title search fields when course search is implemented.
     description: text(),
     departmentPrefix: text()
       .notNull()
@@ -81,6 +93,7 @@ export const courses = sqliteTable(
     >(),
   },
   (table) => [
+    index("courses_by_academic_level").on(table.academicLevel),
     index("courses_by_code").on(table.code),
     index("courses_by_department_prefix").on(table.departmentPrefix),
   ]
@@ -98,11 +111,10 @@ export const courseMatchingSections = sqliteTable(
       .references(() => courses.id),
     sectionIds: text({ mode: "json" }).$type<SectionId[]>().notNull(),
     importedAt: int({ mode: "timestamp" }),
-    isArchived: int({ mode: "boolean" }).notNull(),
+    archivedAt: int({ mode: "timestamp" }),
   },
   (table) => [
-    index("course_matching_sections_by_course_id").on(table.courseId),
-    index("course_matching_sections_by_is_archived").on(table.isArchived),
+    index("course_matching_sections_by_archived_at").on(table.archivedAt),
   ]
 );
 
@@ -123,11 +135,19 @@ export const sections = sqliteTable(
     classEnd: int(), // in minutes
     buildingName: text(),
     roomNumber: text(),
+    room: text(),
     showTBD: int({ mode: "boolean" }).notNull(),
     days: text({ mode: "json" }).$type<number[]>().notNull(),
     isOnline: int({ mode: "boolean" }).notNull(),
-  }
-  //Todo: do indexing
+  },
+  (table) => [
+    index("sections_by_class_times").on(table.classStart, table.classEnd),
+    index("sections_by_term_code_and_class_times").on(
+      table.termCode,
+      table.classStart,
+      table.classEnd
+    ),
+  ]
 );
 
 export const sectionProfessors = sqliteTable(
