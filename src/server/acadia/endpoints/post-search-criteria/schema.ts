@@ -1,7 +1,7 @@
-// oxlint-disable sort-keys typescript/no-unsafe-type-assertion
 import { z } from "zod";
 
-import type { CourseId, ProfessorId, SectionId } from "../../../db/schema";
+// oxlint-disable sort-keys typescript/no-unsafe-type-assertion
+import type { CourseId, ProfessorId, SectionId } from "@/db/schema";
 
 const CourseIdSchema = z.string().transform((id) => id as CourseId);
 const ProfessorIdSchema = z
@@ -30,7 +30,7 @@ export interface PostSearchCriteriaRequest {
   readonly subrequirement?: string;
 }
 
-export const PostSearchCriteriaFilteredResponseSchema = z
+export const PostSearchCriteriaResponseSchema = z
   .object({
     CourseFullModels: z.array(
       z.object({
@@ -91,7 +91,7 @@ export const PostSearchCriteriaFilteredResponseSchema = z
   }));
 
 export type PostSearchCriteriaResponse = z.infer<
-  typeof PostSearchCriteriaFilteredResponseSchema
+  typeof PostSearchCriteriaResponseSchema
 >;
 
 export type AcadiaCourse = PostSearchCriteriaResponse["courses"][number];

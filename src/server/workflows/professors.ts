@@ -2,8 +2,8 @@ import { db } from "@/db";
 import type { Database } from "@/db";
 import { departments, professorDepartments, professors } from "@/db/schema";
 import type { ProfessorId } from "@/db/schema";
+import type { AcadiaProfessor } from "@/server/acadia/endpoints/post-search-criteria/schema";
 import type { AcadiaExtractor } from "@/server/acadia/extractor";
-import type { AcadiaProfessor } from "@/server/acadia/schemas/post-search-criteria";
 
 interface ImportProfessorsOptions {
   readonly database?: Database;
@@ -32,12 +32,17 @@ export async function importProfessors({
 
   for (const department of departmentRows) {
     // Keep portal requests sequential so a full import does not burst traffic.
-    // oxlint-disable-next-line no-await-in-loop
-    const departmentProfessors = await extractor.getProfessorsByDepartment(
-      department.prefix
-    );
+    const departmentProfessorsResult =
+      // oxlint-disable-next-line no-await-in-loop
+      await extractor.getProfessorsByDepartment(department.prefix);
 
-    for (const professor of departmentProfessors) {
+    if (departmentProfessorsResult.isErr()) {
+      throw new Error(departmentProfessorsResult.error.message, {
+        cause: departmentProfessorsResult.error,
+      });
+    }
+
+    for (const professor of departmentProfessorsResult.value) {
       professorsById.set(professor.id, professor);
 
       const membership = {

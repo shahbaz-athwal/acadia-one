@@ -1,7 +1,7 @@
-// oxlint-disable sort-keys typescript/no-unsafe-type-assertion
 import { z } from "zod";
 
-import type { CourseId, ProfessorId, SectionId } from "../../../db/schema";
+// oxlint-disable sort-keys typescript/no-unsafe-type-assertion
+import type { CourseId, ProfessorId, SectionId } from "@/db/schema";
 
 const CourseIdSchema = z.string().transform((id) => id as CourseId);
 const ProfessorIdSchema = z.string().transform((id) => id as ProfessorId);
@@ -11,7 +11,7 @@ const NullableStringSchema = z
   .nullable()
   .transform((value) => (value === "" ? null : value));
 
-export const SectionDetailsFilteredResponseSchema = z
+export const SectionDetailsResponseSchema = z
   .object({
     SectionsRetrieved: z.object({
       TermsAndSections: z.array(
@@ -106,5 +106,5 @@ export const SectionDetailsFilteredResponseSchema = z
   );
 
 export type AcadiaSection = z.infer<
-  typeof SectionDetailsFilteredResponseSchema
+  typeof SectionDetailsResponseSchema
 >[number];

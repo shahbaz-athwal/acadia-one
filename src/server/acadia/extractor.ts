@@ -1,9 +1,9 @@
 import type { CourseId, SectionId } from "@/db/schema";
 
-import { createAcadiaPortalFetch } from "./fetch-client";
-import { PostSearchCriteriaFilteredResponseSchema } from "./schemas/post-search-criteria";
-import type { PostSearchCriteriaRequest } from "./schemas/post-search-criteria";
-import { SectionDetailsFilteredResponseSchema } from "./schemas/section";
+import { PostSearchCriteriaEndpoint } from "./endpoints/post-search-criteria/endpoint";
+import type { PostSearchCriteriaRequest } from "./endpoints/post-search-criteria/schema";
+import { SectionDetailsEndpoint } from "./endpoints/section-details/endpoint";
+import { AcadiaClient } from "./fetch-client";
 
 const DEFAULT_SEARCH_CRITERIA = {
   courseIds: null,
@@ -17,57 +17,38 @@ const DEFAULT_SEARCH_CRITERIA = {
 } satisfies PostSearchCriteriaRequest;
 
 export class AcadiaExtractor {
-  private readonly portalFetch: ReturnType<typeof createAcadiaPortalFetch>;
+  private readonly client: AcadiaClient;
 
   constructor(cookies: string) {
-    this.portalFetch = createAcadiaPortalFetch(cookies);
+    this.client = new AcadiaClient(cookies);
   }
 
-  async postSearchCriteria(
-    searchCriteria?: Partial<PostSearchCriteriaRequest>
-  ) {
+  postSearchCriteria(searchCriteria?: Partial<PostSearchCriteriaRequest>) {
     const criteria = {
       ...DEFAULT_SEARCH_CRITERIA,
       ...searchCriteria,
     };
 
-    const response = await this.portalFetch<unknown>(
-      "/student/Student/Courses/PostSearchCriteria",
-      {
-        body: criteria,
-        method: "POST",
-      }
+    return this.client.execute(PostSearchCriteriaEndpoint, criteria);
+  }
+
+  getAllCourses() {
+    return this.postSearchCriteria({ quantityPerPage: 3000 }).map(
+      (data) => data.courses
     );
-
-    return PostSearchCriteriaFilteredResponseSchema.parse(response);
   }
 
-  async getAllCourses() {
-    const data = await this.postSearchCriteria({ quantityPerPage: 3000 });
-    return data.courses;
-  }
-
-  async getProfessorsByDepartment(departmentPrefix: string) {
-    const data = await this.postSearchCriteria({
+  getProfessorsByDepartment(departmentPrefix: string) {
+    return this.postSearchCriteria({
       quantityPerPage: 1,
       subjects: [departmentPrefix],
-    });
-
-    return data.professors;
+    }).map((data) => data.professors);
   }
 
-  async getSectionDetails(courseId: CourseId, sectionIds: SectionId[]) {
-    const response = await this.portalFetch<unknown>(
-      "/student/Student/Courses/Sections",
-      {
-        body: {
-          courseId,
-          sectionIds,
-        },
-        method: "POST",
-      }
-    );
-
-    return SectionDetailsFilteredResponseSchema.parse(response);
+  getSectionDetails(courseId: CourseId, sectionIds: SectionId[]) {
+    return this.client.execute(SectionDetailsEndpoint, {
+      courseId,
+      sectionIds,
+    });
   }
 }

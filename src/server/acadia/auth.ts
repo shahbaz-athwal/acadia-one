@@ -2,32 +2,19 @@ import { err, ok, ResultAsync } from "neverthrow";
 import type { Result } from "neverthrow";
 import type { FetchResponse } from "ofetch";
 
+import { acadiaFailure } from "./errors";
+import type {
+  AcadiaAuthError,
+  AcadiaUnexpectedAuthResponseDetails,
+} from "./errors";
 import { acadiaAuthFetch } from "./fetch-client";
+
+export type { AcadiaAuthError } from "./errors";
 
 const ACADIA_SELF_SERVICE_TITLE = "Acadia University Self-Service";
 const ACADIA_SIGN_IN_TITLE = "Sign In - Acadia University Self-Service";
-
-interface AcadiaAuthErrorDetails {
-  readonly redirectLocation?: string | null;
-  readonly status?: number;
-  readonly title?: string | null;
-}
-
-export type AcadiaAuthError =
-  | {
-      readonly cause: unknown;
-      readonly message: string;
-      readonly type: "network_failure";
-    }
-  | {
-      readonly message: string;
-      readonly type: "incorrect_credential";
-    }
-  | {
-      readonly details?: AcadiaAuthErrorDetails;
-      readonly message: string;
-      readonly type: "unknown_error";
-    };
+const FOLLOW_AUTH_REDIRECT_OPERATION = "authentication.follow_redirect";
+const SUBMIT_CREDENTIALS_OPERATION = "authentication.submit_credentials";
 
 type AcadiaHtmlResponse = FetchResponse<string>;
 
@@ -60,23 +47,25 @@ function extractHtmlTitle(html: string | undefined) {
   return title?.replaceAll(/\s+/gu, " ").trim() ?? null;
 }
 
-function toNetworkFailure(cause: unknown): AcadiaAuthError {
-  return {
-    cause,
-    message: "Unable to reach Acadia authentication.",
-    type: "network_failure",
-  };
+function toNetworkFailure(operation: string) {
+  return (cause: unknown): AcadiaAuthError =>
+    acadiaFailure(operation, {
+      cause,
+      message: "Unable to reach Acadia authentication.",
+      type: "network_failure",
+    });
 }
 
-function unknownError(
+function unexpectedAuthResponse(
+  operation: string,
   message: string,
-  details?: AcadiaAuthErrorDetails
+  details?: AcadiaUnexpectedAuthResponseDetails
 ): AcadiaAuthError {
-  return {
+  return acadiaFailure(operation, {
     details,
     message,
-    type: "unknown_error",
-  };
+    type: "unexpected_auth_response",
+  });
 }
 
 function submitCredentials(
@@ -96,7 +85,7 @@ function submitCredentials(
       },
       method: "POST",
     }),
-    toNetworkFailure
+    toNetworkFailure(SUBMIT_CREDENTIALS_OPERATION)
   );
 }
 
@@ -108,10 +97,12 @@ function inspectLoginResponse(
   const title = extractHtmlTitle(loginResponse._data);
 
   if (title === ACADIA_SIGN_IN_TITLE) {
-    return err({
-      message: "The Acadia credentials were rejected.",
-      type: "incorrect_credential",
-    });
+    return err(
+      acadiaFailure(SUBMIT_CREDENTIALS_OPERATION, {
+        message: "The Acadia credentials were rejected.",
+        type: "incorrect_credential",
+      })
+    );
   }
 
   if (
@@ -120,11 +111,15 @@ function inspectLoginResponse(
     redirectLocation.length === 0
   ) {
     return err(
-      unknownError("Acadia authentication did not return a redirect.", {
-        redirectLocation,
-        status: loginResponse.status,
-        title,
-      })
+      unexpectedAuthResponse(
+        SUBMIT_CREDENTIALS_OPERATION,
+        "Acadia authentication did not return a redirect.",
+        {
+          redirectLocation,
+          status: loginResponse.status,
+          title,
+        }
+      )
     );
   }
 
@@ -148,7 +143,7 @@ function fetchRedirect(
         method: "GET",
       }
     ),
-    toNetworkFailure
+    toNetworkFailure(FOLLOW_AUTH_REDIRECT_OPERATION)
   ).map((response) => ({
     cookies: context.cookies,
     response,
@@ -162,10 +157,14 @@ function inspectSelfServiceResponse(
 
   if (title !== ACADIA_SELF_SERVICE_TITLE) {
     return err(
-      unknownError("Acadia authentication did not reach self-service.", {
-        status: context.response.status,
-        title,
-      })
+      unexpectedAuthResponse(
+        FOLLOW_AUTH_REDIRECT_OPERATION,
+        "Acadia authentication did not reach self-service.",
+        {
+          status: context.response.status,
+          title,
+        }
+      )
     );
   }
 
