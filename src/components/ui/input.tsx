@@ -5,10 +5,7 @@ import type * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-type InputProps = Omit<
-  InputPrimitive.Props & React.RefAttributes<HTMLInputElement>,
-  "size"
-> & {
+type InputProps = Omit<React.ComponentPropsWithRef<"input">, "size"> & {
   size?: "sm" | "default" | "lg" | number;
   unstyled?: boolean;
   nativeInput?: boolean;
@@ -16,11 +13,12 @@ type InputProps = Omit<
 
 function Input({
   className,
-  size = "default",
+  nativeInput,
+  size: sizeProp,
   unstyled = false,
-  nativeInput = false,
   ...props
 }: InputProps) {
+  const size = sizeProp ?? "default";
   const inputClassName = cn(
     "h-8.5 w-full min-w-0 rounded-[inherit] px-[calc(--spacing(3)-1px)] leading-8.5 outline-none placeholder:text-muted-foreground/72 sm:h-7.5 sm:leading-7.5",
     size === "sm" &&
