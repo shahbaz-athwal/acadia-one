@@ -277,6 +277,11 @@ export const departments = [
     prefix: "GEOM",
   },
   {
+    facultyUrl: "https://science.acadiau.ca/links-for-faculty-staff.html",
+    name: "Faculty of Science",
+    prefix: "SCIE",
+  },
+  {
     facultyUrl: "https://spt.acadiau.ca/spt-faculty.html",
     name: "Social and Political Thought",
     prefix: "SOPT",
