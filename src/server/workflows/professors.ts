@@ -2,8 +2,10 @@ import { db } from "@/db";
 import type { Database } from "@/db";
 import { departments, professorDepartments, professors } from "@/db/schema";
 import type { ProfessorId } from "@/db/schema";
-import type { AcadiaProfessor } from "@/server/acadia/endpoints/post-search-criteria/schema";
-import type { AcadiaExtractor } from "@/server/acadia/extractor";
+import type {
+  AcadiaExtractor,
+  AcadiaProfessor,
+} from "@/server/acadia/extractor";
 
 interface ImportProfessorsOptions {
   readonly database?: Database;

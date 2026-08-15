@@ -48,9 +48,8 @@ function extractHtmlTitle(html: string | undefined) {
 }
 
 function toNetworkFailure(operation: string) {
-  return (cause: unknown): AcadiaAuthError =>
+  return (): AcadiaAuthError =>
     acadiaFailure(operation, {
-      cause,
       message: "Unable to reach Acadia authentication.",
       type: "network_failure",
     });

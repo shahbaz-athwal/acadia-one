@@ -6,13 +6,13 @@ export interface AcadiaErrorContext {
 }
 
 export interface AcadiaNetworkFailure {
-  readonly cause: unknown;
   readonly message: string;
   readonly type: "network_failure";
 }
 
 export interface AcadiaHttpFailure {
   readonly message: string;
+  readonly redirectLocation?: string | null;
   readonly status: number;
   readonly type: "http_failure";
 }
@@ -20,7 +20,6 @@ export interface AcadiaHttpFailure {
 export interface AcadiaResponseDecodeFailure {
   readonly bodyKind: "empty" | "html" | "text";
   readonly bodyLength: number;
-  readonly cause?: unknown;
   readonly contentType: string | null;
   readonly message: string;
   readonly status: number;

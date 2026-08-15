@@ -1,9 +1,11 @@
 import type { CourseId, SectionId } from "@/db/schema";
 
-import { PostSearchCriteriaEndpoint } from "./endpoints/post-search-criteria/endpoint";
+import { PostSearchCriteriaEndpoint } from "./endpoints/post-search-criteria/schema";
 import type { PostSearchCriteriaRequest } from "./endpoints/post-search-criteria/schema";
-import { SectionDetailsEndpoint } from "./endpoints/section-details/endpoint";
+import { SectionDetailsEndpoint } from "./endpoints/section-details/schema";
 import { AcadiaClient } from "./fetch-client";
+
+export type { AcadiaProfessor } from "./endpoints/post-search-criteria/schema";
 
 const DEFAULT_SEARCH_CRITERIA = {
   courseIds: null,

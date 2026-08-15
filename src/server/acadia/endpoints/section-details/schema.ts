@@ -3,6 +3,8 @@ import { z } from "zod";
 // oxlint-disable sort-keys typescript/no-unsafe-type-assertion
 import type { CourseId, ProfessorId, SectionId } from "@/db/schema";
 
+import type { AcadiaEndpoint } from "../../fetch-client";
+
 const CourseIdSchema = z.string().transform((id) => id as CourseId);
 const ProfessorIdSchema = z.string().transform((id) => id as ProfessorId);
 const SectionIdSchema = z.string().transform((id) => id as SectionId);
@@ -108,3 +110,18 @@ export const SectionDetailsResponseSchema = z
 export type AcadiaSection = z.infer<
   typeof SectionDetailsResponseSchema
 >[number];
+
+interface SectionDetailsRequest {
+  readonly courseId: CourseId;
+  readonly sectionIds: SectionId[];
+}
+
+export const SectionDetailsEndpoint = {
+  createBody: (request: SectionDetailsRequest) => request,
+  operation: "sections.get",
+  path: "/student/Student/Courses/Sections",
+  responseSchema: SectionDetailsResponseSchema,
+} satisfies AcadiaEndpoint<
+  SectionDetailsRequest,
+  typeof SectionDetailsResponseSchema
+>;

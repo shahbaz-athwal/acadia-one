@@ -1,14 +1,14 @@
 import { err, fromThrowable, ok, ResultAsync } from "neverthrow";
 import type { Result } from "neverthrow";
 import { ofetch } from "ofetch";
-import type { FetchResponse } from "ofetch";
+import type { FetchOptions, FetchResponse } from "ofetch";
 import type { z } from "zod";
 
-import type { AcadiaEndpoint } from "./endpoint";
 import { acadiaFailure, validationFailure } from "./errors";
-import type { AcadiaPortalError, AcadiaResponseDecodeFailure } from "./errors";
+import type { AcadiaPortalError } from "./errors";
 
 export const ACADIA_BASE_URL = "https://collss.acadiau.ca";
+export const ACADIA_REQUEST_TIMEOUT_MS = 15_000;
 
 export const acadiaAuthFetch = ofetch.create({
   baseURL: new URL("/student/Account/Login", ACADIA_BASE_URL).toString(),
@@ -16,9 +16,20 @@ export const acadiaAuthFetch = ofetch.create({
   redirect: "manual",
   responseType: "text",
   retry: false,
+  timeout: ACADIA_REQUEST_TIMEOUT_MS,
 });
 
 type AcadiaTextResponse = FetchResponse<string>;
+
+export interface AcadiaEndpoint<
+  Input,
+  ResponseSchema extends z.ZodType = z.ZodType,
+> {
+  readonly createBody: (input: Input) => FetchOptions<"text">["body"];
+  readonly operation: string;
+  readonly path: `/${string}`;
+  readonly responseSchema: ResponseSchema;
+}
 
 function getBodyKind(body: string | undefined) {
   if (body === undefined || body.trim().length === 0) {
@@ -52,11 +63,7 @@ function decodeJsonResponse(
 
   return fromThrowable(
     (): unknown => JSON.parse(body),
-    (cause) =>
-      acadiaFailure(operation, {
-        ...commonDetails,
-        cause,
-      } satisfies AcadiaResponseDecodeFailure)
+    () => acadiaFailure(operation, commonDetails)
   )();
 }
 
@@ -88,6 +95,7 @@ export class AcadiaClient {
       redirect: "manual",
       responseType: "text",
       retry: false,
+      timeout: ACADIA_REQUEST_TIMEOUT_MS,
     });
   }
 
@@ -95,26 +103,33 @@ export class AcadiaClient {
     endpoint: AcadiaEndpoint<Input, ResponseSchema>,
     input: Input
   ): ResultAsync<z.output<ResponseSchema>, AcadiaPortalError> {
-    const request = ResultAsync.fromThrowable(
-      async () =>
-        await this.portalFetch.raw<string, "text">(endpoint.path, {
-          body: endpoint.createBody(input),
-          method: endpoint.method,
-        }),
-      (cause) =>
+    return ResultAsync.fromPromise(
+      this.portalFetch.raw<string, "text">(endpoint.path, {
+        body: endpoint.createBody(input),
+        method: "POST",
+      }),
+      () =>
         acadiaFailure(endpoint.operation, {
-          cause,
           message: "Unable to reach the Acadia portal.",
           type: "network_failure",
         })
-    );
-
-    return request()
+    )
       .andThen((response) => {
         if (response.status < 200 || response.status >= 300) {
+          const redirectLocation = response.headers.get("location");
+          const authenticationRequired =
+            response.status === 401 ||
+            response.status === 403 ||
+            redirectLocation
+              ?.toLowerCase()
+              .includes("/student/account/login") === true;
+
           return err(
             acadiaFailure(endpoint.operation, {
-              message: "Acadia returned a non-success HTTP response.",
+              message: authenticationRequired
+                ? "Acadia authentication is required."
+                : "Acadia returned a non-success HTTP response.",
+              redirectLocation,
               status: response.status,
               type: "http_failure",
             })

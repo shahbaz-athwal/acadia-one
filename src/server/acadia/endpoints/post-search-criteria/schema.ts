@@ -3,6 +3,8 @@ import { z } from "zod";
 // oxlint-disable sort-keys typescript/no-unsafe-type-assertion
 import type { CourseId, ProfessorId, SectionId } from "@/db/schema";
 
+import type { AcadiaEndpoint } from "../../fetch-client";
+
 const CourseIdSchema = z.string().transform((id) => id as CourseId);
 const ProfessorIdSchema = z
   .string()
@@ -96,3 +98,13 @@ export type PostSearchCriteriaResponse = z.infer<
 
 export type AcadiaCourse = PostSearchCriteriaResponse["courses"][number];
 export type AcadiaProfessor = PostSearchCriteriaResponse["professors"][number];
+
+export const PostSearchCriteriaEndpoint = {
+  createBody: (criteria: PostSearchCriteriaRequest) => criteria,
+  operation: "courses.search",
+  path: "/student/Student/Courses/PostSearchCriteria",
+  responseSchema: PostSearchCriteriaResponseSchema,
+} satisfies AcadiaEndpoint<
+  PostSearchCriteriaRequest,
+  typeof PostSearchCriteriaResponseSchema
+>;
