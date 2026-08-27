@@ -12,7 +12,6 @@ type AuditWriter = Pick<Database, "insert">;
 
 interface AdminAuditEntry {
   readonly action: string;
-  readonly actorIp: string | null;
   readonly after?: AdminAuditDetails;
   readonly before?: AdminAuditDetails;
   readonly summary: string;
@@ -28,7 +27,6 @@ export function recordAdminAction(
     .insert(adminAuditLog)
     .values({
       action: entry.action,
-      actorIp: entry.actorIp,
       after: entry.after ?? null,
       before: entry.before ?? null,
       createdAt: recordedAt,

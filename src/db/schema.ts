@@ -213,9 +213,6 @@ export const adminAuditLog = sqliteTable(
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
     action: text().notNull(),
-    // There are no user accounts: admin access is a single shared secret, so
-    // the closest thing to "who" we can record is the requesting address.
-    actorIp: text(),
     target: text(),
     summary: text().notNull(),
     before: text({ mode: "json" }).$type<AdminAuditDetails>(),

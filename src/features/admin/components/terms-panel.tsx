@@ -98,8 +98,12 @@ export const TermsPanel = () => {
   const selectedTerms = terms.filter((term) =>
     selected.includes(term.termCode)
   );
-  const canArchive = selectedTerms.some((term) => term.archivedAt === null);
-  const canUnarchive = selectedTerms.some((term) => term.archivedAt !== null);
+  const toArchive = selectedTerms
+    .filter((term) => term.archivedAt === null)
+    .map((term) => term.termCode);
+  const toUnarchive = selectedTerms
+    .filter((term) => term.archivedAt !== null)
+    .map((term) => term.termCode);
 
   const toggle = (termCode: string, checked: boolean) => {
     setSelected((current) =>
@@ -171,9 +175,9 @@ export const TermsPanel = () => {
             <CardContent className="flex flex-col gap-3">
               <div className="flex flex-wrap items-center gap-2">
                 <Button
-                  disabled={!canArchive}
+                  disabled={toArchive.length === 0}
                   onClick={() => {
-                    confirmAction({ archived: true, termCodes: selected });
+                    confirmAction({ archived: true, termCodes: toArchive });
                   }}
                   size="sm"
                   variant="outline"
@@ -182,9 +186,9 @@ export const TermsPanel = () => {
                   Archive selected
                 </Button>
                 <Button
-                  disabled={!canUnarchive}
+                  disabled={toUnarchive.length === 0}
                   onClick={() => {
-                    confirmAction({ archived: false, termCodes: selected });
+                    confirmAction({ archived: false, termCodes: toUnarchive });
                   }}
                   size="sm"
                   variant="outline"

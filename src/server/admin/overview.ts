@@ -23,21 +23,10 @@ import {
   terms,
 } from "@/db/schema";
 
-export interface AdminTableCount {
+interface AdminTableCount {
   readonly label: string;
   readonly rows: number;
   readonly table: string;
-}
-
-export interface AdminHealthSignals {
-  readonly coursesWithoutSections: number;
-  readonly databaseBytes: number;
-  readonly foreignKeyViolations: number;
-  readonly foreignKeysEnabled: boolean;
-  readonly lastCourseImportAt: Date | null;
-  readonly orphanedSectionProfessors: number;
-  readonly pendingSectionImports: number;
-  readonly professorsWithoutRmpId: number;
 }
 
 const COUNTED_TABLES: { label: string; table: SQLiteTable }[] = [
@@ -53,9 +42,7 @@ const COUNTED_TABLES: { label: string; table: SQLiteTable }[] = [
   { label: "Admin audit log", table: adminAuditLog },
 ];
 
-export async function getTableCounts(
-  database: Database
-): Promise<AdminTableCount[]> {
+export async function getTableCounts(database: Database) {
   const results: AdminTableCount[] = [];
 
   for (const entry of COUNTED_TABLES) {
@@ -96,9 +83,7 @@ function readPragmas(database: Database) {
   };
 }
 
-export async function getHealthSignals(
-  database: Database
-): Promise<AdminHealthSignals> {
+export async function getHealthSignals(database: Database) {
   const [pending] = await database
     .select({ value: count() })
     .from(courseMatchingSections)

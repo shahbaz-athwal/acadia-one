@@ -215,7 +215,10 @@ export const ImportsPanel = () => {
                       </TableCell>
                       <TableCell>{formatDateTime(run.startedAt)}</TableCell>
                       <TableCell className="tabular-nums">
-                        {formatDuration(run.startedAt, run.finishedAt)}
+                        {formatDuration(
+                          run.startedAt,
+                          run.status === "running" ? new Date() : run.finishedAt
+                        )}
                       </TableCell>
                       <TableCell className="max-w-80 whitespace-normal text-xs">
                         {run.errorMessage ?? formatCounts(run.counts)}

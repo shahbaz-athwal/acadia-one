@@ -15,7 +15,7 @@ export interface AdminTermRow {
   readonly termCode: string;
 }
 
-export interface TermArchivePreview {
+interface TermArchivePreview {
   readonly courseCount: number;
   readonly missingTermCodes: string[];
   readonly sectionCount: number;
@@ -89,7 +89,6 @@ export async function previewTermArchive(
 }
 
 interface SetTermsArchivedOptions {
-  readonly actorIp: string | null;
   readonly archived: boolean;
   readonly termCodes: string[];
 }
@@ -100,7 +99,7 @@ interface SetTermsArchivedOptions {
  */
 export async function setTermsArchived(
   database: Database,
-  { actorIp, archived, termCodes }: SetTermsArchivedOptions,
+  { archived, termCodes }: SetTermsArchivedOptions,
   now: Date = new Date()
 ) {
   if (termCodes.length === 0) {
@@ -131,7 +130,6 @@ export async function setTermsArchived(
       transaction,
       {
         action: archived ? "terms.archive" : "terms.unarchive",
-        actorIp,
         after: {
           archivedAt: archived ? now.toISOString() : null,
           termCodes: changedTermCodes,
@@ -153,7 +151,6 @@ export async function setTermsArchived(
 }
 
 interface CreateTermOptions {
-  readonly actorIp: string | null;
   readonly endDate: Date;
   readonly name: string;
   readonly startDate: Date;
@@ -167,7 +164,7 @@ interface CreateTermOptions {
  */
 export async function createAdminTerm(
   database: Database,
-  { actorIp, endDate, name, startDate, termCode }: CreateTermOptions,
+  { endDate, name, startDate, termCode }: CreateTermOptions,
   now: Date = new Date()
 ) {
   const existing = await database
@@ -189,7 +186,6 @@ export async function createAdminTerm(
       transaction,
       {
         action: "terms.create",
-        actorIp,
         after: {
           endDate: endDate.toISOString(),
           name,

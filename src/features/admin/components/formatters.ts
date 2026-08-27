@@ -17,9 +17,9 @@ const BYTE_UNITS = ["B", "KB", "MB", "GB"] as const;
 const MILLISECONDS_PER_SECOND = 1000;
 const SECONDS_PER_MINUTE = 60;
 
-export type MaybeDate = Date | string | null | undefined;
+type MaybeDate = Date | string | null | undefined;
 
-export function toDate(value: MaybeDate) {
+function toDate(value: MaybeDate) {
   if (value === null || value === undefined) {
     return null;
   }

@@ -56,7 +56,6 @@ export const AuditPanel = () => {
                 <TableHead>Action</TableHead>
                 <TableHead>Target</TableHead>
                 <TableHead>Summary</TableHead>
-                <TableHead>From</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -64,7 +63,7 @@ export const AuditPanel = () => {
                 <TableRow>
                   <TableCell
                     className="text-muted-foreground text-sm"
-                    colSpan={5}
+                    colSpan={4}
                   >
                     Nothing has been recorded yet.
                   </TableCell>
@@ -95,9 +94,6 @@ export const AuditPanel = () => {
                           </pre>
                         </details>
                       )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {entry.actorIp ?? "—"}
                     </TableCell>
                   </TableRow>
                 ))

@@ -1,7 +1,7 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "b5ee8b2f-74dd-4436-ac07-00b3012255d0",
+  "id": "f1cd60e8-1cb5-426b-862e-6b22f34e397b",
   "prevIds": [
     "09d8ca5a-8315-4f1d-a27a-a5e3469154f6"
   ],
@@ -63,16 +63,6 @@
       "default": null,
       "generated": null,
       "name": "action",
-      "entityType": "columns",
-      "table": "admin_audit_log"
-    },
-    {
-      "type": "text",
-      "notNull": false,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "actorIp",
       "entityType": "columns",
       "table": "admin_audit_log"
     },

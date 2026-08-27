@@ -10,7 +10,6 @@ import {
   startImportRun,
 } from "@/server/admin/import-runner";
 import { adminMiddleware } from "@/server/admin/middleware";
-import { currentActorIp } from "@/server/admin/session";
 
 const IMPORT_RUN_LIMIT = 25;
 
@@ -39,7 +38,6 @@ export const triggerImport = createServerFn({ method: "POST" })
 
     recordAdminAction(database, {
       action: "imports.start",
-      actorIp: currentActorIp(),
       after: { kind: data.kind, runId },
       summary: `Started a ${data.kind} import.`,
       target: runId,

@@ -3,7 +3,6 @@ import { z } from "zod";
 
 import { getDatabase } from "@/db";
 import { adminMiddleware } from "@/server/admin/middleware";
-import { currentActorIp } from "@/server/admin/session";
 import {
   createAdminTerm,
   listAdminTerms,
@@ -34,7 +33,6 @@ export const archiveTerms = createServerFn({ method: "POST" })
   .handler(
     async ({ data }) =>
       await setTermsArchived(getDatabase(), {
-        actorIp: currentActorIp(),
         archived: data.archived,
         termCodes: data.termCodes,
       })
@@ -59,7 +57,6 @@ export const createTerm = createServerFn({ method: "POST" })
     }
 
     await createAdminTerm(getDatabase(), {
-      actorIp: currentActorIp(),
       endDate,
       name: data.name,
       startDate,

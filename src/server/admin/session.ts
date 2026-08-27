@@ -3,7 +3,6 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import {
   deleteCookie,
   getCookie,
-  getRequestIP,
   setCookie,
 } from "@tanstack/react-start/server";
 
@@ -119,48 +118,4 @@ export function hasAdminSession() {
   }
 
   return isValidSessionToken(token, readAdminPassword(), Date.now());
-}
-
-export function currentActorIp() {
-  return getRequestIP({ xForwardedFor: true }) ?? null;
-}
-
-const SIGN_IN_WINDOW_MS = 5 * 60 * MILLISECONDS_PER_SECOND * 60;
-const MAX_SIGN_IN_ATTEMPTS = 10;
-const failedSignIns = new Map<string, { count: number; windowStart: number }>();
-
-/**
- * A single shared secret with no account lockout is trivially brute-forceable,
- * so failed attempts are throttled per client address. In-memory only: this is
- * a speed bump for a single-process deployment, not a distributed rate limiter.
- */
-export function assertSignInAllowed(now: number = Date.now()) {
-  const key = currentActorIp() ?? "unknown";
-  const entry = failedSignIns.get(key);
-
-  if (entry === undefined || now - entry.windowStart > SIGN_IN_WINDOW_MS) {
-    return;
-  }
-
-  if (entry.count >= MAX_SIGN_IN_ATTEMPTS) {
-    throw new AdminAuthError(
-      "Too many failed sign-in attempts. Try again later."
-    );
-  }
-}
-
-export function recordFailedSignIn(now: number = Date.now()) {
-  const key = currentActorIp() ?? "unknown";
-  const entry = failedSignIns.get(key);
-
-  if (entry === undefined || now - entry.windowStart > SIGN_IN_WINDOW_MS) {
-    failedSignIns.set(key, { count: 1, windowStart: now });
-    return;
-  }
-
-  entry.count += 1;
-}
-
-export function clearFailedSignIns() {
-  failedSignIns.delete(currentActorIp() ?? "unknown");
 }

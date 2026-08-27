@@ -46,7 +46,6 @@ function createTestDatabase() {
     CREATE TABLE admin_audit_log (
       id text PRIMARY KEY,
       action text NOT NULL,
-      actorIp text,
       target text,
       summary text NOT NULL,
       before text,
@@ -150,7 +149,7 @@ test("archives and unarchives terms without deleting anything", async () => {
 
     const archived = await setTermsArchived(
       database,
-      { actorIp: "10.0.0.1", archived: true, termCodes: ["2026WI", "2026FA"] },
+      { archived: true, termCodes: ["2026WI", "2026FA"] },
       NOW
     );
 
@@ -171,14 +170,14 @@ test("archives and unarchives terms without deleting anything", async () => {
     // Re-archiving is a no-op rather than a second audit entry.
     const again = await setTermsArchived(
       database,
-      { actorIp: null, archived: true, termCodes: ["2026WI"] },
+      { archived: true, termCodes: ["2026WI"] },
       NOW
     );
     expect(again.changedTermCodes).toEqual([]);
 
     const unarchived = await setTermsArchived(
       database,
-      { actorIp: null, archived: false, termCodes: ["2026WI"] },
+      { archived: false, termCodes: ["2026WI"] },
       NOW
     );
     expect(unarchived.changedTermCodes).toEqual(["2026WI"]);
@@ -192,7 +191,6 @@ test("archives and unarchives terms without deleting anything", async () => {
       "terms.archive",
       "terms.unarchive",
     ]);
-    expect(entries[0]?.actorIp).toBe("10.0.0.1");
     expect(entries[0]?.before).toBeTruthy();
   } finally {
     sqlite.close();
@@ -208,7 +206,6 @@ test("rejects a duplicate hand-created term", async () => {
     await createAdminTerm(
       database,
       {
-        actorIp: null,
         endDate: new Date("2027-04-20T00:00:00.000Z"),
         name: "Winter 2027",
         startDate: new Date("2027-01-05T00:00:00.000Z"),
@@ -231,7 +228,6 @@ test("rejects a duplicate hand-created term", async () => {
       await createAdminTerm(
         database,
         {
-          actorIp: null,
           endDate: new Date("2027-04-20T00:00:00.000Z"),
           name: "Winter 2027 again",
           startDate: new Date("2027-01-05T00:00:00.000Z"),

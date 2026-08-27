@@ -1,7 +1,6 @@
 CREATE TABLE `admin_audit_log` (
 	`id` text PRIMARY KEY,
 	`action` text NOT NULL,
-	`actorIp` text,
 	`target` text,
 	`summary` text NOT NULL,
 	`before` text,
