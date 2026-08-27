@@ -47,6 +47,9 @@ export const getRouter = () => {
 
 declare module "@tanstack/react-router" {
   interface Register {
-    router: typeof getRouter;
+    // `RegisteredRouter` reads this key directly, so it has to be the router
+    // instance type. Registering `typeof getRouter` (the factory) collapsed
+    // every typed `to:` down to "." | "..".
+    router: ReturnType<typeof getRouter>;
   }
 }

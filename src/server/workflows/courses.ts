@@ -1,6 +1,6 @@
 import { isNull } from "drizzle-orm";
 
-import { db } from "@/db";
+import { getDatabase } from "@/db";
 import type { Database } from "@/db";
 import { courseMatchingSections, courses, departments } from "@/db/schema";
 import type { CourseId } from "@/db/schema";
@@ -53,7 +53,7 @@ async function validateDepartments(
 }
 
 export async function importCourses({
-  database = db,
+  database = getDatabase(),
   extractor,
   snapshotAt = new Date(),
 }: ImportCoursesOptions) {

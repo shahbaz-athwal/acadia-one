@@ -1,7 +1,40 @@
+import { Database as SqliteClient } from "bun:sqlite";
+
 import { drizzle } from "drizzle-orm/bun-sqlite";
 
-const databaseUrl = process.env.DATABASE_URL ?? "file:./local.db";
+const DEFAULT_DATABASE_URL = "file:./local.db";
 
-export const db = drizzle(databaseUrl, { jit: true });
+/**
+ * SQLite disables foreign key enforcement per connection, so `sections.termCode
+ * -> terms.termCode` and the other declared references are only checked once
+ * this pragma runs. It has to be issued on every connection we open.
+ */
+export function enableForeignKeys(client: SqliteClient) {
+  client.run("PRAGMA foreign_keys = ON");
+}
 
-export type Database = typeof db;
+export function createDatabase(
+  url: string = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL
+) {
+  const client = new SqliteClient(url);
+
+  enableForeignKeys(client);
+
+  return drizzle({ client, jit: true });
+}
+
+export type Database = ReturnType<typeof createDatabase>;
+
+let defaultDatabase: Database | undefined;
+
+/**
+ * Opening the connection lazily keeps `import`ing a workflow from creating a
+ * stray `local.db` in whatever directory the process happens to start in.
+ * Prefer passing an explicit database into workflows; this is the fallback for
+ * request handlers that want the process-wide connection.
+ */
+export function getDatabase(): Database {
+  defaultDatabase ??= createDatabase();
+
+  return defaultDatabase;
+}

@@ -1,6 +1,6 @@
 import { and, eq, inArray, isNull } from "drizzle-orm";
 
-import { db } from "@/db";
+import { getDatabase } from "@/db";
 import type { Database } from "@/db";
 import {
   courseMatchingSections,
@@ -17,10 +17,21 @@ interface SectionDetailsExtractor {
   readonly getSectionDetails: AcadiaExtractor["getSectionDetails"];
 }
 
+export interface SectionImportProgress {
+  readonly completedCourses: number;
+  readonly totalCourses: number;
+}
+
 interface ImportSectionDetailsOptions {
   readonly database?: Database;
   readonly extractor: SectionDetailsExtractor;
   readonly importedAt?: Date;
+  /**
+   * Called after every course is persisted. A full import is ~1200 sequential
+   * portal requests, so callers that surface progress (the admin dashboard)
+   * need something to report before the promise settles.
+   */
+  readonly onProgress?: (progress: SectionImportProgress) => void;
 }
 
 interface PendingCourseImport {
@@ -141,10 +152,11 @@ function persistCourseImport(
   acadiaSections: AcadiaSection[],
   importedAt: Date
 ) {
+  // `archivedAt` is deliberately absent: archive state is owned by the admin
+  // dashboard, and the importer must never write it. See the upsert below.
   const termRows = new Map<
     string,
     {
-      archivedAt: null;
       endDate: Date;
       name: string;
       startDate: Date;
@@ -160,7 +172,6 @@ function persistCourseImport(
 
   for (const section of acadiaSections) {
     termRows.set(section.term.termCode, {
-      archivedAt: null,
       endDate: parseDate(section.term.endDate, "term end date"),
       name: section.term.name,
       startDate: parseDate(section.term.startDate, "term start date"),
@@ -209,9 +220,11 @@ function persistCourseImport(
       transaction
         .insert(terms)
         .values(term)
+        // `archivedAt` is intentionally left out of this set. Archiving is a
+        // human decision made in the admin dashboard, and including it here
+        // silently un-archived every term on the next import.
         .onConflictDoUpdate({
           set: {
-            archivedAt: term.archivedAt,
             endDate: term.endDate,
             name: term.name,
             startDate: term.startDate,
@@ -282,9 +295,10 @@ function persistCourseImport(
 }
 
 export async function importSectionDetails({
-  database = db,
+  database = getDatabase(),
   extractor,
   importedAt = new Date(),
+  onProgress,
 }: ImportSectionDetailsOptions) {
   const pendingRows = await database
     .select({
@@ -345,6 +359,11 @@ export async function importSectionDetails({
     imported.sectionProfessors += counts.sectionProfessors;
     imported.sections += counts.sections;
     imported.terms += counts.terms;
+
+    onProgress?.({
+      completedCourses: imported.courses,
+      totalCourses: pendingImports.length,
+    });
   }
 
   return imported;

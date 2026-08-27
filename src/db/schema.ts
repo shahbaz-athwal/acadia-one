@@ -161,3 +161,66 @@ export const sectionProfessors = sqliteTable(
     index("section_professors_by_professor_id").on(table.professorId),
   ]
 );
+
+export type ImportRunKind = "courses" | "sectionDetails";
+export type ImportRunStatus = "running" | "succeeded" | "failed";
+export type ImportRunTrigger = "admin-dashboard" | "script";
+
+/**
+ * `importCourses` / `importSectionDetails` only return counts to their caller,
+ * so a partial or failed run used to leave no trace. Every run writes a row
+ * here before it starts and updates it when it settles.
+ */
+export const importRuns = sqliteTable(
+  "import_runs",
+  {
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    kind: text().$type<ImportRunKind>().notNull(),
+    status: text().$type<ImportRunStatus>().notNull(),
+    trigger: text().$type<ImportRunTrigger>().notNull(),
+    startedAt: int({ mode: "timestamp" }).notNull(),
+    finishedAt: int({ mode: "timestamp" }),
+    counts: text({ mode: "json" }).$type<Record<string, number>>(),
+    errorMessage: text(),
+  },
+  (table) => [
+    index("import_runs_by_started_at").on(table.startedAt),
+    index("import_runs_by_status").on(table.status),
+  ]
+);
+
+export type AuditJsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | AuditJsonValue[]
+  | { [key: string]: AuditJsonValue };
+
+export type AdminAuditDetails = Readonly<Record<string, AuditJsonValue>>;
+
+/**
+ * Admin writes are destructive and irreversible-looking from the outside (the
+ * section import deletes and reinserts every section of a course), so each one
+ * records what it touched with a before/after snapshot.
+ */
+export const adminAuditLog = sqliteTable(
+  "admin_audit_log",
+  {
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
+    action: text().notNull(),
+    // There are no user accounts: admin access is a single shared secret, so
+    // the closest thing to "who" we can record is the requesting address.
+    actorIp: text(),
+    target: text(),
+    summary: text().notNull(),
+    before: text({ mode: "json" }).$type<AdminAuditDetails>(),
+    after: text({ mode: "json" }).$type<AdminAuditDetails>(),
+    createdAt: int({ mode: "timestamp" }).notNull(),
+  },
+  (table) => [index("admin_audit_log_by_created_at").on(table.createdAt)]
+);

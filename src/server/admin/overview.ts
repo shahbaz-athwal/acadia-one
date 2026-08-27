@@ -1,0 +1,154 @@
+import {
+  and,
+  count,
+  desc,
+  getTableName,
+  isNull,
+  notExists,
+  sql,
+} from "drizzle-orm";
+import type { SQLiteTable } from "drizzle-orm/sqlite-core";
+
+import type { Database } from "@/db";
+import {
+  adminAuditLog,
+  courseMatchingSections,
+  courses,
+  departments,
+  importRuns,
+  professorDepartments,
+  professors,
+  sectionProfessors,
+  sections,
+  terms,
+} from "@/db/schema";
+
+export interface AdminTableCount {
+  readonly label: string;
+  readonly rows: number;
+  readonly table: string;
+}
+
+export interface AdminHealthSignals {
+  readonly coursesWithoutSections: number;
+  readonly databaseBytes: number;
+  readonly foreignKeyViolations: number;
+  readonly foreignKeysEnabled: boolean;
+  readonly lastCourseImportAt: Date | null;
+  readonly orphanedSectionProfessors: number;
+  readonly pendingSectionImports: number;
+  readonly professorsWithoutRmpId: number;
+}
+
+const COUNTED_TABLES: { label: string; table: SQLiteTable }[] = [
+  { label: "Departments", table: departments },
+  { label: "Courses", table: courses },
+  { label: "Course matching sections", table: courseMatchingSections },
+  { label: "Terms", table: terms },
+  { label: "Sections", table: sections },
+  { label: "Professors", table: professors },
+  { label: "Professor departments", table: professorDepartments },
+  { label: "Section professors", table: sectionProfessors },
+  { label: "Import runs", table: importRuns },
+  { label: "Admin audit log", table: adminAuditLog },
+];
+
+export async function getTableCounts(
+  database: Database
+): Promise<AdminTableCount[]> {
+  const results: AdminTableCount[] = [];
+
+  for (const entry of COUNTED_TABLES) {
+    // Sequential on purpose: these are trivial reads against a single SQLite
+    // connection, which serialises them regardless.
+    // oxlint-disable-next-line no-await-in-loop
+    const [row] = await database.select({ value: count() }).from(entry.table);
+
+    results.push({
+      label: entry.label,
+      rows: row?.value ?? 0,
+      table: getTableName(entry.table),
+    });
+  }
+
+  return results;
+}
+
+function readPragmas(database: Database) {
+  const client = database.$client;
+  const foreignKeys = client
+    .query<{ foreign_keys: number }, []>("PRAGMA foreign_keys")
+    .get();
+  const pageCount = client
+    .query<{ page_count: number }, []>("PRAGMA page_count")
+    .get();
+  const pageSize = client
+    .query<{ page_size: number }, []>("PRAGMA page_size")
+    .get();
+  const violations = client
+    .query<Record<string, unknown>, []>("PRAGMA foreign_key_check")
+    .all();
+
+  return {
+    databaseBytes: (pageCount?.page_count ?? 0) * (pageSize?.page_size ?? 0),
+    foreignKeyViolations: violations.length,
+    foreignKeysEnabled: foreignKeys?.foreign_keys === 1,
+  };
+}
+
+export async function getHealthSignals(
+  database: Database
+): Promise<AdminHealthSignals> {
+  const [pending] = await database
+    .select({ value: count() })
+    .from(courseMatchingSections)
+    .where(
+      and(
+        isNull(courseMatchingSections.archivedAt),
+        isNull(courseMatchingSections.importedAt)
+      )
+    );
+
+  const [lastImport] = await database
+    .select({ importedAt: courseMatchingSections.importedAt })
+    .from(courseMatchingSections)
+    .where(sql`${courseMatchingSections.importedAt} IS NOT NULL`)
+    .orderBy(desc(courseMatchingSections.importedAt))
+    .limit(1);
+
+  const [coursesWithoutSections] = await database
+    .select({ value: count() })
+    .from(courses)
+    .where(
+      notExists(
+        database
+          .select({ one: sql`1` })
+          .from(sections)
+          .where(sql`${sections.courseId} = ${courses.id}`)
+      )
+    );
+
+  const [professorsWithoutRmpId] = await database
+    .select({ value: count() })
+    .from(professors)
+    .where(isNull(professors.rmpId));
+
+  // `section_professors` declares no foreign keys at all, so nothing stops a
+  // row from outliving the section or professor it points at.
+  const [orphanedSectionProfessors] = await database
+    .select({ value: count() })
+    .from(sectionProfessors)
+    .where(
+      sql`${sectionProfessors.sectionId} NOT IN (SELECT ${sections.id} FROM ${sections})
+        OR ${sectionProfessors.professorId} NOT IN (SELECT ${professors.id} FROM ${professors})`
+    );
+
+  return {
+    ...readPragmas(database),
+    coursesWithoutSections: coursesWithoutSections?.value ?? 0,
+    lastCourseImportAt: lastImport?.importedAt ?? null,
+    orphanedSectionProfessors: orphanedSectionProfessors?.value ?? 0,
+    pendingSectionImports: pending?.value ?? 0,
+    professorsWithoutRmpId: professorsWithoutRmpId?.value ?? 0,
+  };
+}

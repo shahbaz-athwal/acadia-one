@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { getDatabase } from "@/db";
 import type { Database } from "@/db";
 import { departments, professorDepartments, professors } from "@/db/schema";
 import type { ProfessorId } from "@/db/schema";
@@ -18,7 +18,7 @@ interface ProfessorDepartmentMembership {
 }
 
 export async function importProfessors({
-  database = db,
+  database = getDatabase(),
   extractor,
 }: ImportProfessorsOptions) {
   const departmentRows = await database

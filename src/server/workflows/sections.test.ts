@@ -2,7 +2,7 @@ import { Database as SQLiteDatabase } from "bun:sqlite";
 // oxlint-disable typescript/no-unsafe-type-assertion
 import { expect, test } from "bun:test";
 
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/bun-sqlite";
 import { okAsync } from "neverthrow";
 
@@ -369,6 +369,75 @@ test("imports pending section details and leaves completed batches alone", async
       terms: 0,
     });
     expect(calls).toHaveLength(1);
+  } finally {
+    sqlite.close();
+  }
+});
+
+test("leaves the archive state of an existing term alone", async () => {
+  const { database, sqlite } = createTestDatabase();
+  const archivedAt = new Date("2026-08-13T12:00:00.000Z");
+  const progress: { completedCourses: number; totalCourses: number }[] = [];
+  const extractor = {
+    getSectionDetails: () => okAsync(acadiaSections),
+  };
+
+  try {
+    database
+      .insert(departments)
+      .values({ facultyUrl: "/test", name: "Testing", prefix: "TEST" })
+      .run();
+    database
+      .insert(courses)
+      .values({
+        academicLevel: 1,
+        code: "TEST-1000",
+        credits: 3,
+        departmentPrefix: "TEST",
+        id: COURSE_ID,
+        isLab: false,
+        title: "Introduction to Testing",
+      })
+      .run();
+    // The term the fixture sections belong to, already archived by an admin and
+    // carrying stale details the import should refresh.
+    database
+      .insert(terms)
+      .values({
+        archivedAt,
+        endDate: new Date("2027-04-01T00:00:00.000Z"),
+        name: "Stale name",
+        startDate: new Date("2027-01-01T00:00:00.000Z"),
+        termCode: "2027WI",
+      })
+      .run();
+    database
+      .insert(courseMatchingSections)
+      .values({
+        courseId: COURSE_ID,
+        id: "pending-1",
+        sectionIds: [SECTION_ONE_ID, SECTION_TWO_ID],
+      })
+      .run();
+
+    await importSectionDetails({
+      database,
+      extractor,
+      onProgress: (value) => {
+        progress.push(value);
+      },
+    });
+
+    const [storedTerm] = database
+      .select()
+      .from(terms)
+      .where(eq(terms.termCode, "2027WI"))
+      .all();
+
+    expect(storedTerm?.archivedAt).toEqual(archivedAt);
+    expect(storedTerm?.name).toBe("Winter 2027");
+    expect(storedTerm?.endDate).toEqual(new Date("2027-04-20T00:00:00.000Z"));
+    expect(progress).toEqual([{ completedCourses: 1, totalCourses: 1 }]);
   } finally {
     sqlite.close();
   }
