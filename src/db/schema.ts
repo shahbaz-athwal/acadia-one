@@ -1,4 +1,3 @@
-// oxlint-disable sort-keys no-inline-comments
 import {
   index,
   int,

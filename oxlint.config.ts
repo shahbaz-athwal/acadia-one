@@ -16,5 +16,7 @@ export default defineConfig({
   },
   rules: {
     "func-style": "off",
+    "no-inline-comments": "off",
+    "sort-keys": "off",
   },
 });

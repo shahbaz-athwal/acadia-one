@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-// oxlint-disable sort-keys typescript/no-unsafe-type-assertion
+// oxlint-disable typescript/no-unsafe-type-assertion
 import type { CourseId, ProfessorId, SectionId } from "@/db/schema";
 
 import type { AcadiaEndpoint } from "../../fetch-client";
