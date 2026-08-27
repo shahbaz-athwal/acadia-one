@@ -38,6 +38,7 @@ const PERCENT = 100;
 
 const KIND_LABELS: Record<ImportRunKind, string> = {
   courses: "Course import",
+  professors: "Professor import",
   sectionDetails: "Section import",
 };
 
@@ -92,9 +93,10 @@ export const ImportsPanel = () => {
         <CardHeader>
           <CardTitle>Run an import</CardTitle>
           <CardDescription>
-            Terms and sections come from the Acadia portal. A full section
-            import is roughly 1200 sequential portal requests and runs in the
-            background — leaving this page does not stop it.
+            Courses, terms, sections, and professors all come from the Acadia
+            portal. Each import runs in the background — leaving this page does
+            not stop it — and only one can run at a time. A full section import
+            is roughly 1200 sequential portal requests.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
@@ -119,6 +121,17 @@ export const ImportsPanel = () => {
             >
               <DownloadIcon />
               Run course import
+            </Button>
+            <Button
+              disabled={activeRun !== null || triggerMutation.isPending}
+              onClick={() => {
+                triggerMutation.mutate("professors");
+              }}
+              size="sm"
+              variant="outline"
+            >
+              <DownloadIcon />
+              Run professor import
             </Button>
           </div>
 

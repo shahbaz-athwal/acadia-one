@@ -6,17 +6,14 @@ import type { ImportRunKind, ImportRunTrigger } from "@/db/schema";
 import { authenticateAcadiaStudent } from "@/server/acadia/auth";
 import { AcadiaExtractor } from "@/server/acadia/extractor";
 import { importCourses } from "@/server/workflows/courses";
+import { importProfessors } from "@/server/workflows/professors";
 import { importSectionDetails } from "@/server/workflows/sections";
-
-export interface ImportRunProgress {
-  readonly completedCourses: number;
-  readonly totalCourses: number;
-}
+import type { SectionImportProgress } from "@/server/workflows/sections";
 
 interface ActiveRun {
   readonly id: string;
   readonly kind: ImportRunKind;
-  progress: ImportRunProgress | null;
+  progress: SectionImportProgress | null;
 }
 
 /**
@@ -110,17 +107,30 @@ async function createExtractor() {
 async function executeRun(database: Database, run: ActiveRun) {
   const extractor = await createExtractor();
 
-  if (run.kind === "courses") {
-    return await importCourses({ database, extractor });
+  // Cases are exhaustive over `ImportRunKind`, so adding a kind to
+  // `IMPORT_RUN_KINDS` fails to compile until it is dispatched here.
+  switch (run.kind) {
+    case "courses": {
+      return await importCourses({ database, extractor });
+    }
+    case "professors": {
+      return await importProfessors({ database, extractor });
+    }
+    case "sectionDetails": {
+      return await importSectionDetails({
+        database,
+        extractor,
+        onProgress: (progress) => {
+          run.progress = progress;
+        },
+      });
+    }
+    default: {
+      // `import_runs.kind` is an unconstrained text column, so a hand-edited
+      // row can hold something this process has never heard of.
+      throw new Error(`Unknown import kind: ${String(run.kind)}`);
+    }
   }
-
-  return await importSectionDetails({
-    database,
-    extractor,
-    onProgress: (progress) => {
-      run.progress = progress;
-    },
-  });
 }
 
 async function finishRun(database: Database, run: ActiveRun) {

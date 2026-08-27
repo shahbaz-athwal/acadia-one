@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { getDatabase } from "@/db";
+import { IMPORT_RUN_KINDS } from "@/db/schema";
 import { recordAdminAction } from "@/server/admin/audit";
 import {
   failInterruptedRuns,
@@ -28,7 +29,7 @@ export const getImportRuns = createServerFn({ method: "GET" })
 
 export const triggerImport = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
-  .validator(z.object({ kind: z.enum(["courses", "sectionDetails"]) }))
+  .validator(z.object({ kind: z.enum(IMPORT_RUN_KINDS) }))
   .handler(({ data }) => {
     const database = getDatabase();
     const { runId } = startImportRun(database, {

@@ -162,14 +162,20 @@ export const sectionProfessors = sqliteTable(
   ]
 );
 
-export type ImportRunKind = "courses" | "sectionDetails";
+export const IMPORT_RUN_KINDS = [
+  "courses",
+  "professors",
+  "sectionDetails",
+] as const;
+
+export type ImportRunKind = (typeof IMPORT_RUN_KINDS)[number];
 export type ImportRunStatus = "running" | "succeeded" | "failed";
 export type ImportRunTrigger = "admin-dashboard" | "script";
 
 /**
- * `importCourses` / `importSectionDetails` only return counts to their caller,
- * so a partial or failed run used to leave no trace. Every run writes a row
- * here before it starts and updates it when it settles.
+ * The import workflows only return counts to their caller, so a partial or
+ * failed run used to leave no trace. Every run writes a row here before it
+ * starts and updates it when it settles.
  */
 export const importRuns = sqliteTable(
   "import_runs",
