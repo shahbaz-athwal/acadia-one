@@ -1,5 +1,5 @@
 import { Database as SqliteClient } from "bun:sqlite";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 
 const MIGRATIONS_DIR = `${import.meta.dir}/../drizzle`;
 
@@ -11,19 +11,20 @@ const MIGRATIONS_DIR = `${import.meta.dir}/../drizzle`;
 export function migratedClient(): SqliteClient {
   const client = new SqliteClient(":memory:");
 
-  const directories = readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
+  const files = readdirSync(MIGRATIONS_DIR, { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name)
+    .map((entry) => `${MIGRATIONS_DIR}/${entry.name}/migration.sql`)
+    // Deleting a generated migration leaves its directory behind, and git does
+    // not track empty directories — so a checkout can hold folders drizzle
+    // skips. Skip them here too rather than blowing up on a stale leftover.
+    .filter((file) => existsSync(file))
     // Timestamp-prefixed, so lexicographic order is migration order. `toSorted`
     // would be cleaner but tsconfig's `lib` stops at ES2022.
     // oxlint-disable-next-line unicorn/no-array-sort
     .sort();
 
-  for (const directory of directories) {
-    const sql = readFileSync(
-      `${MIGRATIONS_DIR}/${directory}/migration.sql`,
-      "utf-8"
-    );
+  for (const file of files) {
+    const sql = readFileSync(file, "utf-8");
 
     for (const statement of sql.split("--> statement-breakpoint")) {
       if (statement.trim().length > 0) {
