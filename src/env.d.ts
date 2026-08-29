@@ -16,5 +16,7 @@ declare namespace NodeJS {
     readonly ADMIN_PASSWORD?: string;
     /** SQLite connection string, e.g. `file:./local.db`. */
     readonly DATABASE_URL?: string;
+    /** Gemini key for `bun run rmp:match`. Unset disables model adjudication. */
+    readonly GOOGLE_GENERATIVE_AI_API_KEY?: string;
   }
 }
