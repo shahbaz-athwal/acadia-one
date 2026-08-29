@@ -8,6 +8,8 @@
     "db:generate": "bunx --bun drizzle-kit generate",
     "db:migrate": "bunx --bun drizzle-kit migrate",
     "db:push": "bunx --bun drizzle-kit push",
+    "db:snapshot": "bun run scripts/db-snapshot.ts",
+    "db:seed": "bun run scripts/db-seed.ts",
     "db:studio": "bunx --bun drizzle-kit studio",
     "build": "bunx --bun vite build",
     "start": "portless acadia-one bunx --bun vite preview",
