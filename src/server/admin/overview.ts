@@ -2,6 +2,7 @@ import {
   and,
   count,
   desc,
+  eq,
   getTableName,
   isNull,
   notExists,
@@ -17,6 +18,8 @@ import {
   departments,
   importRuns,
   professorDepartments,
+  professorRatingPulls,
+  professorRatings,
   professors,
   sectionProfessors,
   sections,
@@ -38,6 +41,8 @@ const COUNTED_TABLES: { label: string; table: SQLiteTable }[] = [
   { label: "Professors", table: professors },
   { label: "Professor departments", table: professorDepartments },
   { label: "Section professors", table: sectionProfessors },
+  { label: "Professor ratings", table: professorRatings },
+  { label: "RMP rating pulls", table: professorRatingPulls },
   { label: "Import runs", table: importRuns },
   { label: "Admin audit log", table: adminAuditLog },
 ];
@@ -128,9 +133,30 @@ export async function getHealthSignals(database: Database) {
         OR ${sectionProfessors.professorId} NOT IN (SELECT ${professors.id} FROM ${professors})`
     );
 
+  // A review whose course code did not resolve is kept deliberately, so this is
+  // the size of the enrichment backlog rather than a fault.
+  const [ratingsWithoutCourse] = await database
+    .select({ value: count() })
+    .from(professorRatings)
+    .where(isNull(professorRatings.courseId));
+
+  const [failedRatingPulls] = await database
+    .select({ value: count() })
+    .from(professorRatingPulls)
+    .where(eq(professorRatingPulls.status, "failed"));
+
+  const [lastRatingPull] = await database
+    .select({ finishedAt: professorRatingPulls.finishedAt })
+    .from(professorRatingPulls)
+    .orderBy(desc(professorRatingPulls.finishedAt))
+    .limit(1);
+
   return {
     ...readPragmas(database),
     coursesWithoutSections: coursesWithoutSections?.value ?? 0,
+    failedRatingPulls: failedRatingPulls?.value ?? 0,
+    lastRatingPullAt: lastRatingPull?.finishedAt ?? null,
+    ratingsWithoutCourse: ratingsWithoutCourse?.value ?? 0,
     lastCourseImportAt: lastImport?.importedAt ?? null,
     orphanedSectionProfessors: orphanedSectionProfessors?.value ?? 0,
     pendingSectionImports: pending?.value ?? 0,

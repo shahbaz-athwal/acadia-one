@@ -90,6 +90,24 @@ export const OverviewPanel = () => {
       value: formatNumber(health.professorsWithoutRmpId),
     },
     {
+      hint: "Reviews kept without a course link, because the student-typed course code did not resolve. Expected; linking is an enrichment, not a filter.",
+      label: "Reviews without a course link",
+      tone: "default",
+      value: formatNumber(health.ratingsWithoutCourse),
+    },
+    {
+      hint: "Professors whose last RMP review pull failed. They are retried on the next run.",
+      label: "Failed RMP review pulls",
+      tone: health.failedRatingPulls > 0 ? "warning" : "default",
+      value: formatNumber(health.failedRatingPulls),
+    },
+    {
+      hint: "Most recent finishedAt across professor_rating_pulls.",
+      label: "Last RMP review pull at",
+      tone: "default",
+      value: formatDateTime(health.lastRatingPullAt),
+    },
+    {
       hint: "section_professors declares no foreign keys, so these rows are never cleaned up automatically.",
       label: "Orphaned section_professors rows",
       tone: health.orphanedSectionProfessors > 0 ? "warning" : "default",
