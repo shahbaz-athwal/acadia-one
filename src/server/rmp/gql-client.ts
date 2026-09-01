@@ -33,6 +33,14 @@ function rmpFailure(
 }
 
 /**
+ * RMP 403s anything whose `User-Agent` does not look like a browser — a bare
+ * `Python-urllib` is refused outright. ofetch's default happens to get through,
+ * but that is not something to leave to chance, so it is pinned here.
+ */
+const RMP_USER_AGENT =
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+
+/**
  * RMP's public GraphQL endpoint gates on a fixed basic credential (`test:test`)
  * rather than a per-caller key. There is nothing to configure.
  */
@@ -40,6 +48,7 @@ const rmpFetch = ofetch.create({
   headers: {
     Authorization: "Basic dGVzdDp0ZXN0",
     "Content-Type": "application/json",
+    "User-Agent": RMP_USER_AGENT,
   },
   retry: 2,
   retryDelay: 500,
