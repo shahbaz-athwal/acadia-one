@@ -1,0 +1,1522 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "2bd1738c-b33b-48ec-b4bc-d1de3d2faad2",
+  "prevIds": [
+    "f1cd60e8-1cb5-426b-862e-6b22f34e397b"
+  ],
+  "ddl": [
+    {
+      "name": "admin_audit_log",
+      "entityType": "tables"
+    },
+    {
+      "name": "course_matching_sections",
+      "entityType": "tables"
+    },
+    {
+      "name": "courses",
+      "entityType": "tables"
+    },
+    {
+      "name": "departments",
+      "entityType": "tables"
+    },
+    {
+      "name": "import_runs",
+      "entityType": "tables"
+    },
+    {
+      "name": "professor_departments",
+      "entityType": "tables"
+    },
+    {
+      "name": "professor_rating_pulls",
+      "entityType": "tables"
+    },
+    {
+      "name": "professor_ratings",
+      "entityType": "tables"
+    },
+    {
+      "name": "professors",
+      "entityType": "tables"
+    },
+    {
+      "name": "section_professors",
+      "entityType": "tables"
+    },
+    {
+      "name": "sections",
+      "entityType": "tables"
+    },
+    {
+      "name": "terms",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "admin_audit_log"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "action",
+      "entityType": "columns",
+      "table": "admin_audit_log"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "target",
+      "entityType": "columns",
+      "table": "admin_audit_log"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "summary",
+      "entityType": "columns",
+      "table": "admin_audit_log"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "before",
+      "entityType": "columns",
+      "table": "admin_audit_log"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "after",
+      "entityType": "columns",
+      "table": "admin_audit_log"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "createdAt",
+      "entityType": "columns",
+      "table": "admin_audit_log"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "course_matching_sections"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "courseId",
+      "entityType": "columns",
+      "table": "course_matching_sections"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "sectionIds",
+      "entityType": "columns",
+      "table": "course_matching_sections"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "importedAt",
+      "entityType": "columns",
+      "table": "course_matching_sections"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "archivedAt",
+      "entityType": "columns",
+      "table": "course_matching_sections"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "courses"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "code",
+      "entityType": "columns",
+      "table": "courses"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "title",
+      "entityType": "columns",
+      "table": "courses"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "description",
+      "entityType": "columns",
+      "table": "courses"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "departmentPrefix",
+      "entityType": "columns",
+      "table": "courses"
+    },
+    {
+      "type": "real",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "credits",
+      "entityType": "columns",
+      "table": "courses"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "isLab",
+      "entityType": "columns",
+      "table": "courses"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "academicLevel",
+      "entityType": "columns",
+      "table": "courses"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "requisites",
+      "entityType": "columns",
+      "table": "courses"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "prefix",
+      "entityType": "columns",
+      "table": "departments"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "departments"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "facultyUrl",
+      "entityType": "columns",
+      "table": "departments"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "import_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "kind",
+      "entityType": "columns",
+      "table": "import_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "status",
+      "entityType": "columns",
+      "table": "import_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "trigger",
+      "entityType": "columns",
+      "table": "import_runs"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "startedAt",
+      "entityType": "columns",
+      "table": "import_runs"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "finishedAt",
+      "entityType": "columns",
+      "table": "import_runs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "counts",
+      "entityType": "columns",
+      "table": "import_runs"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "errorMessage",
+      "entityType": "columns",
+      "table": "import_runs"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "professorId",
+      "entityType": "columns",
+      "table": "professor_departments"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "departmentPrefix",
+      "entityType": "columns",
+      "table": "professor_departments"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "professorId",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "runId",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "status",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "skipReason",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "startedAt",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "finishedAt",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "durationMs",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "requests",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "reportedCount",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "highWaterLegacyId",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "fetched",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "inserted",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "updated",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "linked",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "unlinked",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "errorMessage",
+      "entityType": "columns",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "rmpLegacyId",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "professorId",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "courseId",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "courseCode",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "courseCodeRaw",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "real",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "quality",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "helpful",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "clarity",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "difficulty",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "comment",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "tags",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "gradeReceived",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "isForCredit",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "attendanceRequired",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "wouldTakeAgain",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "textbookUse",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "thumbsUpTotal",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "thumbsDownTotal",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "postedAt",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "importedAt",
+      "entityType": "columns",
+      "table": "professor_ratings"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "professors"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "rmpId",
+      "entityType": "columns",
+      "table": "professors"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "rmpLegacyId",
+      "entityType": "columns",
+      "table": "professors"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "professors"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "imageUrl",
+      "entityType": "columns",
+      "table": "professors"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "details",
+      "entityType": "columns",
+      "table": "professors"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "sectionId",
+      "entityType": "columns",
+      "table": "section_professors"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "professorId",
+      "entityType": "columns",
+      "table": "section_professors"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "id",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "termCode",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "courseId",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "sectionCode",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "sectionSearchName",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "classStart",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "classEnd",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "buildingName",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "roomNumber",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "room",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "showTBD",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "days",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "isOnline",
+      "entityType": "columns",
+      "table": "sections"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "termCode",
+      "entityType": "columns",
+      "table": "terms"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "name",
+      "entityType": "columns",
+      "table": "terms"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "endDate",
+      "entityType": "columns",
+      "table": "terms"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "startDate",
+      "entityType": "columns",
+      "table": "terms"
+    },
+    {
+      "type": "integer",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "archivedAt",
+      "entityType": "columns",
+      "table": "terms"
+    },
+    {
+      "columns": [
+        "courseId"
+      ],
+      "tableTo": "courses",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "nameExplicit": false,
+      "name": "fk_course_matching_sections_courseId_courses_id_fk",
+      "entityType": "fks",
+      "table": "course_matching_sections"
+    },
+    {
+      "columns": [
+        "departmentPrefix"
+      ],
+      "tableTo": "departments",
+      "columnsTo": [
+        "prefix"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "nameExplicit": false,
+      "name": "fk_courses_departmentPrefix_departments_prefix_fk",
+      "entityType": "fks",
+      "table": "courses"
+    },
+    {
+      "columns": [
+        "professorId"
+      ],
+      "tableTo": "professors",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_professor_departments_professorId_professors_id_fk",
+      "entityType": "fks",
+      "table": "professor_departments"
+    },
+    {
+      "columns": [
+        "departmentPrefix"
+      ],
+      "tableTo": "departments",
+      "columnsTo": [
+        "prefix"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "RESTRICT",
+      "nameExplicit": false,
+      "name": "fk_professor_departments_departmentPrefix_departments_prefix_fk",
+      "entityType": "fks",
+      "table": "professor_departments"
+    },
+    {
+      "columns": [
+        "professorId"
+      ],
+      "tableTo": "professors",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "nameExplicit": false,
+      "name": "fk_professor_ratings_professorId_professors_id_fk",
+      "entityType": "fks",
+      "table": "professor_ratings"
+    },
+    {
+      "columns": [
+        "courseId"
+      ],
+      "tableTo": "courses",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "SET NULL",
+      "nameExplicit": false,
+      "name": "fk_professor_ratings_courseId_courses_id_fk",
+      "entityType": "fks",
+      "table": "professor_ratings"
+    },
+    {
+      "columns": [
+        "termCode"
+      ],
+      "tableTo": "terms",
+      "columnsTo": [
+        "termCode"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "nameExplicit": false,
+      "name": "fk_sections_termCode_terms_termCode_fk",
+      "entityType": "fks",
+      "table": "sections"
+    },
+    {
+      "columns": [
+        "courseId"
+      ],
+      "tableTo": "courses",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "nameExplicit": false,
+      "name": "fk_sections_courseId_courses_id_fk",
+      "entityType": "fks",
+      "table": "sections"
+    },
+    {
+      "columns": [
+        "professorId",
+        "departmentPrefix"
+      ],
+      "nameExplicit": false,
+      "name": "professor_departments_pk",
+      "entityType": "pks",
+      "table": "professor_departments"
+    },
+    {
+      "columns": [
+        "sectionId",
+        "professorId"
+      ],
+      "nameExplicit": false,
+      "name": "section_professors_pk",
+      "entityType": "pks",
+      "table": "section_professors"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "admin_audit_log_pk",
+      "table": "admin_audit_log",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "course_matching_sections_pk",
+      "table": "course_matching_sections",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "courses_pk",
+      "table": "courses",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "prefix"
+      ],
+      "nameExplicit": false,
+      "name": "departments_pk",
+      "table": "departments",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "import_runs_pk",
+      "table": "import_runs",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "professorId"
+      ],
+      "nameExplicit": false,
+      "name": "professor_rating_pulls_pk",
+      "table": "professor_rating_pulls",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "professor_ratings_pk",
+      "table": "professor_ratings",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "professors_pk",
+      "table": "professors",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "termCode"
+      ],
+      "nameExplicit": false,
+      "name": "terms_pk",
+      "table": "terms",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        {
+          "value": "createdAt",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "admin_audit_log_by_created_at",
+      "entityType": "indexes",
+      "table": "admin_audit_log"
+    },
+    {
+      "columns": [
+        {
+          "value": "archivedAt",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "course_matching_sections_by_archived_at",
+      "entityType": "indexes",
+      "table": "course_matching_sections"
+    },
+    {
+      "columns": [
+        {
+          "value": "academicLevel",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "courses_by_academic_level",
+      "entityType": "indexes",
+      "table": "courses"
+    },
+    {
+      "columns": [
+        {
+          "value": "code",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "courses_by_code",
+      "entityType": "indexes",
+      "table": "courses"
+    },
+    {
+      "columns": [
+        {
+          "value": "departmentPrefix",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "courses_by_department_prefix",
+      "entityType": "indexes",
+      "table": "courses"
+    },
+    {
+      "columns": [
+        {
+          "value": "startedAt",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "import_runs_by_started_at",
+      "entityType": "indexes",
+      "table": "import_runs"
+    },
+    {
+      "columns": [
+        {
+          "value": "status",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "import_runs_by_status",
+      "entityType": "indexes",
+      "table": "import_runs"
+    },
+    {
+      "columns": [
+        {
+          "value": "departmentPrefix",
+          "isExpression": false
+        },
+        {
+          "value": "professorId",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "professor_departments_by_department_prefix",
+      "entityType": "indexes",
+      "table": "professor_departments"
+    },
+    {
+      "columns": [
+        {
+          "value": "status",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "professor_rating_pulls_by_status",
+      "entityType": "indexes",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "columns": [
+        {
+          "value": "finishedAt",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "professor_rating_pulls_by_finished_at",
+      "entityType": "indexes",
+      "table": "professor_rating_pulls"
+    },
+    {
+      "columns": [
+        {
+          "value": "rmpLegacyId",
+          "isExpression": false
+        }
+      ],
+      "isUnique": true,
+      "where": null,
+      "origin": "manual",
+      "name": "professor_ratings_by_rmp_legacy_id",
+      "entityType": "indexes",
+      "table": "professor_ratings"
+    },
+    {
+      "columns": [
+        {
+          "value": "professorId",
+          "isExpression": false
+        },
+        {
+          "value": "rmpLegacyId",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "professor_ratings_by_professor_id",
+      "entityType": "indexes",
+      "table": "professor_ratings"
+    },
+    {
+      "columns": [
+        {
+          "value": "courseId",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "professor_ratings_by_course_id",
+      "entityType": "indexes",
+      "table": "professor_ratings"
+    },
+    {
+      "columns": [
+        {
+          "value": "postedAt",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "professor_ratings_by_posted_at",
+      "entityType": "indexes",
+      "table": "professor_ratings"
+    },
+    {
+      "columns": [
+        {
+          "value": "professorId",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "section_professors_by_professor_id",
+      "entityType": "indexes",
+      "table": "section_professors"
+    },
+    {
+      "columns": [
+        {
+          "value": "classStart",
+          "isExpression": false
+        },
+        {
+          "value": "classEnd",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "sections_by_class_times",
+      "entityType": "indexes",
+      "table": "sections"
+    },
+    {
+      "columns": [
+        {
+          "value": "termCode",
+          "isExpression": false
+        },
+        {
+          "value": "classStart",
+          "isExpression": false
+        },
+        {
+          "value": "classEnd",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "sections_by_term_code_and_class_times",
+      "entityType": "indexes",
+      "table": "sections"
+    },
+    {
+      "columns": [
+        {
+          "value": "archivedAt",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "terms_by_archived_at",
+      "entityType": "indexes",
+      "table": "terms"
+    }
+  ],
+  "renames": []
+}

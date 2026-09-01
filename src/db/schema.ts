@@ -5,6 +5,7 @@ import {
   real,
   sqliteTable,
   text,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
 export const terms = sqliteTable(
@@ -158,6 +159,126 @@ export const sectionProfessors = sqliteTable(
   (table) => [
     primaryKey({ columns: [table.sectionId, table.professorId] }),
     index("section_professors_by_professor_id").on(table.professorId),
+  ]
+);
+
+/**
+ * Reviews pulled from Rate My Professors.
+ *
+ * `courseId` is nullable on purpose, and it is the whole design of this table.
+ * Students type the course code by hand on RMP, so the field is full of typos
+ * (`PYSC2143`), abbreviations (`MAT1213`), bare numbers (`1223`), and subjects
+ * with no number at all (`MATHSTATS`). Only 58% of sampled reviews resolve to a
+ * local course. Dropping the other 42% — which is what the previous
+ * implementation did — silently throws away most of a professor's feedback to
+ * preserve a foreign key. Instead the review is always stored, `courseCodeRaw`
+ * keeps what the student actually typed, and linking a course becomes an
+ * enrichment that can be improved later rather than an import-time filter.
+ *
+ * Snapshotted alongside `professors` and `courses`, which is what makes the
+ * foreign keys below safe: all three are deleted and reinserted together by one
+ * seed, in dependency order. `courseId` is `set null` rather than `cascade` on
+ * purpose — dropping a course must not destroy the reviews written about it,
+ * which is the same reasoning that makes the column nullable in the first place.
+ */
+export const professorRatings = sqliteTable(
+  "professor_ratings",
+  {
+    id: text().primaryKey(),
+    /**
+     * Monotonic with post date, which `postedAt` is not reliably (RMP sends it
+     * as `2026-01-13 02:12:26 +0000 UTC`). This is the incremental high-water
+     * mark: a pull stops once it reaches an id it already holds.
+     */
+    rmpLegacyId: int().notNull(),
+    professorId: text()
+      .$type<ProfessorId>()
+      .notNull()
+      .references(() => professors.id, { onDelete: "cascade" }),
+    courseId: text()
+      .$type<CourseId>()
+      .references(() => courses.id, { onDelete: "set null" }),
+    /** Canonical `SUBJ-1234`, or null when the raw code does not parse. */
+    courseCode: text(),
+    courseCodeRaw: text(),
+    /** Mean of `helpful` and `clarity`; `real` because that mean lands on .5. */
+    quality: real().notNull(),
+    helpful: int().notNull(),
+    clarity: int().notNull(),
+    difficulty: int().notNull(),
+    comment: text(),
+    tags: text({ mode: "json" }).$type<string[]>().notNull(),
+    gradeReceived: text(),
+    isForCredit: int({ mode: "boolean" }),
+    attendanceRequired: int({ mode: "boolean" }),
+    wouldTakeAgain: int({ mode: "boolean" }),
+    /** Raw 0-5 RMP value, not a boolean. See the extractor's transform. */
+    textbookUse: int(),
+    thumbsUpTotal: int().notNull(),
+    thumbsDownTotal: int().notNull(),
+    postedAt: int({ mode: "timestamp" }).notNull(),
+    importedAt: int({ mode: "timestamp" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("professor_ratings_by_rmp_legacy_id").on(table.rmpLegacyId),
+    // Ordered so `max(rmpLegacyId) group by professorId` — the high-water mark
+    // query the whole incremental path is built on — is served by the index.
+    index("professor_ratings_by_professor_id").on(
+      table.professorId,
+      table.rmpLegacyId
+    ),
+    index("professor_ratings_by_course_id").on(table.courseId),
+    index("professor_ratings_by_posted_at").on(table.postedAt),
+  ]
+);
+
+export const RATING_PULL_STATUSES = ["succeeded", "skipped", "failed"] as const;
+
+export type RatingPullStatus = (typeof RATING_PULL_STATUSES)[number];
+
+/**
+ * One row per professor, rewritten on every attempt: what the last pull did,
+ * how long it took, and why it did nothing when it did nothing.
+ *
+ * It deliberately does not gate the next pull. The high-water mark that decides
+ * what to fetch is derived from `professor_ratings` itself, so it stays correct
+ * even when this table is empty — which it is on any fresh checkout, since this
+ * is machine-local bookkeeping and is never snapshotted. `reportedCount` is the
+ * one value read back, and only as an optimisation: RMP's `numRatings` is
+ * approximate, so it is compared against the previous `numRatings` rather than
+ * against a row count.
+ *
+ * Unlike `professor_ratings` it declares no foreign key to `professors`. It is
+ * not in the snapshot, so a `db:seed` that replaces the roster would leave these
+ * rows pointing at nothing, and `applySnapshot` checks `foreign_key_check`
+ * across the whole database — a declared reference here would turn a routine
+ * re-seed into a hard failure.
+ */
+export const professorRatingPulls = sqliteTable(
+  "professor_rating_pulls",
+  {
+    professorId: text().$type<ProfessorId>().primaryKey(),
+    runId: text(),
+    status: text().$type<RatingPullStatus>().notNull(),
+    /** Set when `status` is `skipped`; prose, meant to be read in the UI. */
+    skipReason: text(),
+    startedAt: int({ mode: "timestamp" }).notNull(),
+    finishedAt: int({ mode: "timestamp" }).notNull(),
+    durationMs: int().notNull(),
+    requests: int().notNull(),
+    /** RMP's `numRatings` at this pull, for comparison at the next one. */
+    reportedCount: int(),
+    highWaterLegacyId: int(),
+    fetched: int().notNull(),
+    inserted: int().notNull(),
+    updated: int().notNull(),
+    linked: int().notNull(),
+    unlinked: int().notNull(),
+    errorMessage: text(),
+  },
+  (table) => [
+    index("professor_rating_pulls_by_status").on(table.status),
+    index("professor_rating_pulls_by_finished_at").on(table.finishedAt),
   ]
 );
 
