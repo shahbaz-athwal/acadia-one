@@ -7,13 +7,13 @@ import { authenticateAcadiaStudent } from "@/server/acadia/auth";
 import { AcadiaExtractor } from "@/server/acadia/extractor";
 import { importCourses } from "@/server/workflows/courses";
 import { importProfessors } from "@/server/workflows/professors";
+import type { ImportProgress } from "@/server/workflows/progress";
 import { importSectionDetails } from "@/server/workflows/sections";
-import type { SectionImportProgress } from "@/server/workflows/sections";
 
 interface ActiveRun {
   readonly id: string;
   readonly kind: ImportRunKind;
-  progress: SectionImportProgress | null;
+  progress: ImportProgress | null;
 }
 
 /**

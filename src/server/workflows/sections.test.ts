@@ -377,7 +377,7 @@ test("imports pending section details and leaves completed batches alone", async
 test("leaves the archive state of an existing term alone", async () => {
   const { database, sqlite } = createTestDatabase();
   const archivedAt = new Date("2026-08-13T12:00:00.000Z");
-  const progress: { completedCourses: number; totalCourses: number }[] = [];
+  const progress: { completed: number; total: number; unit: string }[] = [];
   const extractor = {
     getSectionDetails: () => okAsync(acadiaSections),
   };
@@ -437,7 +437,7 @@ test("leaves the archive state of an existing term alone", async () => {
     expect(storedTerm?.archivedAt).toEqual(archivedAt);
     expect(storedTerm?.name).toBe("Winter 2027");
     expect(storedTerm?.endDate).toEqual(new Date("2027-04-20T00:00:00.000Z"));
-    expect(progress).toEqual([{ completedCourses: 1, totalCourses: 1 }]);
+    expect(progress).toEqual([{ completed: 1, total: 1, unit: "courses" }]);
   } finally {
     sqlite.close();
   }

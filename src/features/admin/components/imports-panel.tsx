@@ -157,15 +157,13 @@ export const ImportsPanel = () => {
                 <>
                   <Progress
                     value={
-                      progress.totalCourses === 0
+                      progress.total === 0
                         ? 0
-                        : (progress.completedCourses / progress.totalCourses) *
-                          PERCENT
+                        : (progress.completed / progress.total) * PERCENT
                     }
                   />
                   <p className="text-muted-foreground text-xs tabular-nums">
-                    {progress.completedCourses} / {progress.totalCourses}{" "}
-                    courses
+                    {progress.completed} / {progress.total} {progress.unit}
                   </p>
                 </>
               )}

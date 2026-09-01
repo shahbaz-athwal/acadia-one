@@ -12,14 +12,10 @@ import {
 import type { CourseId, SectionId } from "@/db/schema";
 import type { AcadiaSection } from "@/server/acadia/endpoints/section-details/schema";
 import type { AcadiaExtractor } from "@/server/acadia/extractor";
+import type { ImportProgress } from "@/server/workflows/progress";
 
 interface SectionDetailsExtractor {
   readonly getSectionDetails: AcadiaExtractor["getSectionDetails"];
-}
-
-export interface SectionImportProgress {
-  readonly completedCourses: number;
-  readonly totalCourses: number;
 }
 
 interface ImportSectionDetailsOptions {
@@ -31,7 +27,7 @@ interface ImportSectionDetailsOptions {
    * portal requests, so callers that surface progress (the admin dashboard)
    * need something to report before the promise settles.
    */
-  readonly onProgress?: (progress: SectionImportProgress) => void;
+  readonly onProgress?: (progress: ImportProgress) => void;
 }
 
 interface PendingCourseImport {
@@ -361,8 +357,9 @@ export async function importSectionDetails({
     imported.terms += counts.terms;
 
     onProgress?.({
-      completedCourses: imported.courses,
-      totalCourses: pendingImports.length,
+      completed: imported.courses,
+      total: pendingImports.length,
+      unit: "courses",
     });
   }
 
