@@ -286,6 +286,7 @@ export const IMPORT_RUN_KINDS = [
   "courses",
   "professors",
   "sectionDetails",
+  "rmpRatings",
 ] as const;
 
 export type ImportRunKind = (typeof IMPORT_RUN_KINDS)[number];

@@ -1,5 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { DownloadIcon, KeyRoundIcon } from "lucide-react";
+import {
+  DownloadIcon,
+  KeyRoundIcon,
+  MessageSquareQuoteIcon,
+} from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +43,7 @@ const PERCENT = 100;
 const KIND_LABELS: Record<ImportRunKind, string> = {
   courses: "Course import",
   professors: "Professor import",
+  rmpRatings: "RMP review import",
   sectionDetails: "Section import",
 };
 
@@ -84,7 +89,7 @@ export const ImportsPanel = () => {
           <AlertTitle>Portal credentials are not configured</AlertTitle>
           <AlertDescription>
             Set ACADIA_ADMIN_USERNAME and ACADIA_ADMIN_PASSWORD before starting
-            an import.
+            a portal import. The RMP review import does not need them.
           </AlertDescription>
         </Alert>
       )}
@@ -94,9 +99,12 @@ export const ImportsPanel = () => {
           <CardTitle>Run an import</CardTitle>
           <CardDescription>
             Courses, terms, sections, and professors all come from the Acadia
-            portal. Each import runs in the background — leaving this page does
-            not stop it — and only one can run at a time. A full section import
-            is roughly 1200 sequential portal requests.
+            portal. Rate My Professors reviews do not — that source is public,
+            so the review import runs without portal credentials. Each import
+            runs in the background — leaving this page does not stop it — and
+            only one can run at a time. A full section import is roughly 1200
+            sequential portal requests; a review import is at most 244 and skips
+            professors whose review count has not moved.
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
@@ -132,6 +140,17 @@ export const ImportsPanel = () => {
             >
               <DownloadIcon />
               Run professor import
+            </Button>
+            <Button
+              disabled={activeRun !== null || triggerMutation.isPending}
+              onClick={() => {
+                triggerMutation.mutate("rmpRatings");
+              }}
+              size="sm"
+              variant="outline"
+            >
+              <MessageSquareQuoteIcon />
+              Run RMP review import
             </Button>
           </div>
 

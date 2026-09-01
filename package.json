@@ -11,6 +11,7 @@
     "db:snapshot": "bun run scripts/db-snapshot.ts",
     "db:seed": "bun run scripts/db-seed.ts",
     "rmp:match": "bun run scripts/match-rmp.ts",
+    "rmp:ratings": "bun run scripts/rmp-ratings.ts",
     "db:studio": "bunx --bun drizzle-kit studio",
     "build": "bunx --bun vite build",
     "start": "portless acadia-one bunx --bun vite preview",

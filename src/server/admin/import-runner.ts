@@ -5,9 +5,11 @@ import { importRuns } from "@/db/schema";
 import type { ImportRunKind, ImportRunTrigger } from "@/db/schema";
 import { authenticateAcadiaStudent } from "@/server/acadia/auth";
 import { AcadiaExtractor } from "@/server/acadia/extractor";
+import { recordAdminAction } from "@/server/admin/audit";
 import { importCourses } from "@/server/workflows/courses";
 import { importProfessors } from "@/server/workflows/professors";
 import type { ImportProgress } from "@/server/workflows/progress";
+import { importRmpRatings } from "@/server/workflows/rmp-ratings";
 import { importSectionDetails } from "@/server/workflows/sections";
 
 interface ActiveRun {
@@ -104,26 +106,82 @@ async function createExtractor() {
   return new AcadiaExtractor(cookiesResult.value);
 }
 
+/**
+ * A run degraded rather than failed — some professors did not import, or the
+ * roster lookup that drives skipping was unavailable — is still recorded as
+ * succeeded, because most of it did work. The audit log is where that nuance
+ * lives, so a half-empty run is never silently indistinguishable from a clean
+ * one.
+ */
+function auditRmpRatingsRun(
+  database: Database,
+  run: ActiveRun,
+  report: Awaited<ReturnType<typeof importRmpRatings>>
+) {
+  const failures = report.professors.filter(
+    (professor) => professor.status === "failed"
+  );
+
+  if (failures.length === 0 && report.rosterWarning === null) {
+    return;
+  }
+
+  recordAdminAction(database, {
+    action: "imports.rmpRatings.degraded",
+    after: {
+      failedProfessors: failures.map((professor) => ({
+        error: professor.errorMessage,
+        professor: professor.professorName,
+      })),
+      rosterWarning: report.rosterWarning,
+    },
+    summary:
+      failures.length === 0
+        ? "RMP review import could not read the roster, so nothing was skipped."
+        : `RMP review import finished with ${failures.length} professor(s) failing.`,
+    target: run.id,
+  });
+}
+
 async function executeRun(database: Database, run: ActiveRun) {
-  const extractor = await createExtractor();
+  const onProgress = (progress: ImportProgress) => {
+    run.progress = progress;
+  };
 
   // Cases are exhaustive over `ImportRunKind`, so adding a kind to
   // `IMPORT_RUN_KINDS` fails to compile until it is dispatched here.
   switch (run.kind) {
     case "courses": {
-      return await importCourses({ database, extractor });
+      return await importCourses({
+        database,
+        extractor: await createExtractor(),
+      });
     }
     case "professors": {
-      return await importProfessors({ database, extractor });
+      return await importProfessors({
+        database,
+        extractor: await createExtractor(),
+      });
     }
     case "sectionDetails": {
       return await importSectionDetails({
         database,
-        extractor,
-        onProgress: (progress) => {
-          run.progress = progress;
-        },
+        extractor: await createExtractor(),
+        onProgress,
       });
+    }
+    case "rmpRatings": {
+      // Rate My Professors is public, so this is the one import that needs no
+      // portal credentials — `createExtractor` is deliberately not called.
+      const report = await importRmpRatings({
+        database,
+        onProgress,
+        runId: run.id,
+      });
+
+      auditRmpRatingsRun(database, run, report);
+
+      return report.counts;
     }
     default: {
       // `import_runs.kind` is an unconstrained text column, so a hand-edited
