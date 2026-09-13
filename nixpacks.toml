@@ -1,0 +1,13 @@
+[variables]
+NODE_ENV = "production"
+HOST = "0.0.0.0"
+PORT = "3000"
+
+[phases.install]
+cmds = ["bun install --frozen-lockfile"]
+
+[phases.build]
+cmds = ["bun run build"]
+
+[start]
+cmd = "bun run db:migrate && bun run start"
