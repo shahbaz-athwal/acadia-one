@@ -14,7 +14,7 @@
     "rmp:ratings": "bun run scripts/rmp-ratings.ts",
     "db:studio": "bunx --bun drizzle-kit studio",
     "build": "bunx --bun vite build",
-    "start": "bunx --bun srvx --prod --static dist/client --entry dist/server/server.js",
+    "start": "bunx --bun srvx --prod --static=../client --entry=dist/server/server.js",
     "test": "op run --env-file=.env -- bun test",
     "check": "bunx --bun ultracite check",
     "fix": "bunx --bun ultracite fix"
