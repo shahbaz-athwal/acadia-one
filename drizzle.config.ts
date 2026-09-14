@@ -1,10 +1,10 @@
 import { defineConfig } from "drizzle-kit";
 
-const databaseUrl = process.env.DATABASE_URL ?? "file:./local.db";
+import { DEFAULT_DATABASE_URL, resolveDatabasePath } from "./src/db/path";
 
 export default defineConfig({
   dbCredentials: {
-    url: databaseUrl,
+    url: resolveDatabasePath(process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL),
   },
   dialect: "sqlite",
   out: "./drizzle",

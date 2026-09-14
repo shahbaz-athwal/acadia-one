@@ -1,8 +1,10 @@
 import { Database as SqliteClient } from "bun:sqlite";
+import { mkdirSync } from "node:fs";
+import nodePath from "node:path";
 
 import { drizzle } from "drizzle-orm/bun-sqlite";
 
-const DEFAULT_DATABASE_URL = "file:./local.db";
+import { DEFAULT_DATABASE_URL, resolveDatabasePath } from "./path";
 
 /**
  * SQLite disables foreign key enforcement per connection, so `sections.termCode
@@ -16,7 +18,20 @@ export function enableForeignKeys(client: SqliteClient) {
 export function createDatabase(
   url: string = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL
 ) {
-  const client = new SqliteClient(url);
+  const databasePath = resolveDatabasePath(url);
+
+  // SQLite reports a missing parent directory as the same opaque "unable to open
+  // database file" it uses for a permissions problem. The deployed database
+  // lives on a mounted volume, so create the directory rather than make an
+  // operator guess which of the two they are looking at.
+  if (databasePath !== ":memory:") {
+    mkdirSync(nodePath.dirname(databasePath), { recursive: true });
+  }
+
+  const client = new SqliteClient(databasePath, {
+    create: true,
+    readwrite: true,
+  });
 
   enableForeignKeys(client);
 

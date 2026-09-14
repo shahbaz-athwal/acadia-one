@@ -10,4 +10,4 @@ cmds = ["bun install --frozen-lockfile"]
 cmds = ["bun run build"]
 
 [start]
-cmd = "bun run db:migrate && bun run start"
+cmd = "bun run db:migrate && bun run db:seed --if-empty && bun run start"

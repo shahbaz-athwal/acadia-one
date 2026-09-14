@@ -7,7 +7,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: "3000"
-      DATABASE_URL: file:/app/data/local.db
+      DATABASE_URL: /app/data/local.db
     volumes:
       - type: bind
         source: /var/lib/dryft/sqlite
